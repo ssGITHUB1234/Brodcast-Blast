@@ -1,0 +1,179 @@
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from config.database import get_supabase_client
+from config.settings import FLASK_HOST, FLASK_PORT, ADMIN_USER_IDS
+from bot.services.user_service import UserService
+from bot.services.broadcast_service import BroadcastService
+from bot.services.priority_service import PrioritySlotService
+
+app = Flask(__name__)
+CORS(app)
+
+user_service = UserService()
+broadcast_service = BroadcastService()
+priority_service = PrioritySlotService()
+
+def is_admin(user_id):
+    """Check if user is admin"""
+    return user_id in ADMIN_USER_IDS
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({'status': 'ok', 'message': 'Broadcast Bot API is running'})
+
+@app.route('/api/stats', methods=['GET'])
+def get_stats():
+    """Get overall statistics"""
+    try:
+        db = get_supabase_client()
+        
+        users_response = db.table('users').select('*', count='exact').execute()
+        broadcasts_response = db.table('broadcasts').select('*', count='exact').execute()
+        priority_slots_response = db.table('priority_slots').select('*', count='exact').execute()
+        
+        active_users = db.table('users').select('*', count='exact').eq('active', True).eq('blocked', False).execute()
+        sent_broadcasts = db.table('broadcasts').select('*', count='exact').eq('status', 'sent').execute()
+        active_slots = db.table('priority_slots').select('*', count='exact').eq('active', True).execute()
+        
+        total_views = 0
+        if broadcasts_response.data:
+            for bc in broadcasts_response.data:
+                total_views += bc.get('views', 0)
+        
+        total_revenue = 0
+        completed_payments = db.table('payments').select('*').eq('status', 'completed').execute()
+        if completed_payments.data:
+            for payment in completed_payments.data:
+                total_revenue += float(payment.get('amount', 0))
+        
+        return jsonify({
+            'total_users': users_response.count or 0,
+            'active_users': active_users.count or 0,
+            'total_broadcasts': broadcasts_response.count or 0,
+            'sent_broadcasts': sent_broadcasts.count or 0,
+            'total_views': total_views,
+            'total_priority_slots': priority_slots_response.count or 0,
+            'active_priority_slots': active_slots.count or 0,
+            'total_revenue': total_revenue
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    """Get all users"""
+    try:
+        db = get_supabase_client()
+        response = db.table('users').select('*').order('join_date', desc=True).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    """Get specific user"""
+    try:
+        user = user_service.get_user(user_id)
+        if user:
+            return jsonify(user)
+        return jsonify({'error': 'User not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/users/<int:user_id>/block', methods=['POST'])
+def block_user(user_id):
+    """Block/unblock a user"""
+    try:
+        data = request.json
+        blocked = data.get('blocked', True)
+        
+        user = user_service.update_user(user_id, blocked=blocked)
+        if user:
+            return jsonify({'message': f"User {'blocked' if blocked else 'unblocked'} successfully", 'user': user})
+        return jsonify({'error': 'User not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/broadcasts', methods=['GET'])
+def get_broadcasts():
+    """Get all broadcasts"""
+    try:
+        db = get_supabase_client()
+        status = request.args.get('status')
+        
+        query = db.table('broadcasts').select('*')
+        if status:
+            query = query.eq('status', status)
+        
+        response = query.order('created_at', desc=True).limit(100).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/broadcasts/<int:broadcast_id>', methods=['GET'])
+def get_broadcast(broadcast_id):
+    """Get specific broadcast"""
+    try:
+        broadcast = broadcast_service.get_broadcast(broadcast_id)
+        if broadcast:
+            return jsonify(broadcast)
+        return jsonify({'error': 'Broadcast not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/priority-slots', methods=['GET'])
+def get_priority_slots():
+    """Get all priority slots"""
+    try:
+        db = get_supabase_client()
+        response = db.table('priority_slots').select('*').order('created_at', desc=True).limit(100).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/priority-slots/active', methods=['GET'])
+def get_active_slot():
+    """Get currently active priority slot"""
+    try:
+        active_slot = priority_service.get_active_priority_slot()
+        if active_slot:
+            return jsonify(active_slot)
+        return jsonify({'message': 'No active priority slot'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analytics/broadcasts', methods=['GET'])
+def get_broadcast_analytics():
+    """Get broadcast analytics"""
+    try:
+        db = get_supabase_client()
+        response = db.table('analytics').select('*').order('timestamp', desc=True).limit(1000).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/payments', methods=['GET'])
+def get_payments():
+    """Get all payments"""
+    try:
+        db = get_supabase_client()
+        response = db.table('payments').select('*').order('timestamp', desc=True).limit(100).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/logs', methods=['GET'])
+def get_admin_logs():
+    """Get admin logs"""
+    try:
+        db = get_supabase_client()
+        response = db.table('admin_logs').select('*').order('timestamp', desc=True).limit(100).execute()
+        return jsonify(response.data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    print("🚀 Starting Flask Admin API...")
+    print(f"📊 Dashboard will be available at http://{FLASK_HOST}:{FLASK_PORT}")
+    app.run(host=FLASK_HOST, port=FLASK_PORT, debug=True)
