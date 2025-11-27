@@ -1,0 +1,50 @@
+2025-11-27T13:20:22.832838574Z Collecting gunicorn==21.2.0 (from -r requirements.txt (line 9))
+2025-11-27T13:20:22.842806106Z   Downloading gunicorn-21.2.0-py3-none-any.whl.metadata (4.1 kB)
+2025-11-27T13:20:23.316736896Z Collecting Pillow==10.1.0 (from -r requirements.txt (line 10))
+2025-11-27T13:20:23.370242622Z   Downloading Pillow-10.1.0.tar.gz (50.8 MB)
+2025-11-27T13:20:24.65367096Z      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50.8/50.8 MB 40.2 MB/s eta 0:00:00
+2025-11-27T13:20:25.650708998Z   Installing build dependencies: started
+2025-11-27T13:20:26.789215284Z   Installing build dependencies: finished with status 'done'
+2025-11-27T13:20:26.789957741Z   Getting requirements to build wheel: started
+2025-11-27T13:20:27.087942845Z   Getting requirements to build wheel: finished with status 'error'
+2025-11-27T13:20:27.091947065Z   error: subprocess-exited-with-error
+2025-11-27T13:20:27.091959726Z   
+2025-11-27T13:20:27.091967006Z   × Getting requirements to build wheel did not run successfully.
+2025-11-27T13:20:27.091974036Z   │ exit code: 1
+2025-11-27T13:20:27.091980547Z   ╰─> [21 lines of output]
+2025-11-27T13:20:27.091986107Z       Traceback (most recent call last):
+2025-11-27T13:20:27.091992297Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 389, in <module>
+2025-11-27T13:20:27.091998358Z           main()
+2025-11-27T13:20:27.092002448Z           ~~~~^^
+2025-11-27T13:20:27.092006129Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 373, in main
+2025-11-27T13:20:27.09202243Z           json_out["return_val"] = hook(**hook_input["kwargs"])
+2025-11-27T13:20:27.09202605Z                                    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+2025-11-27T13:20:27.09203243Z         File "/opt/render/project/src/.venv/lib/python3.13/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 143, in get_requires_for_build_wheel
+2025-11-27T13:20:27.09203621Z           return hook(config_settings)
+2025-11-27T13:20:27.09203986Z         File "/tmp/pip-build-env-b0wo5tjv/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 331, in get_requires_for_build_wheel
+2025-11-27T13:20:27.092043511Z           return self._get_build_requires(config_settings, requirements=[])
+2025-11-27T13:20:27.092047161Z                  ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-11-27T13:20:27.092051451Z         File "/tmp/pip-build-env-b0wo5tjv/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 301, in _get_build_requires
+2025-11-27T13:20:27.092055092Z           self.run_setup()
+2025-11-27T13:20:27.092058812Z           ~~~~~~~~~~~~~~^^
+2025-11-27T13:20:27.092063052Z         File "/tmp/pip-build-env-b0wo5tjv/overlay/lib/python3.13/site-packages/setuptools/build_meta.py", line 317, in run_setup
+2025-11-27T13:20:27.092066692Z           exec(code, locals())
+2025-11-27T13:20:27.092070222Z           ~~~~^^^^^^^^^^^^^^^^
+2025-11-27T13:20:27.092073753Z         File "<string>", line 30, in <module>
+2025-11-27T13:20:27.092089354Z         File "<string>", line 27, in get_version
+2025-11-27T13:20:27.092092624Z       KeyError: '__version__'
+2025-11-27T13:20:27.092094794Z       [end of output]
+2025-11-27T13:20:27.092097064Z   
+2025-11-27T13:20:27.092099954Z   note: This error originates from a subprocess, and is likely not a problem with pip.
+2025-11-27T13:20:27.420730889Z 
+2025-11-27T13:20:27.420754611Z [notice] A new release of pip is available: 25.1.1 -> 25.3
+2025-11-27T13:20:27.420757541Z [notice] To update, run: pip install --upgrade pip
+2025-11-27T13:20:27.422578704Z error: subprocess-exited-with-error
+2025-11-27T13:20:27.422587335Z 
+2025-11-27T13:20:27.422590885Z × Getting requirements to build wheel did not run successfully.
+2025-11-27T13:20:27.422593465Z │ exit code: 1
+2025-11-27T13:20:27.422596255Z ╰─> See above for output.
+2025-11-27T13:20:27.422598305Z 
+2025-11-27T13:20:27.422601246Z note: This error originates from a subprocess, and is likely not a problem with pip.
+2025-11-27T13:20:27.658384413Z ==> Build failed 😞
+2025-11-27T13:20:27.658400174Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
