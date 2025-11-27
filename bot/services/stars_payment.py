@@ -3,6 +3,9 @@ import requests
 from config.settings import TELEGRAM_BOT_TOKEN
 from config.database import get_supabase_client
 
+# Telegram Stars exchange rate: approximately 100 XTR = $1 USD
+STARS_PER_USD = 100
+
 class StarsPaymentService:
     """Handle Telegram Stars payments via bot API"""
     
@@ -17,14 +20,17 @@ class StarsPaymentService:
             self._db = get_supabase_client()
         return self._db
     
-    def send_invoice(self, user_id, slot_id, title, description, amount, payload=None):
+    def send_invoice(self, user_id, slot_id, title, description, amount_usd, payload=None):
         """
         Send invoice to user for priority slot purchase
-        Amount is in XTR (Telegram Stars)
+        amount_usd: Price in USD (will be converted to Stars)
         """
         try:
             if payload is None:
                 payload = f"slot_{slot_id}"
+            
+            # Convert USD to Telegram Stars (100 XTR ≈ $1 USD)
+            amount_stars = int(amount_usd * STARS_PER_USD)
             
             url = f"{self.api_url}/sendInvoice"
             
@@ -34,7 +40,7 @@ class StarsPaymentService:
                 'description': description,
                 'payload': payload,
                 'currency': 'XTR',
-                'prices': [{'label': title, 'amount': int(amount)}],
+                'prices': [{'label': title, 'amount': amount_stars}],
                 'provider_token': '',  # Empty for digital goods with Telegram Stars
             }
             

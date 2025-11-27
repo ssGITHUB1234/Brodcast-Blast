@@ -220,7 +220,7 @@ def handle_stars_payment_init(bot, call, slot_id, slot, user_id):
             slot_id,
             title,
             description,
-            amount=int(slot['price']),
+            amount_usd=float(slot['price']),
             payload=f"slot_{slot_id}"
         )
         
