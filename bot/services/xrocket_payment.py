@@ -20,8 +20,10 @@ class XRocketPayService:
     
     def get_headers(self):
         """Get request headers with API key"""
+        if not self.api_key:
+            print("WARNING: xRocket API key not configured")
         return {
-            'Rocket-Pay-Key': self.api_key,
+            'Rocket-Pay-Key': self.api_key if self.api_key else '',
             'Content-Type': 'application/json'
         }
     
@@ -59,14 +61,27 @@ class XRocketPayService:
             url = f"{self.api_url}/tg-invoices"
             
             data = {
-                'amount': str(amount),
+                'amount': float(amount),
                 'description': description[:1024],
                 'numPayments': num_payments,
             }
             
-            response = requests.post(url, json=data, headers=self.get_headers())
+            headers = self.get_headers()
+            
+            print(f"xRocket: Creating invoice with URL: {url}")
+            print(f"xRocket: Headers: {headers}")
+            print(f"xRocket: Data: {data}")
+            
+            response = requests.post(url, json=data, headers=headers, timeout=10)
+            
+            print(f"xRocket: Response status: {response.status_code}")
+            print(f"xRocket: Response text: {response.text}")
+            
             result = response.json()
             
+            print(f"xRocket: Parsed result: {result}")
+            
+            # Handle different response formats
             if result.get('status') == 'success':
                 invoice = result.get('data', {})
                 return {
@@ -75,11 +90,21 @@ class XRocketPayService:
                     'amount': invoice.get('amount'),
                     'status': invoice.get('status'),
                 }
+            elif isinstance(result, dict) and 'id' in result:
+                # Direct invoice object response
+                return {
+                    'invoice_id': result.get('id'),
+                    'invoice_url': result.get('url'),
+                    'amount': result.get('amount'),
+                    'status': result.get('status', 'active'),
+                }
             else:
-                print(f"Error creating xRocket invoice: {result.get('message')}")
+                print(f"Error creating xRocket invoice - unexpected response format: {result}")
                 return None
         except Exception as e:
             print(f"Error creating xRocket invoice: {e}")
+            import traceback
+            traceback.print_exc()
             return None
     
     def get_invoice(self, invoice_id):

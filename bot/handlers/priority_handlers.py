@@ -267,22 +267,30 @@ def handle_xrocket_init(bot, call, slot_id, slot, user_id):
         description = f"Priority Slot #{slot_id}"
         invoice = xrocket_service.create_invoice(slot['price'], description, slot_id)
         
-        if invoice:
+        if invoice and invoice.get('invoice_url'):
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("🚀 Pay with xRocket", url=invoice['invoice_url']))
             
             bot.edit_message_text(
                 f"🚀 xRocket Payment\n\n"
                 f"Amount: ${slot['price']}\n"
-                f"Invoice ID: {invoice['invoice_id']}\n\n"
+                f"Invoice ID: {invoice.get('invoice_id', 'pending')}\n\n"
                 f"Click the button below to pay:",
                 call.message.chat.id,
                 call.message.message_id,
                 reply_markup=markup
             )
-            payment_service.record_payment(user_id, slot_id, slot['price'], 'xrocket', str(invoice['invoice_id']), 'pending')
+            payment_service.record_payment(user_id, slot_id, slot['price'], 'xrocket', str(invoice.get('invoice_id', f"xrocket_{slot_id}")), 'pending')
         else:
-            bot.answer_callback_query(call.id, "Error creating invoice")
+            print(f"xRocket invoice creation failed: {invoice}")
+            bot.edit_message_text(
+                "❌ xRocket payment is temporarily unavailable.\n\n"
+                "Please try another payment method:\n"
+                "⭐ Telegram Stars\n"
+                "💳 CryptoPay",
+                call.message.chat.id,
+                call.message.message_id
+            )
     except Exception as e:
         print(f"Error initiating xRocket: {e}")
         bot.answer_callback_query(call.id, "Error processing payment")
