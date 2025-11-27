@@ -50,6 +50,16 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes
+- 2024-11-27: **Message Editing System Complete** - Fixed duplicate messages on button clicks
+  - All button interactions now UPDATE existing messages instead of creating new ones ✅
+  - Implemented `edit_or_send` helper function with fallback to new messages if edit fails
+  - Fixed priority slot handler duplicate message bug (was sending 2 messages)
+  - Message ID tracking through all callback handlers for smooth navigation
+  - No more message spam in user chats - cleaner UX
+- 2024-11-27: **Navigation System Complete** - Full menu + back buttons on all screens
+  - Main menu button on all interactive messages
+  - Back button for payment pages
+  - State tracking via state_manager.py for user context
 - 2024-11-27: **Payment Integration Complete** - Integrated 2 payment methods
   - ⭐ Telegram Stars (XTR currency) - sendInvoice via Bot API ✅
   - 💳 CryptoPay (USDT, TON, BTC, ETH, LTC, BNB, TRX, USDC) - REST API + webhooks ✅

@@ -161,18 +161,27 @@ def payment_callback(call):
 @bot.callback_query_handler(func=lambda call: call.data.startswith('menu_'))
 def menu_callback(call):
     menu_action = call.data.replace('menu_', '')
+    # Convert callback to message-like object to pass message_id
+    class CallbackMessage:
+        def __init__(self, callback):
+            self.from_user = callback.from_user
+            self.chat = callback.message.chat
+            self.message_id = callback.message.message_id
+    
+    msg = CallbackMessage(call)
+    
     if menu_action == 'create':
-        broadcast_handlers.handle_create_broadcast(bot, call.message)
+        broadcast_handlers.handle_create_broadcast(bot, msg)
     elif menu_action == 'priority':
-        priority_handlers.handle_priority_slots(bot, call.message)
+        priority_handlers.handle_priority_slots(bot, msg)
     elif menu_action == 'mybroadcasts':
-        menu_handler.handle_my_broadcasts(bot, call.message)
+        menu_handler.handle_my_broadcasts(bot, msg)
     elif menu_action == 'stats':
-        menu_handler.handle_stats(bot, call.message)
+        menu_handler.handle_stats(bot, msg)
     elif menu_action == 'settings':
-        menu_handler.handle_settings(bot, call.message)
+        menu_handler.handle_settings(bot, msg)
     elif menu_action == 'help':
-        menu_handler.handle_help(bot, call.message)
+        menu_handler.handle_help(bot, msg)
     
     bot.answer_callback_query(call.id)
 

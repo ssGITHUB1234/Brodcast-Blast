@@ -54,9 +54,9 @@ def handle_priority_slots(bot, message):
     active_slot = priority_service.get_active_priority_slot()
     
     if active_slot and active_slot['user_id'] == user_id:
-        show_active_slot_info(bot, message.chat.id, user_id, active_slot)
+        show_active_slot_info(bot, message.chat.id, user_id, active_slot, message.message_id)
     else:
-        show_priority_slot_packages(bot, message.chat.id, user_id, active_slot)
+        show_priority_slot_packages(bot, message.chat.id, user_id, active_slot, message.message_id)
 
 def show_priority_slot_packages(bot, chat_id, user_id, active_slot=None, message_id=None):
     """Show available priority slot packages"""
@@ -109,12 +109,13 @@ def show_priority_slot_packages(bot, chat_id, user_id, active_slot=None, message
            f"When you have an active priority slot, all other broadcasts are paused and only your messages are sent.\n\n" \
            f"Choose your package:"
     
-    edit_or_send(bot, chat_id, text, message_id, markup)
-    if not message_id:
-        msg = bot.send_message(chat_id, text, reply_markup=markup)
-        set_user_state(user_id, msg.message_id, 'priority')
+    result = edit_or_send(bot, chat_id, text, message_id, markup)
+    if result:  # New message was sent
+        set_user_state(user_id, result.message_id, 'priority')
+    else:  # Message was edited
+        set_user_state(user_id, message_id, 'priority')
 
-def show_active_slot_info(bot, chat_id, user_id, slot):
+def show_active_slot_info(bot, chat_id, user_id, slot, message_id=None):
     """Show active slot information"""
     if slot['slot_type'] == 'time':
         remaining = "Check /mystats for details"
@@ -132,8 +133,11 @@ def show_active_slot_info(bot, chat_id, user_id, slot):
            f"📊 {remaining}\n\n" \
            f"All your broadcasts will be sent immediately, and other users' broadcasts are queued."
     
-    msg = bot.send_message(chat_id, text, reply_markup=markup)
-    set_user_state(user_id, msg.message_id, 'priority_active')
+    result = edit_or_send(bot, chat_id, text, message_id, markup)
+    if result:
+        set_user_state(user_id, result.message_id, 'priority_active')
+    else:
+        set_user_state(user_id, message_id, 'priority_active')
 
 def handle_priority_slot_selection(bot, call):
     """Handle priority slot package selection"""
