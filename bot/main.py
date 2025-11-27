@@ -11,12 +11,14 @@ from bot.services.broadcast_service import BroadcastService
 from bot.services.priority_service import PrioritySlotService
 from bot.services.user_service import UserService
 from bot.services.ai_service import generate_broadcast_template
+from bot.services.monetag_service import MonetgService
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN) if TELEGRAM_BOT_TOKEN else None
 
 broadcast_service = BroadcastService()
 priority_service = PrioritySlotService()
 user_service = UserService()
+monetag_service = MonetgService()
 
 @bot.message_handler(commands=['start'])
 def start_command(message):
@@ -85,6 +87,40 @@ def help_command(message):
             self.chat = msg.chat
             self.message_id = None
     menu_handler.handle_help(bot, CommandMessage(message))
+
+@bot.message_handler(commands=['ads'])
+def ads_command(message):
+    """Watch ads to earn rewards"""
+    user_id = message.from_user.id
+    
+    if not monetag_service.is_enabled:
+        bot.reply_to(message, "Ad system not available yet.")
+        return
+    
+    try:
+        user = user_service.get_user(user_id)
+    except:
+        user = None
+    
+    if user and user.get('blocked'):
+        bot.reply_to(message, "Access denied.")
+        return
+    
+    markup = types.InlineKeyboardMarkup()
+    markup.add(
+        types.InlineKeyboardButton("🎬 Watch Rewarded Ad", callback_data="ad_rewarded"),
+        types.InlineKeyboardButton("🎁 Popup Reward", callback_data="ad_popup")
+    )
+    
+    bot.send_message(
+        message.chat.id,
+        "💰 Earn Rewards!\n\n"
+        "Watch ads to earn bonus credits for your broadcasts:\n\n"
+        "🎬 Rewarded Interstitial - Full screen ad\n"
+        "🎁 Rewarded Popup - Quick popup ad\n\n"
+        "Click a button below to start earning!",
+        reply_markup=markup
+    )
 
 @bot.message_handler(commands=['ai_template'])
 def ai_template_command(message):
@@ -214,6 +250,19 @@ def menu_callback(call):
         menu_handler.handle_settings(bot, msg)
     elif menu_action == 'help':
         menu_handler.handle_help(bot, msg)
+    elif menu_action == 'ads':
+        if monetag_service.is_enabled:
+            markup = types.InlineKeyboardMarkup()
+            markup.add(
+                types.InlineKeyboardButton("🎬 Watch Rewarded Ad", callback_data="ad_rewarded"),
+                types.InlineKeyboardButton("🎁 Popup Reward", callback_data="ad_popup")
+            )
+            text = "💰 Earn Rewards!\n\nWatch ads to earn bonus credits:\n🎬 Rewarded Interstitial\n🎁 Rewarded Popup"
+            from bot.utils.nav_helpers import edit_or_send
+            edit_or_send(bot, msg.chat.id, text, msg.message_id, markup)
+        else:
+            bot.answer_callback_query(call.id, "Ad system not available")
+            return
     
     bot.answer_callback_query(call.id)
 
@@ -240,6 +289,31 @@ def broadcast_pagination_callback(call):
     msg = CallbackMessage(call)
     menu_handler.handle_my_broadcasts(bot, msg, page=new_page)
     bot.answer_callback_query(call.id)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('ad_'))
+def ad_callback(call):
+    """Handle ad watching"""
+    user_id = call.from_user.id
+    ad_type = call.data.replace('ad_', '')
+    
+    if ad_type == 'rewarded':
+        bot.answer_callback_query(call.id, "Opening rewarded ad...", show_alert=False)
+        bot.send_message(call.message.chat.id,
+            "🎬 Rewarded Ad Opened\n\n"
+            "Watch the ad to earn credits!\n"
+            "Your reward will be applied after you complete viewing.",
+            reply_markup=types.InlineKeyboardMarkup().add(
+                types.InlineKeyboardButton("🏠 Menu", callback_data="nav_menu")
+            ))
+    elif ad_type == 'popup':
+        bot.answer_callback_query(call.id, "Opening reward popup...", show_alert=False)
+        bot.send_message(call.message.chat.id,
+            "🎁 Reward Popup Ad\n\n"
+            "Quick popup ad - watch and earn!\n"
+            "Reward: +10 broadcast credits",
+            reply_markup=types.InlineKeyboardMarkup().add(
+                types.InlineKeyboardButton("🏠 Menu", callback_data="nav_menu")
+            ))
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('settings_'))
 def settings_callback(call):

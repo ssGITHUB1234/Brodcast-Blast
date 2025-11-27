@@ -12,6 +12,8 @@ STARS_API_KEY = os.getenv('STARS_API_KEY', '')
 CRYPTOPAY_API_KEY = os.getenv('CRYPTOPAY_API_KEY', '')
 XROCKET_API_KEY = os.getenv('XROCKET_API_KEY', '')
 MONETAG_SDK_KEY = os.getenv('MONETAG_SDK_KEY', '')
+MONETAG_ZONE = '10243712'  # Zone ID from SDK
+MONETAG_SDK_FUNC = 'show_10243712'  # SDK function name
 
 COUNTRIES = [
     'Sri Lanka', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',

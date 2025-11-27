@@ -50,6 +50,12 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes
+- 2024-11-27: **Monetag Ads System Complete** - Full ad integration
+  - ✅ `/ads` command for users to watch ads
+  - ✅ Two ad formats: Rewarded Interstitial & Popup
+  - ✅ Main menu button for easy access
+  - ✅ Admin dashboard SDK loaded
+  - ✅ Monetag Zone: 10243712
 - 2024-11-27: **Chat Analysis Dashboard Complete** - Added pie/bar charts for analytics
   - 📊 Top Paying Users as Bar Chart - shows revenue by user
   - 📊 Top Broadcasting Users as Pie Chart - shows broadcast distribution
@@ -95,4 +101,4 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 
 ## Optional/Future Variables
 - STARS_API_KEY - For Telegram Stars (handled via bot API)
-- MONETAG_SDK_KEY - For ad integration (coming soon)
+- MONETAG_SDK_KEY - For Monetag ad integration (zone: 10243712)
