@@ -17,6 +17,19 @@ CORS(app)
 user_service = UserService()
 broadcast_service = BroadcastService()
 priority_service = PrioritySlotService()
+payment_service = PaymentService()
+
+# In-memory pricing cache
+pricing_cache = {
+    'time_1h': 5.0,
+    'time_6h': 25.0,
+    'time_12h': 45.0,
+    'time_24h': 80.0,
+    'count_5': 10.0,
+    'count_10': 18.0,
+    'count_25': 40.0,
+    'count_50': 70.0,
+}
 
 def is_admin(user_id):
     """Check if user is admin"""
@@ -26,6 +39,29 @@ def is_admin(user_id):
 def admin_dashboard():
     """Serve admin dashboard"""
     return render_template('dashboard.html')
+
+@app.route('/api/pricing', methods=['GET'])
+def get_pricing():
+    """Get all pricing"""
+    return jsonify(pricing_cache)
+
+@app.route('/api/pricing/<slot_key>', methods=['POST'])
+def update_pricing(slot_key):
+    """Update pricing for a slot"""
+    try:
+        data = request.json
+        price = float(data.get('price', 0))
+        
+        if slot_key not in pricing_cache:
+            return jsonify({'error': 'Invalid slot key'}), 400
+        
+        if price < 0:
+            return jsonify({'error': 'Price must be positive'}), 400
+        
+        pricing_cache[slot_key] = price
+        return jsonify({'message': f'Price updated for {slot_key}', 'price': price})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/health', methods=['GET'])
 def health_check():

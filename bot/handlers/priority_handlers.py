@@ -4,7 +4,6 @@ from bot.services.user_service import UserService
 from bot.services.payment_service import PaymentService
 from bot.services.stars_payment import StarsPaymentService
 from bot.services.cryptopay import CryptoPayService
-from config.settings import PRIORITY_SLOT_PRICES
 from bot.utils.helpers import format_price, get_slot_description
 
 priority_service = PrioritySlotService()
@@ -12,6 +11,17 @@ user_service = UserService()
 payment_service = PaymentService()
 stars_service = StarsPaymentService()
 cryptopay_service = CryptoPayService()
+
+# Get dynamic pricing from backend
+def get_priority_slot_prices():
+    """Get pricing from backend (shared pricing_cache)"""
+    try:
+        from backend.app import pricing_cache
+        return pricing_cache
+    except ImportError:
+        # Fallback to static pricing if backend not available
+        from config.settings import PRIORITY_SLOT_PRICES
+        return PRIORITY_SLOT_PRICES
 
 def handle_priority_slots(bot, message):
     """Show priority slot options"""
@@ -49,6 +59,7 @@ def handle_priority_slots(bot, message):
 def show_priority_slot_packages(bot, chat_id, active_slot=None):
     """Show available priority slot packages"""
     markup = types.InlineKeyboardMarkup(row_width=1)
+    PRICES = get_priority_slot_prices()
     
     active_msg = ""
     if active_slot:
@@ -56,35 +67,35 @@ def show_priority_slot_packages(bot, chat_id, active_slot=None):
     
     markup.add(
         types.InlineKeyboardButton(
-            f"⏱️ 1 Hour - {format_price(PRIORITY_SLOT_PRICES['time_1h'])}",
+            f"⏱️ 1 Hour - {format_price(PRICES['time_1h'])}",
             callback_data="priority_time_1h"
         ),
         types.InlineKeyboardButton(
-            f"⏱️ 6 Hours - {format_price(PRIORITY_SLOT_PRICES['time_6h'])}",
+            f"⏱️ 6 Hours - {format_price(PRICES['time_6h'])}",
             callback_data="priority_time_6h"
         ),
         types.InlineKeyboardButton(
-            f"⏱️ 12 Hours - {format_price(PRIORITY_SLOT_PRICES['time_12h'])}",
+            f"⏱️ 12 Hours - {format_price(PRICES['time_12h'])}",
             callback_data="priority_time_12h"
         ),
         types.InlineKeyboardButton(
-            f"⏱️ 24 Hours - {format_price(PRIORITY_SLOT_PRICES['time_24h'])}",
+            f"⏱️ 24 Hours - {format_price(PRICES['time_24h'])}",
             callback_data="priority_time_24h"
         ),
         types.InlineKeyboardButton(
-            f"📊 5 Broadcasts - {format_price(PRIORITY_SLOT_PRICES['count_5'])}",
+            f"📊 5 Broadcasts - {format_price(PRICES['count_5'])}",
             callback_data="priority_count_5"
         ),
         types.InlineKeyboardButton(
-            f"📊 10 Broadcasts - {format_price(PRIORITY_SLOT_PRICES['count_10'])}",
+            f"📊 10 Broadcasts - {format_price(PRICES['count_10'])}",
             callback_data="priority_count_10"
         ),
         types.InlineKeyboardButton(
-            f"📊 25 Broadcasts - {format_price(PRIORITY_SLOT_PRICES['count_25'])}",
+            f"📊 25 Broadcasts - {format_price(PRICES['count_25'])}",
             callback_data="priority_count_25"
         ),
         types.InlineKeyboardButton(
-            f"📊 50 Broadcasts - {format_price(PRIORITY_SLOT_PRICES['count_50'])}",
+            f"📊 50 Broadcasts - {format_price(PRICES['count_50'])}",
             callback_data="priority_count_50"
         )
     )
@@ -124,13 +135,14 @@ def handle_priority_slot_selection(bot, call):
             "⚠️ Another user has an active slot. You can still purchase for later use.",
             show_alert=True)
     
+    PRICES = get_priority_slot_prices()
     if slot_data.startswith('time_'):
         hours = int(slot_data.split('_')[1].replace('h', ''))
-        price = PRIORITY_SLOT_PRICES[slot_data]
+        price = PRICES[slot_data]
         show_payment_options(bot, call.message.chat.id, user_id, 'time', price, duration_hours=hours)
     elif slot_data.startswith('count_'):
         count = int(slot_data.split('_')[1])
-        price = PRIORITY_SLOT_PRICES[slot_data]
+        price = PRICES[f'count_{count}']
         show_payment_options(bot, call.message.chat.id, user_id, 'count', price, message_count=count)
 
 def show_payment_options(bot, chat_id, user_id, slot_type, price, duration_hours=None, message_count=None):
@@ -157,6 +169,7 @@ def handle_payment_gateway_selection(bot, call):
     """Handle payment gateway selection"""
     user_id = call.from_user.id
     payment_data = call.data.replace('pay_', '')
+    PRICES = get_priority_slot_prices()
     
     gateway, slot_info = payment_data.split('_', 1)
     slot_parts = slot_info.split('_')
@@ -166,11 +179,11 @@ def handle_payment_gateway_selection(bot, call):
     if slot_type == 'time':
         duration_hours = value
         message_count = None
-        price = PRIORITY_SLOT_PRICES[f'time_{value}h']
+        price = PRICES[f'time_{value}h']
     else:
         duration_hours = None
         message_count = value
-        price = PRIORITY_SLOT_PRICES[f'count_{value}']
+        price = PRICES[f'count_{value}']
     
     slot = priority_service.create_priority_slot(
         user_id=user_id,
