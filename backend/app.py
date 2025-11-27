@@ -39,11 +39,11 @@ ad_settings = {
 # Track users who watched ads (reset periodically)
 users_ads_watched = set()  # Set of user IDs who watched ads in current session
 
-# Monetag ad zones management (just zone IDs)
-monetag_zones = [
-    {'id': 1, 'name': 'Default Zone', 'zone_id': '10243712', 'active': True}
+# Monetag ad links management (direct links)
+monetag_links = [
+    {'id': 1, 'name': 'Default Link', 'link': 'https://linkmoneta.g.com/?link=10243712', 'active': True}
 ]
-next_zone_id = 2
+next_link_id = 2
 
 def is_admin(user_id):
     """Check if user is admin"""
@@ -387,63 +387,63 @@ def clear_ad_watched(user_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/ads/zones', methods=['GET'])
-def get_ad_zones():
-    """Get all Monetag ad zones"""
-    return jsonify(monetag_zones)
+@app.route('/api/ads/links', methods=['GET'])
+def get_ad_links():
+    """Get all Monetag ad links"""
+    return jsonify(monetag_links)
 
-@app.route('/api/ads/zones', methods=['POST'])
-def add_ad_zone():
-    """Add new Monetag ad zone"""
-    global next_zone_id
+@app.route('/api/ads/links', methods=['POST'])
+def add_ad_link():
+    """Add new Monetag ad link"""
+    global next_link_id
     try:
         data = request.json
-        zone_id = data.get('zone_id', '').strip()
-        name = data.get('name', f'Zone {zone_id}')
+        link = data.get('link', '').strip()
+        name = data.get('name', 'New Link')
         
-        if not zone_id:
-            return jsonify({'error': 'Zone ID is required'}), 400
+        if not link:
+            return jsonify({'error': 'Link is required'}), 400
         
-        # Check if zone already exists
-        if any(z['zone_id'] == zone_id for z in monetag_zones):
-            return jsonify({'error': 'Zone ID already exists'}), 400
+        # Check if link already exists
+        if any(l['link'] == link for l in monetag_links):
+            return jsonify({'error': 'Link already exists'}), 400
         
-        new_zone = {
-            'id': next_zone_id,
+        new_link = {
+            'id': next_link_id,
             'name': name,
-            'zone_id': zone_id,
+            'link': link,
             'active': True
         }
-        monetag_zones.append(new_zone)
-        next_zone_id += 1
-        return jsonify({'message': 'Zone added', 'zone': new_zone})
+        monetag_links.append(new_link)
+        next_link_id += 1
+        return jsonify({'message': 'Link added', 'link': new_link})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/ads/zones/<int:zone_id>', methods=['PUT'])
-def update_ad_zone(zone_id):
-    """Update Monetag ad zone name"""
+@app.route('/api/ads/links/<int:link_id>', methods=['PUT'])
+def update_ad_link(link_id):
+    """Update Monetag ad link name"""
     try:
         data = request.json
-        zone = next((z for z in monetag_zones if z['id'] == zone_id), None)
+        link = next((l for l in monetag_links if l['id'] == link_id), None)
         
-        if not zone:
-            return jsonify({'error': 'Zone not found'}), 404
+        if not link:
+            return jsonify({'error': 'Link not found'}), 404
         
-        zone['name'] = data.get('name', zone['name'])
-        zone['active'] = data.get('active', zone['active'])
+        link['name'] = data.get('name', link['name'])
+        link['active'] = data.get('active', link['active'])
         
-        return jsonify({'message': 'Zone updated', 'zone': zone})
+        return jsonify({'message': 'Link updated', 'link': link})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/api/ads/zones/<int:zone_id>', methods=['DELETE'])
-def delete_ad_zone(zone_id):
-    """Delete Monetag ad zone"""
-    global monetag_zones
+@app.route('/api/ads/links/<int:link_id>', methods=['DELETE'])
+def delete_ad_link(link_id):
+    """Delete Monetag ad link"""
+    global monetag_links
     try:
-        monetag_zones = [z for z in monetag_zones if z['id'] != zone_id]
-        return jsonify({'message': 'Zone deleted'})
+        monetag_links = [l for l in monetag_links if l['id'] != link_id]
+        return jsonify({'message': 'Link deleted'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
