@@ -81,13 +81,26 @@ CREATE TABLE IF NOT EXISTS admin_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- IMPORTANT: Disable Row Level Security for bot access
+-- Run these commands to allow the bot to read/write data
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE broadcasts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE priority_slots DISABLE ROW LEVEL SECURITY;
+ALTER TABLE analytics DISABLE ROW LEVEL SECURITY;
+ALTER TABLE payments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_logs DISABLE ROW LEVEL SECURITY;
+
+-- Also drop any existing RLS policies if they exist
+DROP POLICY IF EXISTS "Enable all access" ON users;
+DROP POLICY IF EXISTS "Enable all access" ON broadcasts;
+DROP POLICY IF EXISTS "Enable all access" ON priority_slots;
+DROP POLICY IF EXISTS "Enable all access" ON analytics;
+DROP POLICY IF EXISTS "Enable all access" ON payments;
+DROP POLICY IF EXISTS "Enable all access" ON admin_logs;
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_broadcasts_status ON broadcasts(status);
 CREATE INDEX IF NOT EXISTS idx_broadcasts_user ON broadcasts(user_id);
 CREATE INDEX IF NOT EXISTS idx_priority_slots_active ON priority_slots(active);
 CREATE INDEX IF NOT EXISTS idx_analytics_broadcast ON analytics(broadcast_id);
 CREATE INDEX IF NOT EXISTS idx_users_active ON users(active);
-
--- Insert a test admin user (optional - replace with your Telegram user ID)
--- INSERT INTO users (user_id, username, first_name, active) 
--- VALUES (123456789, 'admin', 'Admin', TRUE);
