@@ -149,9 +149,7 @@ def settings_callback(call):
 
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def handle_pre_checkout_query(pre_checkout_query):
-    """Handle pre-checkout query for Telegram Stars"""
-    from bot.services.stars_payment import StarsPaymentService
-    stars_service = StarsPaymentService()
+    """Handle pre-checkout query for Telegram payments (Stars, Wallet, etc)"""
     bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
 
 @bot.message_handler(content_types=['successful_payment'])
