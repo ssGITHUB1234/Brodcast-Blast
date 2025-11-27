@@ -50,6 +50,12 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes
+- 2024-11-27: **Chat Analysis Dashboard Complete** - Added pie/bar charts for analytics
+  - 📊 Top Paying Users as Bar Chart - shows revenue by user
+  - 📊 Top Broadcasting Users as Pie Chart - shows broadcast distribution
+  - Ban/Unban controls for each user with instant status updates
+  - Chart.js integration for interactive visualizations
+- 2024-11-27: **Broadcast Pagination Complete** - 1 broadcast per page with nav buttons
 - 2024-11-27: **Message Editing System Complete** - Fixed duplicate messages on button clicks
   - All button interactions now UPDATE existing messages instead of creating new ones ✅
   - Implemented `edit_or_send` helper function with fallback to new messages if edit fails
