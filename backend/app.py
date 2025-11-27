@@ -250,6 +250,82 @@ def get_admin_logs():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/analytics/top-paying', methods=['GET'])
+def get_top_paying_users():
+    """Get top paying users (by total payment amount)"""
+    try:
+        db = get_supabase_client()
+        limit = request.args.get('limit', 10, type=int)
+        
+        # Get payments aggregated by user
+        payments = db.table('payments').select('user_id, amount, status').execute()
+        
+        user_payments = {}
+        if payments.data:
+            for payment in payments.data:
+                if payment.get('status') == 'completed':
+                    uid = payment['user_id']
+                    amount = float(payment.get('amount', 0))
+                    if uid not in user_payments:
+                        user_payments[uid] = 0
+                    user_payments[uid] += amount
+        
+        # Sort by amount and get top users
+        sorted_users = sorted(user_payments.items(), key=lambda x: x[1], reverse=True)[:limit]
+        
+        result = []
+        for user_id, total_amount in sorted_users:
+            user = user_service.get_user(user_id)
+            if user:
+                result.append({
+                    'user_id': user_id,
+                    'first_name': user.get('first_name', 'N/A'),
+                    'country': user.get('country', 'N/A'),
+                    'total_paid': round(total_amount, 2),
+                    'blocked': user.get('blocked', False)
+                })
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analytics/top-broadcasting', methods=['GET'])
+def get_top_broadcasting_users():
+    """Get top broadcasting users (by broadcast count)"""
+    try:
+        db = get_supabase_client()
+        limit = request.args.get('limit', 10, type=int)
+        
+        # Get broadcasts aggregated by user
+        broadcasts = db.table('broadcasts').select('user_id, broadcast_id').execute()
+        
+        user_broadcasts = {}
+        if broadcasts.data:
+            for bc in broadcasts.data:
+                uid = bc['user_id']
+                if uid not in user_broadcasts:
+                    user_broadcasts[uid] = 0
+                user_broadcasts[uid] += 1
+        
+        # Sort by count and get top users
+        sorted_users = sorted(user_broadcasts.items(), key=lambda x: x[1], reverse=True)[:limit]
+        
+        result = []
+        for user_id, broadcast_count in sorted_users:
+            user = user_service.get_user(user_id)
+            if user:
+                result.append({
+                    'user_id': user_id,
+                    'first_name': user.get('first_name', 'N/A'),
+                    'country': user.get('country', 'N/A'),
+                    'broadcast_count': broadcast_count,
+                    'blocked': user.get('blocked', False)
+                })
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/webhook/cryptopay', methods=['POST'])
 def cryptopay_webhook():
     """Handle CryptoPay payment webhook"""

@@ -351,6 +351,7 @@
             <button class="tab-btn" onclick="switchTab('users')">👥 Users</button>
             <button class="tab-btn" onclick="switchTab('broadcasts')">📢 Broadcasts</button>
             <button class="tab-btn" onclick="switchTab('analytics')">📊 Analytics</button>
+            <button class="tab-btn" onclick="switchTab('chat-analysis')">💬 Chat Analysis</button>
         </div>
         
         <!-- OVERVIEW TAB -->
@@ -497,6 +498,25 @@
             </div>
         </div>
         
+        <!-- CHAT ANALYSIS TAB -->
+        <div id="chat-analysis" class="tab-content">
+            <div class="section">
+                <h2>💰 Top Paying Users</h2>
+                <div id="top-paying-section" class="loading">
+                    <div class="spinner"></div>
+                    Loading top paying users...
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📢 Top Broadcasting Users</h2>
+                <div id="top-broadcasting-section" class="loading">
+                    <div class="spinner"></div>
+                    Loading top broadcasting users...
+                </div>
+            </div>
+        </div>
+        
         <div class="footer">
             <p>🤖 Telegram Broadcast Bot Admin Dashboard</p>
             <p style="font-size: 12px; margin-top: 10px;">Last updated: <span id="last-updated">-</span></p>
@@ -531,6 +551,8 @@
             } else if (tabName === 'analytics') {
                 loadSlots();
                 loadUserAnalytics();
+            } else if (tabName === 'chat-analysis') {
+                loadChatAnalysis();
             } else if (tabName === 'overview') {
                 loadDashboard();
             }
@@ -826,6 +848,77 @@
                 }
             } catch (error) {
                 showError('Error deleting broadcast');
+            }
+        }
+        
+        async function loadChatAnalysis() {
+            try {
+                // Load top paying users
+                const payingRes = await fetch(`${API_BASE}/analytics/top-paying?limit=10`);
+                const payingUsers = await payingRes.json();
+                renderTopPaying(payingUsers);
+                
+                // Load top broadcasting users
+                const broadcastRes = await fetch(`${API_BASE}/analytics/top-broadcasting?limit=10`);
+                const broadcastUsers = await broadcastRes.json();
+                renderTopBroadcasting(broadcastUsers);
+            } catch (error) {
+                console.error('Error loading chat analysis:', error);
+                document.getElementById('chat-analysis-section').innerHTML = '<div class="error">Error loading data</div>';
+            }
+        }
+        
+        function renderTopPaying(users) {
+            let html = '<table><thead><tr><th>User ID</th><th>Name</th><th>Country</th><th>Total Paid</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+            if (Array.isArray(users) && users.length > 0) {
+                users.forEach(u => {
+                    const statusBadge = u.blocked ? 'badge-blocked' : 'badge-active';
+                    const statusText = u.blocked ? 'BLOCKED' : 'ACTIVE';
+                    const actionBtn = u.blocked ? 
+                        `<button class="btn btn-success btn-small" onclick="toggleUserBan(${u.user_id}, false, 'paying')">Unban</button>` :
+                        `<button class="btn btn-danger btn-small" onclick="toggleUserBan(${u.user_id}, true, 'paying')">Ban</button>`;
+                    html += `<tr><td>${u.user_id}</td><td>${u.first_name}</td><td>${u.country}</td><td>$${u.total_paid}</td><td><span class="badge ${statusBadge}">${statusText}</span></td><td>${actionBtn}</td></tr>`;
+                });
+            } else {
+                html += '<tr><td colspan="6" style="text-align: center;">No payment data</td></tr>';
+            }
+            html += '</tbody></table>';
+            document.getElementById('top-paying-section').innerHTML = html;
+        }
+        
+        function renderTopBroadcasting(users) {
+            let html = '<table><thead><tr><th>User ID</th><th>Name</th><th>Country</th><th>Broadcasts</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+            if (Array.isArray(users) && users.length > 0) {
+                users.forEach(u => {
+                    const statusBadge = u.blocked ? 'badge-blocked' : 'badge-active';
+                    const statusText = u.blocked ? 'BLOCKED' : 'ACTIVE';
+                    const actionBtn = u.blocked ? 
+                        `<button class="btn btn-success btn-small" onclick="toggleUserBan(${u.user_id}, false, 'broadcasting')">Unban</button>` :
+                        `<button class="btn btn-danger btn-small" onclick="toggleUserBan(${u.user_id}, true, 'broadcasting')">Ban</button>`;
+                    html += `<tr><td>${u.user_id}</td><td>${u.first_name}</td><td>${u.country}</td><td>${u.broadcast_count}</td><td><span class="badge ${statusBadge}">${statusText}</span></td><td>${actionBtn}</td></tr>`;
+                });
+            } else {
+                html += '<tr><td colspan="6" style="text-align: center;">No broadcast data</td></tr>';
+            }
+            html += '</tbody></table>';
+            document.getElementById('top-broadcasting-section').innerHTML = html;
+        }
+        
+        async function toggleUserBan(userId, shouldBan, type) {
+            try {
+                const response = await fetch(`${API_BASE}/users/${userId}/block`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({blocked: shouldBan})
+                });
+                if (response.ok) {
+                    showSuccess(`✅ User ${shouldBan ? 'banned' : 'unbanned'}`);
+                    loadChatAnalysis();
+                } else {
+                    showError('Failed to update user');
+                }
+            } catch (error) {
+                showError('Error updating user');
             }
         }
         
