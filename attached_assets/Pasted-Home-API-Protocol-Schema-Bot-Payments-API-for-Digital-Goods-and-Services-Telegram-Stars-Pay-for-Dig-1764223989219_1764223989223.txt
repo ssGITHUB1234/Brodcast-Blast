@@ -1,0 +1,168 @@
+Home
+API
+Protocol
+Schema
+Bot Payments API for Digital Goods and Services
+Telegram Stars: Pay for Digital Goods and More
+Telegram Bot Payments are a free and open platform that allows sellers to accept payments for goods and services from Telegram users. This page covers payments for digital goods and services – if you’re interested in selling physical goods and services, please check out our dedicated page.
+
+Note: This article is intended for bot developers and store owners. If you're looking for a general overview of Telegram Payments, check out the Telegram blog.
+
+If you are new to Telegram bots and would like to learn how to create and set up a bot, please consult our Introduction to Bots and Bot FAQ.
+
+Overview
+Payments are seamlessly integrated into Telegram, allowing you to sell digital goods and services in exchange for Telegram Stars, an in-app virtual item that you can later convert to a reward.
+
+With the Payments API, you’ll be able to:
+
+Send invoices to any chat, including to groups and channels.
+Create invoices that can be forwarded and used by multiple buyers to order things.
+Use inline mode to help users show your goods and services to their friends and communities.
+Accept payments from users on mobile or desktop apps.
+Try @DurgerKingBot to create a test invoice – or start a message with @DurgerKingBot ... in any chat for an inline invoice.
+Check out Demo Shop for an example of a Telegram Channel used as virtual storefront.
+Star Pricing
+Here is a table showing a breakdown of how much a user pays to acquire certain amounts of Stars, and the net proceeds received by the developer. Note that these amounts may vary from user to user due to VAT and other applicable fees that are outside of Telegram’s control.
+
+
+How does this work?
+You create a bot that offers digital goods and services to Telegram users. Merchant bots can send specially formatted invoice messages to users, groups or channels. If your bot supports inline mode, users can also send invoices to other chats via the bot, including to 1-on-1 chats with other users.
+
+Invoice messages feature a photo and description of the product along with a prominent Pay button. Tapping this button opens a special payment interface in the Telegram app.
+
+Since your bot sells digital goods and services, all transactions must be carried out in Telegram Stars, with currency tag XTR. Users can acquire Stars from Telegram using standard Apple and Google in-app purchases or via @PremiumBot and then use them to buy digital goods and services from you.
+
+The invoice interface for digital goods and services is seamless and doesn’t require users to enter any personal information, like their full name, shipping address or credit card details.
+
+Detailed information and step-by-step instructions are available below.
+
+The Payments API
+This section explores payments via Telegram's Bot API in more detail.
+
+This section is dedicated to the sale of digital goods and services – if you’re interested in selling physical goods and services, please check out our dedicated page.
+
+Creating a Telegram Bot
+To start accepting payments, you need a Telegram bot. Use @BotFather to create a bot if you don't have one already. For the purposes of this document, we will assume you named your bot @merchantbot.
+
+Implementing Payments
+You will find the necessary methods for building your payment implementation in the Payments Section of the Bot API Manual.
+
+In short, you must:
+
+Send an invoice via sendInvoice (currency: “XTR”)
+Await an Update with the field pre_checkout_query
+Approve or cancel the order via answerPreCheckoutQuery
+Await an Update with the field successful_payment
+Store the SuccessfulPayment’s telegram_payment_charge_id – it may be needed to issue a refund in the future
+Deliver the goods and services purchased by the user
+You may find that some API methods for Payments request a provider_token. This parameter is only needed for sales of physical goods and services – for digital ones, you can leave it empty.
+
+Testing Payments
+You can freely test payments in Telegram Stars by connecting your bot to Telegram’s dedicated test environment. To find out more about how you can access and use the test environment, please reference our documentation.
+
+Step-by-Step Process
+See Bot API: Payments for the complete list of available methods and objects. Be sure to provide the proper set of parameters to account for the type of goods you are selling, differentiating between digital and physical orders.
+
+1. Create Invoice
+The user contacts @merchantbot and requests to purchase something. The bot forms an invoice message with a description of the goods or service and amount to be paid (expressed in Telegram Stars). There are two ways of creating an invoice:
+
+A. Bot Invoice
+Use the sendInvoice method to generate an invoice and send it to a chat. You can pass an empty string as the provider_token parameter, since the invoice is for digital goods and services.
+
+Invoice messages with a pay button can be sent to chats of any type: private chats with the user, groups, or channels. The resulting invoice message will look like this:
+
+Join button
+Bot Invoice
+
+Remember to specify XTR in the currency field, since all sales of digital goods and services are carried out exclusively in Telegram Stars.
+
+B. Inline Invoice
+If @merchantbot supports inline mode, you can use inputInvoiceMessageContent to allow users to share invoices for your goods and services to their one-on-one chats with friends, or to their groups and channels. These invoices will have a Pay button that can be used multiple times.
+
+Join button
+Inline Invoice
+
+2. Choose Forwarding Behavior
+There are two ways for handling forwarded copies of your invoices, controlled by the parameter start_parameter in the sendInvoice method.
+
+A. Multi-chat invoice. Forwarded copies show a Pay button, which multiple users can press and attempt to pay for the goods or services. Inline invoices are always multi-chat invoices.
+B. Single-chat invoice. Invoice can only be paid from the chat to which it was sent, forwarded copies show a URL button with a deep link to the bot. The deep link can be used to generate a similar invoice in the chat with the bot, to show an error message, or for other purposes. More info on Deep Linking »
+If a single-chat invoice is sent to the chat with @merchantbot, it can only be paid once. If a single-chat invoice is sent to any other chat, it can be paid many times by many users.
+
+To get a better understanding of how this works, try toggling the “Pay from Forwards” parameter when creating invoices with our demo @ShopBot.
+
+Regardless of whether or not the Pay button is available in an invoice, the merchant bot always has the power to decide whether or not to accept new payments for a particular invoice.
+
+3. Pre-Checkout
+The user purchases Stars from Telegram (if necessary), then presses the pay button. At this moment the Bot API sends an Update with the field pre_checkout_query that contains all the available information about the order to the bot.
+
+Your bot must reply using answerPrecheckoutQuery within 10 seconds after receiving this update or the transaction is canceled.
+
+The bot may return an error if it can't process the order for any reason. We highly recommend specifying a reason for failure to complete the order in human readable form (e.g. "Sorry, we're all out of rubber duck digital posters! Would you be interested in a cast iron bear digital poster instead?"). Telegram will display this reason to the user.
+
+Warning: It is critical to make sure your bot only accepts multiple payments when the order can be processed correctly. This is especially important if you are using multi-chat, inline or single-chat, multi-use invoices.
+
+4. Checkout
+If the bot confirms the order and the payment is successful, the API will send a receipt message of the type successful_payment from the user. Once your bot receives this message, it should proceed with sending the digital goods or services purchased by the user.
+
+Warning: You must always check that you received a successful_payment update before delivering the goods or services purchased by the user – simply answering a pre_checkout_query does not guarantee a successful order or payment.
+
+If the invoice message was sent in the chat with @merchantbot, it becomes a Receipt in the UI for the user – they can open this receipt at any time and see all the details of the transaction:
+
+Receipt
+Receipt
+
+If the message was sent to any other chat, the Pay button remains and can be used again. It is up to the merchant bot whether to actually accept multiple payments.
+
+Going Live
+Once you've tested everything and confirmed that your payments implementation works, you're ready to go live – to do so, simply switch to the production environment.
+
+Before your merchant bot goes into live mode, please ensure the following:
+
+Live Checklist
+We highly recommend turning on 2-step verification for the Telegram account that controls your bot.
+You as the bot owner have full responsibility in case any conflicts or disputes arise. You must be prepared to correctly process disputes and chargebacks.
+To prevent any misunderstandings and possible legal issues, make sure your bot can respond to a /terms command (or offers a similarly easy way of accessing your Terms and Conditions). Your Terms and Conditions should be written in a clear way and easy to understand for your users. The users must confirm that they have read and agree to your terms before they make the purchase.
+Your bot must provide support for its customers, either by responding to a /support command or by some other clearly communicated means. Users must have a clear way of contacting you about their purchases and you must process their support requests in a timely fashion. You must notify your users that Telegram support or bot support will not be able to help them with purchases made via your bot.
+Verify your server hardware and software are stable. Use backups to make sure that you don't lose data about your users' payments.
+Make sure that you have read, understood and agreed to the Telegram Terms of Service and, by extension, to the Telegram Bot Platform Developer Terms of Service.
+FAQ
+Q: Can I use a different currency or payment provider?
+Payments for digital goods and services must be carried out exclusively in Telegram Stars. App stores like the Play Store for Android and the App Store for iOS have specific rules for developers regarding the sale of digital goods and services. Due to these rules, Telegram cannot display your bot or mini-app to mobile users if you attempt to sell digital goods and services via other currencies or through third-party payment providers.
+
+If you’re selling physical goods or services, you may use different currencies or payment providers. Please check out our dedicated document to learn more.
+
+Q: I run my own website to process sales, does this mean I don’t have to use Telegram Stars?
+To remain in compliance with Google’s Payment Policies 1, 2 and 4, along with Apple’s Review Guidelines 3.1.1, 3.1.1(a) and 3.1.3(b), your bot or mini app must use Telegram Stars for the sale of digital goods and services inside Telegram apps, regardless of any other web portals, apps, services or payment providers you may have set up outside the Telegram ecosystem.
+
+Q: Can I accept payment in cryptocurrency instead of Telegram Stars?
+No. All payments via bots and mini apps for digital goods and services inside Telegram apps must exclusively use Telegram Stars, in order to comply with the guidelines of the App Store and Play Store.
+
+For more details on what terms regulate your engagement with Telegram Stars, please reference Section 6.2. Digital Goods and Services of the Telegram Bot Platform Developer Terms of Service.
+
+Q: Do I need a bot to accept payments?
+Yes. If you are not a developer, you will need to either hire someone to make a bot for you (recommended), or use a bot created by a third-party company. We advise extreme caution when using services of bots that process payments for you – Telegram doesn't maintain any such bots and doesn't endorse any of the third-party bots offering these services.
+
+Q: How are disputes handled?
+You are solely responsible for processing and rectifying legitimate user disputes for digital goods and services sold by your bots or mini apps. Your bots and mini apps must be able to respond to the command /paysupport and process user requests regarding payment issues , and you must provide customer support in a timely fashion.
+
+The Telegram Bot API also allows you to easily and independently refund purchases that were made on your bot or mini app with Telegram Stars.
+
+For more details on customer disputes, please reference Section 6.2.1. Payment Disputes for Digital Goods and Services of the Telegram Bot Platform Developer Terms of Service.
+
+Q: How can I issue refunds?
+Refunds for digital goods and services can be issued via the refundStarPayment method on the Telegram Bot API.
+
+Q: What can I do with Telegram Stars?
+Stars can be used to place Telegram Ads for your TPA or to accept a reward for the monetary value that Telegram assigns to each Star.
+
+For more details on what terms regulate your engagement with Telegram Stars, please reference Section 6.2. Digital Goods and Services of the Telegram Bot Platform Developer Terms of Service.
+
+Q: How do I support payments in my third-party app that uses the Telegram API?
+You are welcome to study the MTProto payment documentation.
+
+About
+Blog
+Press
+Moderation
+Go up
