@@ -321,13 +321,11 @@ def ad_callback(call):
     elif ad_type == 'watched_continue':
         # User finished watching ad, mark watched and start broadcast
         broadcast_handlers.users_ads_watched.add(user_id)
-        bot.answer_callback_query(call.id, "Creating broadcast...", show_alert=False)
+        bot.answer_callback_query(call.id, "Broadcast creation starting...", show_alert=False)
         
         # Start broadcast creation
-        broadcast_handlers.user_broadcast_state[user_id] = {'step': 'text'}
-        bot.send_message(call.message.chat.id,
-            "📝 Send your broadcast message.\n\n"
-            "Text only or with media (image/video/document).")
+        from bot.handlers.broadcast_handlers import start_broadcast_creation
+        start_broadcast_creation(bot, call.message, user_id)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('settings_'))
 def settings_callback(call):

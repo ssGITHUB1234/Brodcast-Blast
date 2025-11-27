@@ -4,6 +4,7 @@ from bot.services.user_service import UserService
 from bot.services.priority_service import PrioritySlotService
 from bot.services.monetag_service import MonetgService
 from config.settings import COUNTRIES, CATEGORIES
+import os
 
 broadcast_service = BroadcastService()
 user_service = UserService()
@@ -30,19 +31,21 @@ def handle_create_broadcast(bot, message):
             links = response.json() if response.ok else []
             
             if links and len(links) > 0:
-                # Show first available link
-                link = links[0]
+                # Open embedded ad viewer with timer
+                link = links[0].get('link', '')
+                domain = os.environ.get('REPLIT_DOMAIN', 'localhost:5000')
+                ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={link}"
+                
                 markup = types.InlineKeyboardMarkup()
                 markup.add(
-                    types.InlineKeyboardButton("🔗 " + link.get('name', 'Watch Ad'), url=link.get('link', ''))
-                )
-                markup.add(
-                    types.InlineKeyboardButton("✅ Done - Create Broadcast", callback_data="ad_watched_continue")
+                    types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
                 )
                 bot.send_message(message.chat.id,
-                    "🎬 Watch Ad to Continue\n\n"
-                    "Click the link below to watch an ad, then come back and click 'Done'.",
+                    "🎬 Watch Ad with Timer\n\n"
+                    "Click to watch - ad auto-completes when timer ends!\n"
+                    "⏱️ 30 seconds total",
                     reply_markup=markup)
+                return
             else:
                 # No links, allow broadcast anyway
                 start_broadcast_creation(bot, message, user_id)

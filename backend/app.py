@@ -54,6 +54,11 @@ def admin_dashboard():
     """Serve admin dashboard"""
     return render_template('dashboard.html')
 
+@app.route('/ad-viewer', methods=['GET'])
+def ad_viewer():
+    """Serve ad viewer page with timer"""
+    return render_template('ad_viewer.html')
+
 @app.route('/api/pricing', methods=['GET'])
 def get_pricing():
     """Get all pricing"""
