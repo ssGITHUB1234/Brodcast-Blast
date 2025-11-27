@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from config.database import get_supabase_client
 from config.settings import FLASK_HOST, FLASK_PORT, ADMIN_USER_IDS
@@ -9,8 +9,9 @@ from bot.services.payment_service import PaymentService
 import hmac
 import hashlib
 import json
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 CORS(app)
 
 user_service = UserService()
@@ -20,6 +21,11 @@ priority_service = PrioritySlotService()
 def is_admin(user_id):
     """Check if user is admin"""
     return user_id in ADMIN_USER_IDS
+
+@app.route('/', methods=['GET'])
+def admin_dashboard():
+    """Serve admin dashboard"""
+    return render_template('dashboard.html')
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
