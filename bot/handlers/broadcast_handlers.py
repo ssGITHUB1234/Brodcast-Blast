@@ -28,28 +28,35 @@ def handle_create_broadcast(bot, message):
     
     # Always require ads
     if not already_watched:
-        try:
-            domain = os.environ.get('REPLIT_DOMAIN', 'localhost:5000')
-            # Get first ad link
-            from backend.app import monetag_links
-            if monetag_links and len(monetag_links) > 0:
-                link = monetag_links[0].get('link', '')
-                ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={link}"
-                
-                markup = types.InlineKeyboardMarkup()
-                markup.add(
-                    types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
-                )
-                bot.send_message(message.chat.id,
-                    "🎬 Watch Ad to Unlock Broadcast\n\n"
-                    "Click to watch - timer auto-completes!\n"
-                    "⏱️ 30 seconds total\n\n"
-                    "After watching, return here and click /create again.",
-                    reply_markup=markup)
-                return
-        except Exception as e:
-            print(f"[ERROR] Error showing ad: {e}")
-            # Allow broadcast if ad system fails
+        domain = os.environ.get('REPLIT_DOMAIN', '').strip()
+        
+        # Only show ad button if we have a valid domain (not localhost)
+        if domain and 'localhost' not in domain and domain != '':
+            try:
+                from backend.app import monetag_links
+                if monetag_links and len(monetag_links) > 0:
+                    link = monetag_links[0].get('link', '')
+                    # URL encode to avoid & becoming &amp;
+                    import urllib.parse
+                    ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={urllib.parse.quote(link, safe='')}"
+                    
+                    markup = types.InlineKeyboardMarkup()
+                    markup.add(
+                        types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
+                    )
+                    bot.send_message(message.chat.id,
+                        "🎬 Watch Ad to Unlock Broadcast\n\n"
+                        "Click to watch - timer auto-completes!\n"
+                        "⏱️ 30 seconds total\n\n"
+                        "After watching, return here and click /create again.",
+                        reply_markup=markup)
+                    return
+            except Exception as e:
+                print(f"[ERROR] Error showing ad button: {e}")
+        else:
+            # No valid domain for ad viewer - for now allow broadcast
+            # In production, set REPLIT_DOMAIN environment variable
+            print(f"[INFO] No valid domain for ads (REPLIT_DOMAIN={domain}), allowing broadcast")
     
     # User watched ad or system failed - allow broadcast
     start_broadcast_creation(bot, message, user_id)
