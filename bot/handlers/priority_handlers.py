@@ -1,11 +1,19 @@
 from telebot import types
 from bot.services.priority_service import PrioritySlotService
 from bot.services.user_service import UserService
+from bot.services.payment_service import PaymentService
+from bot.services.stars_payment import StarsPaymentService
+from bot.services.cryptopay import CryptoPayService
+from bot.services.xrocket_payment import XRocketPayService
 from config.settings import PRIORITY_SLOT_PRICES
 from bot.utils.helpers import format_price, get_slot_description
 
 priority_service = PrioritySlotService()
 user_service = UserService()
+payment_service = PaymentService()
+stars_service = StarsPaymentService()
+cryptopay_service = CryptoPayService()
+xrocket_service = XRocketPayService()
 
 def handle_priority_slots(bot, message):
     """Show priority slot options"""
@@ -160,20 +168,112 @@ def handle_payment_gateway_selection(bot, call):
         payment_gateway=gateway
     )
     
-    if slot:
-        bot.answer_callback_query(call.id, "Processing payment...")
-        
-        bot.send_message(call.message.chat.id,
-            f"💳 Payment Gateway: {gateway.upper()}\n\n"
-            f"⚠️ DEMO MODE: Payment integration is being processed.\n\n"
-            f"In production, you would be redirected to {gateway} payment page.\n\n"
-            f"For demonstration, I'll activate your priority slot now...")
-        
-        priority_service.activate_priority_slot(slot['slot_id'])
-        
-        bot.send_message(call.message.chat.id,
-            f"✅ Priority Slot Activated!\n\n"
-            f"Your exclusive broadcast window is now active.\n"
-            f"Use /create to send broadcasts that will be delivered immediately!")
-    else:
+    if not slot:
         bot.answer_callback_query(call.id, "❌ Error processing request", show_alert=True)
+        return
+    
+    slot_id = slot['slot_id']
+    
+    if gateway == 'stars':
+        handle_stars_payment_init(bot, call, slot_id, slot, user_id)
+    elif gateway == 'crypto':
+        handle_cryptopay_init(bot, call, slot_id, slot, user_id)
+    elif gateway == 'xrocket':
+        handle_xrocket_init(bot, call, slot_id, slot, user_id)
+    elif gateway == 'wallet':
+        handle_wallet_init(bot, call, slot_id, slot, user_id)
+
+
+def handle_stars_payment_init(bot, call, slot_id, slot, user_id):
+    """Initialize Telegram Stars payment"""
+    try:
+        title = f"{slot['slot_type'].capitalize()} Slot"
+        if slot['slot_type'] == 'time':
+            description = f"Priority broadcast for {slot['duration_hours']} hours"
+        else:
+            description = f"Priority broadcast for {slot['message_count']} messages"
+        
+        invoice = stars_service.send_invoice(
+            user_id,
+            slot_id,
+            title,
+            description,
+            amount=int(slot['price']),
+            payload=f"slot_{slot_id}"
+        )
+        
+        if invoice:
+            bot.edit_message_text(
+                "⭐ Check your Telegram app for the payment invoice.\n\n"
+                "Click the Pay button to complete your purchase!",
+                call.message.chat.id,
+                call.message.message_id
+            )
+            payment_service.record_payment(user_id, slot_id, slot['price'], 'telegram_stars', f"stars_pending_{slot_id}", 'pending')
+        else:
+            bot.answer_callback_query(call.id, "Error sending invoice")
+    except Exception as e:
+        print(f"Error initiating Stars payment: {e}")
+        bot.answer_callback_query(call.id, "Error processing payment")
+
+
+def handle_cryptopay_init(bot, call, slot_id, slot, user_id):
+    """Initialize CryptoPay payment"""
+    try:
+        description = f"Priority Slot #{slot_id}"
+        invoice = cryptopay_service.create_invoice(slot['price'], description, slot_id, asset='USDT')
+        
+        if invoice:
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("💳 Pay with Crypto", url=invoice['bot_invoice_url']))
+            
+            bot.edit_message_text(
+                f"💳 CryptoPay Invoice\n\n"
+                f"Amount: ${slot['price']}\n"
+                f"Invoice ID: {invoice['invoice_id']}\n\n"
+                f"Click the button below to pay:",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=markup
+            )
+            payment_service.record_payment(user_id, slot_id, slot['price'], 'cryptopay', str(invoice['invoice_id']), 'pending')
+        else:
+            bot.answer_callback_query(call.id, "Error creating invoice")
+    except Exception as e:
+        print(f"Error initiating CryptoPay: {e}")
+        bot.answer_callback_query(call.id, "Error processing payment")
+
+
+def handle_xrocket_init(bot, call, slot_id, slot, user_id):
+    """Initialize xRocket payment"""
+    try:
+        description = f"Priority Slot #{slot_id}"
+        invoice = xrocket_service.create_invoice(slot['price'], description, slot_id)
+        
+        if invoice:
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("🚀 Pay with xRocket", url=invoice['invoice_url']))
+            
+            bot.edit_message_text(
+                f"🚀 xRocket Payment\n\n"
+                f"Amount: ${slot['price']}\n"
+                f"Invoice ID: {invoice['invoice_id']}\n\n"
+                f"Click the button below to pay:",
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=markup
+            )
+            payment_service.record_payment(user_id, slot_id, slot['price'], 'xrocket', str(invoice['invoice_id']), 'pending')
+        else:
+            bot.answer_callback_query(call.id, "Error creating invoice")
+    except Exception as e:
+        print(f"Error initiating xRocket: {e}")
+        bot.answer_callback_query(call.id, "Error processing payment")
+
+
+def handle_wallet_init(bot, call, slot_id, slot, user_id):
+    """Initialize Telegram Wallet payment"""
+    try:
+        bot.answer_callback_query(call.id, "Coming soon!")
+    except Exception as e:
+        print(f"Error with wallet payment: {e}")

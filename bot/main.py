@@ -147,6 +147,39 @@ def settings_callback(call):
         registration.user_categories[user_id] = []
         registration.show_category_selection(bot, call.message.chat.id, user_id)
 
+@bot.pre_checkout_query_handler(func=lambda query: True)
+def handle_pre_checkout_query(pre_checkout_query):
+    """Handle pre-checkout query for Telegram Stars"""
+    from bot.services.stars_payment import StarsPaymentService
+    stars_service = StarsPaymentService()
+    bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
+
+@bot.message_handler(content_types=['successful_payment'])
+def handle_successful_payment(message):
+    """Handle successful Telegram Stars payment"""
+    from bot.services.payment_service import PaymentService
+    from bot.services.priority_service import PrioritySlotService
+    user_id = message.from_user.id
+    successful_payment = message.successful_payment
+    payment_service = PaymentService()
+    priority_service = PrioritySlotService()
+    
+    try:
+        payload = successful_payment.invoice_payload
+        if payload.startswith('slot_'):
+            slot_id = int(payload.split('_')[1])
+            transaction_id = successful_payment.telegram_payment_charge_id
+            
+            payment_service.update_payment_status(f"stars_pending_{slot_id}", 'completed')
+            priority_service.activate_priority_slot(slot_id)
+            
+            bot.send_message(user_id,
+                "✅ Payment Successful!\n\n"
+                "Your priority slot is now ACTIVE.\n"
+                "Use /create to send broadcasts that will be delivered immediately!")
+    except Exception as e:
+        print(f"Error handling successful payment: {e}")
+
 @bot.message_handler(content_types=['text'])
 def handle_text(message):
     user_id = message.from_user.id

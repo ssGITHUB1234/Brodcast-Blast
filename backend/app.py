@@ -5,6 +5,10 @@ from config.settings import FLASK_HOST, FLASK_PORT, ADMIN_USER_IDS
 from bot.services.user_service import UserService
 from bot.services.broadcast_service import BroadcastService
 from bot.services.priority_service import PrioritySlotService
+from bot.services.payment_service import PaymentService
+import hmac
+import hashlib
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -171,6 +175,71 @@ def get_admin_logs():
         response = db.table('admin_logs').select('*').order('timestamp', desc=True).limit(100).execute()
         return jsonify(response.data)
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/webhook/cryptopay', methods=['POST'])
+def cryptopay_webhook():
+    """Handle CryptoPay payment webhook"""
+    try:
+        from bot.services.payment_service import PaymentService
+        from config.settings import CRYPTOPAY_API_KEY
+        
+        signature = request.headers.get('Crypto-Pay-Signature')
+        body = request.data
+        
+        payment_service = PaymentService()
+        if not payment_service.verify_cryptopay_webhook(body, signature):
+            return jsonify({'error': 'Invalid signature'}), 401
+        
+        data = request.get_json()
+        if data.get('update_type') == 'invoice_paid':
+            invoice = data.get('data', {})
+            invoice_id = str(invoice.get('invoice_id'))
+            
+            payment_service.update_payment_status(invoice_id, 'completed')
+            
+            db = get_supabase_client()
+            payment = db.table('payments').select('*').eq('transaction_id', invoice_id).execute()
+            if payment.data:
+                slot_id = payment.data[0]['slot_id']
+                priority_service.activate_priority_slot(slot_id)
+        
+        return jsonify({'ok': True})
+    except Exception as e:
+        print(f"CryptoPay webhook error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/webhook/xrocket', methods=['POST'])
+def xrocket_webhook():
+    """Handle xRocket payment webhook"""
+    try:
+        from bot.services.payment_service import PaymentService
+        from config.settings import XROCKET_API_KEY
+        
+        signature = request.headers.get('Rocket-Pay-Signature')
+        body = request.data
+        
+        payment_service = PaymentService()
+        if not payment_service.verify_xrocket_webhook(body, signature):
+            return jsonify({'error': 'Invalid signature'}), 401
+        
+        data = request.get_json()
+        if data.get('invoice_id'):
+            invoice_id = str(data.get('invoice_id'))
+            status = data.get('status')
+            
+            if status == 'paid':
+                payment_service.update_payment_status(invoice_id, 'completed')
+                
+                db = get_supabase_client()
+                payment = db.table('payments').select('*').eq('transaction_id', invoice_id).execute()
+                if payment.data:
+                    slot_id = payment.data[0]['slot_id']
+                    priority_service.activate_priority_slot(slot_id)
+        
+        return jsonify({'ok': True})
+    except Exception as e:
+        print(f"xRocket webhook error: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
