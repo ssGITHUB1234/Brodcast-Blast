@@ -168,6 +168,37 @@ def get_broadcast(broadcast_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/broadcasts/<int:broadcast_id>', methods=['DELETE'])
+def delete_broadcast_admin(broadcast_id):
+    """Delete a broadcast"""
+    try:
+        db = get_supabase_client()
+        db.table('broadcasts').delete().eq('broadcast_id', broadcast_id).execute()
+        return jsonify({'message': 'Broadcast deleted'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/user-analytics', methods=['GET'])
+def get_user_analytics():
+    """Get user broadcast analytics aggregated"""
+    try:
+        db = get_supabase_client()
+        broadcasts = db.table('broadcasts').select('user_id, broadcast_id, views, sent_count').execute()
+        
+        user_stats = {}
+        if broadcasts.data:
+            for bc in broadcasts.data:
+                uid = bc['user_id']
+                if uid not in user_stats:
+                    user_stats[uid] = {'user_id': uid, 'broadcast_count': 0, 'total_views': 0, 'total_sent': 0}
+                user_stats[uid]['broadcast_count'] += 1
+                user_stats[uid]['total_views'] += bc.get('views', 0)
+                user_stats[uid]['total_sent'] += bc.get('sent_count', 0)
+        
+        return jsonify(list(user_stats.values()))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/priority-slots', methods=['GET'])
 def get_priority_slots():
     """Get all priority slots"""

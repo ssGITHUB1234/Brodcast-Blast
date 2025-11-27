@@ -6,7 +6,7 @@ from datetime import datetime
 
 from config.settings import TELEGRAM_BOT_TOKEN
 from config.database import initialize_database, get_supabase_client
-from bot.handlers import registration, broadcast_handlers, priority_handlers, menu_handler
+from bot.handlers import registration, broadcast_handlers, priority_handlers, menu_handler, analytics_handlers
 from bot.services.broadcast_service import BroadcastService
 from bot.services.priority_service import PrioritySlotService
 from bot.services.user_service import UserService
@@ -41,6 +41,11 @@ def my_broadcasts_command(message):
 @bot.message_handler(commands=['stats'])
 def stats_command(message):
     menu_handler.handle_stats(bot, message)
+
+@bot.message_handler(commands=['mystats'])
+def mystats_command(message):
+    """View detailed broadcast analytics"""
+    analytics_handlers.handle_broadcast_analytics(bot, message)
 
 @bot.message_handler(commands=['settings'])
 def settings_command(message):
@@ -116,6 +121,14 @@ def target_category_callback(call):
 @bot.callback_query_handler(func=lambda call: call.data.startswith('priority_'))
 def priority_slot_callback(call):
     priority_handlers.handle_priority_slot_selection(bot, call)
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('analytics_'))
+def analytics_callback(call):
+    """Handle analytics callbacks"""
+    if call.data.startswith('analytics_prev_') or call.data.startswith('analytics_next_'):
+        analytics_handlers.handle_analytics_navigation(bot, call)
+    elif call.data == 'analytics_close':
+        analytics_handlers.handle_analytics_close(bot, call)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('pay_'))
 def payment_callback(call):

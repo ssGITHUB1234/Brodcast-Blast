@@ -349,6 +349,7 @@
             <button class="tab-btn active" onclick="switchTab('overview')">📈 Overview</button>
             <button class="tab-btn" onclick="switchTab('pricing')">💰 Pricing</button>
             <button class="tab-btn" onclick="switchTab('users')">👥 Users</button>
+            <button class="tab-btn" onclick="switchTab('broadcasts')">📢 Broadcasts</button>
             <button class="tab-btn" onclick="switchTab('analytics')">📊 Analytics</button>
         </div>
         
@@ -463,6 +464,17 @@
             </div>
         </div>
         
+        <!-- BROADCASTS TAB -->
+        <div id="broadcasts" class="tab-content">
+            <div class="section">
+                <h2>📢 All Broadcasts</h2>
+                <div id="broadcasts-section" class="loading">
+                    <div class="spinner"></div>
+                    Loading broadcasts...
+                </div>
+            </div>
+        </div>
+        
         <!-- ANALYTICS TAB -->
         <div id="analytics" class="tab-content">
             <div class="section">
@@ -474,10 +486,13 @@
             </div>
             
             <div class="section">
-                <h2>📢 Recent Broadcasts</h2>
-                <div id="broadcasts-section" class="loading">
+                <h2>👤 User Broadcast Analytics</h2>
+                <div class="search-box">
+                    <input type="text" id="analytics-search" placeholder="Search by User ID" onkeyup="filterUserAnalytics()">
+                </div>
+                <div id="user-analytics-section" class="loading">
                     <div class="spinner"></div>
-                    Loading broadcasts...
+                    Loading user analytics...
                 </div>
             </div>
         </div>
@@ -491,6 +506,7 @@
     <script>
         const API_BASE = '/api';
         let usersCache = [];
+        let userAnalyticsCache = [];
         
         function switchTab(tabName) {
             // Hide all tabs
@@ -510,9 +526,11 @@
                 loadPricing();
             } else if (tabName === 'users') {
                 loadUsers();
+            } else if (tabName === 'broadcasts') {
+                loadBroadcasts();
             } else if (tabName === 'analytics') {
                 loadSlots();
-                loadBroadcasts();
+                loadUserAnalytics();
             } else if (tabName === 'overview') {
                 loadDashboard();
             }
@@ -725,24 +743,28 @@
                 const response = await fetch(`${API_BASE}/broadcasts`);
                 const broadcasts = await response.json();
                 
-                let html = '<table><thead><tr><th>ID</th><th>User ID</th><th>Message</th><th>Status</th><th>Views</th><th>Created</th></tr></thead><tbody>';
+                let html = '<table><thead><tr><th>ID</th><th>User ID</th><th>Message</th><th>Status</th><th>Views</th><th>Recipients</th><th>Engagement</th><th>Created</th><th>Action</th></tr></thead><tbody>';
                 
                 if (Array.isArray(broadcasts) && broadcasts.length > 0) {
-                    broadcasts.slice(0, 10).forEach(b => {
+                    broadcasts.forEach(b => {
                         const date = new Date(b.created_at).toLocaleDateString();
                         const statusBadge = `badge-${b.status || 'pending'}`;
-                        const message = (b.text || '').substring(0, 40) + (b.text && b.text.length > 40 ? '...' : '');
+                        const message = (b.text || '').substring(0, 35) + (b.text && b.text.length > 35 ? '...' : '');
+                        const engagement = b.sent_count > 0 ? ((b.views / b.sent_count) * 100).toFixed(1) : '0';
                         html += `<tr>
                             <td>#${b.broadcast_id}</td>
                             <td>${b.user_id}</td>
                             <td>${message || '(media)'}</td>
                             <td><span class="badge ${statusBadge}">${(b.status || 'pending').toUpperCase()}</span></td>
                             <td>${b.views || 0}</td>
+                            <td>${b.sent_count || 0}</td>
+                            <td>${engagement}%</td>
                             <td>${date}</td>
+                            <td><button class="btn btn-danger btn-small" onclick="deleteBroadcast(${b.broadcast_id})">Delete</button></td>
                         </tr>`;
                     });
                 } else {
-                    html += '<tr><td colspan="6" style="text-align: center; color: #999;">No broadcasts yet</td></tr>';
+                    html += '<tr><td colspan="9" style="text-align: center; color: #999;">No broadcasts yet</td></tr>';
                 }
                 
                 html += '</tbody></table>';
@@ -750,6 +772,60 @@
             } catch (error) {
                 console.error('Error loading broadcasts:', error);
                 document.getElementById('broadcasts-section').innerHTML = '<div class="error">Error loading broadcasts</div>';
+            }
+        }
+        
+        async function loadUserAnalytics() {
+            try {
+                const response = await fetch(`${API_BASE}/user-analytics`);
+                userAnalyticsCache = await response.json();
+                renderUserAnalytics(userAnalyticsCache);
+            } catch (error) {
+                console.error('Error loading user analytics:', error);
+                document.getElementById('user-analytics-section').innerHTML = '<div class="error">Error loading analytics</div>';
+            }
+        }
+        
+        function renderUserAnalytics(analytics) {
+            let html = '<table><thead><tr><th>User ID</th><th>Total Broadcasts</th><th>Total Views</th><th>Avg Engagement</th><th>Total Recipients</th></tr></thead><tbody>';
+            
+            if (Array.isArray(analytics) && analytics.length > 0) {
+                analytics.forEach(a => {
+                    const avgEngagement = a.total_sent > 0 ? ((a.total_views / a.total_sent) * 100).toFixed(1) : '0';
+                    html += `<tr>
+                        <td>${a.user_id}</td>
+                        <td>${a.broadcast_count}</td>
+                        <td>${a.total_views}</td>
+                        <td>${avgEngagement}%</td>
+                        <td>${a.total_sent}</td>
+                    </tr>`;
+                });
+            } else {
+                html += '<tr><td colspan="5" style="text-align: center; color: #999;">No analytics yet</td></tr>';
+            }
+            
+            html += '</tbody></table>';
+            document.getElementById('user-analytics-section').innerHTML = html;
+        }
+        
+        function filterUserAnalytics() {
+            const searchTerm = document.getElementById('analytics-search').value.toLowerCase();
+            const filtered = userAnalyticsCache.filter(a => a.user_id.toString().includes(searchTerm));
+            renderUserAnalytics(filtered);
+        }
+        
+        async function deleteBroadcast(broadcastId) {
+            if (!confirm('Delete this broadcast?')) return;
+            try {
+                const response = await fetch(`${API_BASE}/broadcasts/${broadcastId}`, {method: 'DELETE'});
+                if (response.ok) {
+                    showSuccess('Broadcast deleted');
+                    loadBroadcasts();
+                } else {
+                    showError('Failed to delete broadcast');
+                }
+            } catch (error) {
+                showError('Error deleting broadcast');
             }
         }
         
