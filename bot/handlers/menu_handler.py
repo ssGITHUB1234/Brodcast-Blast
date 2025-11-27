@@ -2,6 +2,8 @@ from telebot import types
 from bot.services.user_service import UserService
 from bot.services.broadcast_service import BroadcastService
 from bot.services.priority_service import PrioritySlotService
+from bot.utils.state_manager import set_user_state, get_user_message_id
+from bot.utils.nav_helpers import add_navigation_buttons, edit_or_send
 
 user_service = UserService()
 broadcast_service = BroadcastService()
@@ -29,12 +31,13 @@ def handle_menu(bot, message):
         types.InlineKeyboardButton("Settings", callback_data="menu_settings"),
         types.InlineKeyboardButton("Help", callback_data="menu_help")
     )
+    add_navigation_buttons(markup, go_back=False, go_menu=False)
     
     slot_msg = ""
     try:
         active_slot = priority_service.get_active_priority_slot()
         if active_slot and active_slot.get('user_id') == user_id:
-            slot_msg = "\n\nYour priority slot is ACTIVE!"
+            slot_msg = "\n\n✨ Your priority slot is ACTIVE!"
     except:
         pass
     
@@ -51,13 +54,14 @@ def handle_menu(bot, message):
         else:
             categories = cats if cats else 'Not set'
     
-    bot.send_message(message.chat.id,
-        f"Main Menu{slot_msg}\n\n"
-        f"Welcome, {first_name}!\n"
-        f"Country: {country}\n"
-        f"Interests: {categories}\n\n"
-        f"Select an option:",
-        reply_markup=markup)
+    text = f"Main Menu{slot_msg}\n\n" \
+           f"Welcome, {first_name}!\n" \
+           f"Country: {country}\n" \
+           f"Interests: {categories}\n\n" \
+           f"Select an option:"
+    
+    msg = bot.send_message(message.chat.id, text, reply_markup=markup)
+    set_user_state(user_id, msg.message_id, 'menu')
 
 def handle_my_broadcasts(bot, message):
     """Show user's broadcasts"""
@@ -69,18 +73,24 @@ def handle_my_broadcasts(bot, message):
         broadcasts = []
     
     if not broadcasts:
-        bot.reply_to(message, "You haven't created any broadcasts yet.\n\nUse /create to send your first broadcast!")
+        markup = types.InlineKeyboardMarkup()
+        add_navigation_buttons(markup, go_back=False, go_menu=True)
+        msg = bot.send_message(message.chat.id, "You haven't created any broadcasts yet.\n\nUse /create to send your first broadcast!", reply_markup=markup)
+        set_user_state(user_id, msg.message_id, 'mybroadcasts')
         return
     
-    response = "Your Recent Broadcasts:\n\n"
+    response = "📢 Your Recent Broadcasts:\n\n"
     for bc in broadcasts:
-        status_emoji = "[SENT]" if bc['status'] == 'sent' else "[QUEUED]" if bc['status'] == 'queued' else "[DRAFT]"
+        status_emoji = "✅" if bc['status'] == 'sent' else "⏳" if bc['status'] == 'queued' else "📝"
         response += f"{status_emoji} #{bc['broadcast_id']}\n"
-        response += f"   {bc.get('views', 0)} views | {bc.get('sent_count', 0)} sent\n"
+        response += f"   {bc.get('views', 0)} 👁️ | {bc.get('sent_count', 0)} 📤\n"
         text = bc.get('text', '')[:50]
         response += f"   {text}...\n\n"
     
-    bot.reply_to(message, response)
+    markup = types.InlineKeyboardMarkup()
+    add_navigation_buttons(markup, go_back=False, go_menu=True)
+    msg = bot.send_message(message.chat.id, response, reply_markup=markup)
+    set_user_state(user_id, msg.message_id, 'mybroadcasts')
 
 def handle_stats(bot, message):
     """Show user statistics"""
@@ -101,14 +111,18 @@ def handle_stats(bot, message):
     total_broadcasts = len(broadcasts)
     active_slots = sum(1 for slot in priority_slots if slot.get('active', False))
     
-    bot.reply_to(message,
-        f"Your Statistics\n\n"
-        f"Total Broadcasts: {total_broadcasts}\n"
-        f"Total Views: {total_views}\n"
-        f"Total Recipients: {total_sent}\n"
-        f"Priority Slots Used: {len(priority_slots)}\n"
-        f"Active Slots: {active_slots}\n\n"
-        f"Keep broadcasting to reach more users!")
+    text = f"📊 Your Statistics\n\n" \
+           f"📢 Total Broadcasts: {total_broadcasts}\n" \
+           f"👁️ Total Views: {total_views}\n" \
+           f"📤 Total Recipients: {total_sent}\n" \
+           f"🎯 Priority Slots Used: {len(priority_slots)}\n" \
+           f"✨ Active Slots: {active_slots}\n\n" \
+           f"Keep broadcasting to reach more users!"
+    
+    markup = types.InlineKeyboardMarkup()
+    add_navigation_buttons(markup, go_back=False, go_menu=True)
+    msg = bot.send_message(message.chat.id, text, reply_markup=markup)
+    set_user_state(user_id, msg.message_id, 'stats')
 
 def handle_settings(bot, message):
     """Show settings"""
@@ -124,51 +138,55 @@ def handle_settings(bot, message):
         types.InlineKeyboardButton("Change Country", callback_data="settings_country"),
         types.InlineKeyboardButton("Change Categories", callback_data="settings_category")
     )
+    add_navigation_buttons(markup, go_back=False, go_menu=True)
     
     country = user.get('country', 'Not set') if user else 'Not set'
     cats = user.get('categories', user.get('category', 'Not set')) if user else 'Not set'
     if isinstance(cats, list):
         cats = ', '.join(cats)
     
-    bot.send_message(message.chat.id,
-        f"Settings\n\n"
-        f"Current settings:\n"
-        f"Country: {country}\n"
-        f"Categories: {cats}\n\n"
-        f"Select what you want to change:",
-        reply_markup=markup)
+    text = f"⚙️ Settings\n\n" \
+           f"Current settings:\n" \
+           f"📍 Country: {country}\n" \
+           f"📂 Categories: {cats}\n\n" \
+           f"Select what you want to change:"
+    
+    msg = bot.send_message(message.chat.id, text, reply_markup=markup)
+    set_user_state(user_id, msg.message_id, 'settings')
 
 def handle_help(bot, message):
     """Show help information"""
-    help_text = """
-Help & Information
+    user_id = message.from_user.id
+    help_text = """❓ Help & Information
 
-What is this bot?
+📖 What is this bot?
 This is a broadcast bot that allows you to send messages to targeted audiences.
 
-Free Broadcasts:
-- Create broadcasts with text and media
-- Target by country, category, or all users
-- Broadcasts are queued and sent automatically
+📢 Free Broadcasts:
+• Create broadcasts with text and media
+• Target by country, category, or all users
+• Broadcasts are queued and sent automatically
 
-Priority Slots:
+🌟 Priority Slots:
 Want your broadcasts sent immediately?
-- Purchase a priority slot
-- Your broadcasts bypass the queue
-- Other broadcasts are paused during your slot
-- Available as time-based or count-based
+• Purchase a priority slot
+• Your broadcasts bypass the queue
+• Other broadcasts are paused during your slot
+• Available as time-based or count-based
 
-Commands:
+⌨️ Commands:
 /start - Register or restart
 /menu - Main menu
 /create - Create a broadcast
 /priority - View priority slot options
-/mybroadcasts - View your broadcasts
-/stats - View your statistics
+/mystats - View detailed broadcast analytics
 /settings - Change your settings
 /help - Show this help message
 
 Need assistance?
-Contact our admin team for support!
-"""
-    bot.reply_to(message, help_text)
+Contact our admin team for support!"""
+    
+    markup = types.InlineKeyboardMarkup()
+    add_navigation_buttons(markup, go_back=False, go_menu=True)
+    msg = bot.send_message(message.chat.id, help_text, reply_markup=markup)
+    set_user_state(user_id, msg.message_id, 'help')

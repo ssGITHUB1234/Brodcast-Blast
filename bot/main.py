@@ -137,6 +137,23 @@ def noop_callback(call):
     """No-op callback for disabled buttons"""
     bot.answer_callback_query(call.id)
 
+@bot.callback_query_handler(func=lambda call: call.data == 'nav_menu')
+def nav_menu_callback(call):
+    """Navigate to main menu"""
+    # Create a message-like object from the callback
+    class FakeMessage:
+        def __init__(self, callback):
+            self.from_user = callback.from_user
+            self.chat = callback.message.chat
+    
+    menu_handler.handle_menu(bot, FakeMessage(call))
+    bot.answer_callback_query(call.id)
+
+@bot.callback_query_handler(func=lambda call: call.data == 'nav_back')
+def nav_back_callback(call):
+    """Navigate back to previous menu"""
+    bot.answer_callback_query(call.id, "Back navigation coming soon")
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith('pay_'))
 def payment_callback(call):
     priority_handlers.handle_payment_gateway_selection(bot, call)

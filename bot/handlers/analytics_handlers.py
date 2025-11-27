@@ -2,6 +2,8 @@
 from telebot import types
 from bot.services.broadcast_service import BroadcastService
 from bot.services.user_service import UserService
+from bot.utils.state_manager import set_user_state
+from bot.utils.nav_helpers import add_navigation_buttons
 
 broadcast_service = BroadcastService()
 user_service = UserService()
@@ -78,7 +80,7 @@ def show_broadcast_analytics(bot, chat_id, user_id, broadcasts, index):
     info_btn = types.InlineKeyboardButton(f"📋 {index + 1}/{total}", callback_data="noop")
     
     markup.add(prev_btn, info_btn, next_btn)
-    markup.add(types.InlineKeyboardButton("Close", callback_data="analytics_close"))
+    add_navigation_buttons(markup, go_back=False, go_menu=True)
     
     try:
         bot.send_message(chat_id, message_text, reply_markup=markup)

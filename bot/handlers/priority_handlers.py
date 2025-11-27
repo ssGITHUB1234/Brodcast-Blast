@@ -5,6 +5,8 @@ from bot.services.payment_service import PaymentService
 from bot.services.stars_payment import StarsPaymentService
 from bot.services.cryptopay import CryptoPayService
 from bot.utils.helpers import format_price, get_slot_description
+from bot.utils.state_manager import set_user_state, get_user_message_id
+from bot.utils.nav_helpers import add_navigation_buttons, edit_or_send
 
 priority_service = PrioritySlotService()
 user_service = UserService()
@@ -52,11 +54,11 @@ def handle_priority_slots(bot, message):
     active_slot = priority_service.get_active_priority_slot()
     
     if active_slot and active_slot['user_id'] == user_id:
-        show_active_slot_info(bot, message.chat.id, active_slot)
+        show_active_slot_info(bot, message.chat.id, user_id, active_slot)
     else:
-        show_priority_slot_packages(bot, message.chat.id, active_slot)
+        show_priority_slot_packages(bot, message.chat.id, user_id, active_slot)
 
-def show_priority_slot_packages(bot, chat_id, active_slot=None):
+def show_priority_slot_packages(bot, chat_id, user_id, active_slot=None, message_id=None):
     """Show available priority slot packages"""
     markup = types.InlineKeyboardMarkup(row_width=1)
     PRICES = get_priority_slot_prices()
@@ -99,30 +101,39 @@ def show_priority_slot_packages(bot, chat_id, active_slot=None):
             callback_data="priority_count_50"
         )
     )
+    add_navigation_buttons(markup, go_back=False, go_menu=True)
     
-    bot.send_message(chat_id,
-        f"🌟 Priority Broadcast Slots\n\n"
-        f"{active_msg}"
-        f"Get exclusive broadcast rights!\n"
-        f"When you have an active priority slot, all other broadcasts are paused and only your messages are sent.\n\n"
-        f"Choose your package:",
-        reply_markup=markup)
+    text = f"🌟 Priority Broadcast Slots\n\n" \
+           f"{active_msg}" \
+           f"Get exclusive broadcast rights!\n" \
+           f"When you have an active priority slot, all other broadcasts are paused and only your messages are sent.\n\n" \
+           f"Choose your package:"
+    
+    edit_or_send(bot, chat_id, text, message_id, markup)
+    if not message_id:
+        msg = bot.send_message(chat_id, text, reply_markup=markup)
+        set_user_state(user_id, msg.message_id, 'priority')
 
-def show_active_slot_info(bot, chat_id, slot):
+def show_active_slot_info(bot, chat_id, user_id, slot):
     """Show active slot information"""
     if slot['slot_type'] == 'time':
-        remaining = "Check /mystatus for details"
+        remaining = "Check /mystats for details"
         desc = get_slot_description('time', duration_hours=slot['duration_hours'])
     else:
         remaining_count = slot['message_count'] - slot['messages_sent']
         remaining = f"{remaining_count} broadcasts remaining"
         desc = get_slot_description('count', message_count=slot['message_count'])
     
-    bot.send_message(chat_id,
-        f"✨ Your Priority Slot is Active!\n\n"
-        f"📦 Package: {desc}\n"
-        f"📊 {remaining}\n\n"
-        f"All your broadcasts will be sent immediately, and other users' broadcasts are queued.")
+    markup = types.InlineKeyboardMarkup()
+    add_navigation_buttons(markup, go_back=False, go_menu=True)
+    
+    text = f"✨ Your Priority Slot is Active!\n\n" \
+           f"📦 Package: {desc}\n" \
+           f"📊 {remaining}\n\n" \
+           f"All your broadcasts will be sent immediately, and other users' broadcasts are queued."
+    
+    msg = bot.send_message(chat_id, text, reply_markup=markup)
+    set_user_state(user_id, msg.message_id, 'priority_active')
 
 def handle_priority_slot_selection(bot, call):
     """Handle priority slot package selection"""
@@ -150,20 +161,21 @@ def show_payment_options(bot, chat_id, user_id, slot_type, price, duration_hours
     markup = types.InlineKeyboardMarkup(row_width=2)
     
     slot_desc = get_slot_description(slot_type, duration_hours, message_count)
-    
     slot_data = f"{slot_type}_{duration_hours if duration_hours else message_count}"
     
     markup.add(
         types.InlineKeyboardButton("⭐ Telegram Stars", callback_data=f"pay_stars_{slot_data}"),
         types.InlineKeyboardButton("💳 CryptoPay", callback_data=f"pay_crypto_{slot_data}")
     )
+    add_navigation_buttons(markup, go_back=True, go_menu=True)
     
-    bot.send_message(chat_id,
-        f"💰 Payment Required\n\n"
-        f"Package: {slot_desc}\n"
-        f"Price: {format_price(price)}\n\n"
-        f"Select your payment method:",
-        reply_markup=markup)
+    text = f"💰 Payment Required\n\n" \
+           f"Package: {slot_desc}\n" \
+           f"Price: {format_price(price)}\n\n" \
+           f"Select your payment method:"
+    
+    msg = bot.send_message(chat_id, text, reply_markup=markup)
+    set_user_state(user_id, msg.message_id, 'payment')
 
 def handle_payment_gateway_selection(bot, call):
     """Handle payment gateway selection"""
