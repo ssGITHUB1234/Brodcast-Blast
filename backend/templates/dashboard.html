@@ -526,7 +526,7 @@
                 <h2>🎬 Ad System Settings</h2>
                 <div id="ad-message"></div>
                 
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                     <div style="margin-bottom: 20px;">
                         <h3 style="margin-bottom: 15px;">Require Ads Before Broadcasting</h3>
                         <p style="color: #666; margin-bottom: 15px;">Toggle whether users must watch an ad before sending each broadcast.</p>
@@ -542,10 +542,43 @@
                     <button class="btn btn-primary" onclick="saveAdSettings()" style="margin-top: 20px;">Save Settings</button>
                 </div>
                 
-                <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 30px;">
                     <p style="color: #155724; margin: 0;">
                         💡 <strong>Tip:</strong> When enabled, users see an ad before creating each broadcast and must watch it to continue. After watching, they can create their broadcast normally.
                     </p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🔗 Monetag Ad Links</h2>
+                <div id="ad-links-message"></div>
+                
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px;">Add New Ad Link</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="new-link-name" placeholder="Name" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <input type="text" id="new-link-zone" placeholder="Zone ID" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <input type="text" id="new-link-func" placeholder="Function" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <button class="btn btn-primary" onclick="addAdLink()" style="padding: 10px 20px;">Add Link</button>
+                    </div>
+                </div>
+                
+                <div id="ad-links-list" style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Zone ID</th>
+                                <th>Function</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ad-links-tbody">
+                            <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -588,6 +621,7 @@
                 loadChatAnalysis();
             } else if (tabName === 'ads') {
                 loadAdSettings();
+                loadAdLinks();
             } else if (tabName === 'overview') {
                 loadDashboard();
             }
@@ -1059,6 +1093,106 @@
             } catch (error) {
                 console.error('Error saving ad settings:', error);
                 showError('Error saving settings');
+            }
+        }
+        
+        async function loadAdLinks() {
+            try {
+                const response = await fetch(`${API_BASE}/ads/links`);
+                const links = await response.json();
+                renderAdLinks(links);
+            } catch (error) {
+                console.error('Error loading ad links:', error);
+                showError('Failed to load ad links');
+            }
+        }
+        
+        function renderAdLinks(links) {
+            let html = '<table><thead><tr><th>ID</th><th>Name</th><th>Zone ID</th><th>Function</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+            if (Array.isArray(links) && links.length > 0) {
+                links.forEach(link => {
+                    const statusBadge = link.active ? 'badge-active' : 'badge-blocked';
+                    const statusText = link.active ? 'ACTIVE' : 'INACTIVE';
+                    html += `<tr>
+                        <td>#${link.id}</td>
+                        <td>${link.name}</td>
+                        <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px;">${link.zone_id}</code></td>
+                        <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px;">${link.link}</code></td>
+                        <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-primary btn-small" onclick="editAdLink(${link.id}, '${link.name}', '${link.zone_id}', '${link.link}')">Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteAdLink(${link.id})">Delete</button>
+                        </td>
+                    </tr>`;
+                });
+            } else {
+                html += '<tr><td colspan="6" style="text-align: center;">No ad links yet</td></tr>';
+            }
+            html += '</tbody></table>';
+            document.getElementById('ad-links-list').innerHTML = html;
+        }
+        
+        async function addAdLink() {
+            const name = document.getElementById('new-link-name').value.trim();
+            const zone = document.getElementById('new-link-zone').value.trim();
+            const link = document.getElementById('new-link-func').value.trim();
+            
+            if (!name || !zone || !link) {
+                showError('Please fill in all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/ads/links`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name, zone_id: zone, link})
+                });
+                if (response.ok) {
+                    showSuccess('✅ Ad link added');
+                    document.getElementById('new-link-name').value = '';
+                    document.getElementById('new-link-zone').value = '';
+                    document.getElementById('new-link-func').value = '';
+                    loadAdLinks();
+                } else {
+                    showError('Failed to add link');
+                }
+            } catch (error) {
+                showError('Error adding link');
+            }
+        }
+        
+        function editAdLink(linkId, name, zone, link) {
+            const newName = prompt('Edit link name:', name);
+            if (newName === null) return;
+            
+            fetch(`${API_BASE}/ads/links/${linkId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: newName, zone_id: zone, link})
+            }).then(response => {
+                if (response.ok) {
+                    showSuccess('✅ Ad link updated');
+                    loadAdLinks();
+                } else {
+                    showError('Failed to update link');
+                }
+            }).catch(error => showError('Error updating link'));
+        }
+        
+        async function deleteAdLink(linkId) {
+            if (!confirm('Delete this ad link?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/ads/links/${linkId}`, {method: 'DELETE'});
+                if (response.ok) {
+                    showSuccess('✅ Ad link deleted');
+                    loadAdLinks();
+                } else {
+                    showError('Failed to delete link');
+                }
+            } catch (error) {
+                showError('Error deleting link');
             }
         }
         
