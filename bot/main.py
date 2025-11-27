@@ -24,7 +24,13 @@ def start_command(message):
 
 @bot.message_handler(commands=['menu'])
 def menu_command(message):
-    menu_handler.handle_menu(bot, message)
+    # Create wrapper to force new message (don't try to edit command messages)
+    class CommandMessage:
+        def __init__(self, msg):
+            self.from_user = msg.from_user
+            self.chat = msg.chat
+            self.message_id = None  # Force new message, don't edit
+    menu_handler.handle_menu(bot, CommandMessage(message))
 
 @bot.message_handler(commands=['create'])
 def create_broadcast_command(message):
@@ -32,15 +38,30 @@ def create_broadcast_command(message):
 
 @bot.message_handler(commands=['priority'])
 def priority_command(message):
-    priority_handlers.handle_priority_slots(bot, message)
+    class CommandMessage:
+        def __init__(self, msg):
+            self.from_user = msg.from_user
+            self.chat = msg.chat
+            self.message_id = None
+    priority_handlers.handle_priority_slots(bot, CommandMessage(message))
 
 @bot.message_handler(commands=['mybroadcasts'])
 def my_broadcasts_command(message):
-    menu_handler.handle_my_broadcasts(bot, message)
+    class CommandMessage:
+        def __init__(self, msg):
+            self.from_user = msg.from_user
+            self.chat = msg.chat
+            self.message_id = None
+    menu_handler.handle_my_broadcasts(bot, CommandMessage(message))
 
 @bot.message_handler(commands=['stats'])
 def stats_command(message):
-    menu_handler.handle_stats(bot, message)
+    class CommandMessage:
+        def __init__(self, msg):
+            self.from_user = msg.from_user
+            self.chat = msg.chat
+            self.message_id = None
+    menu_handler.handle_stats(bot, CommandMessage(message))
 
 @bot.message_handler(commands=['mystats'])
 def mystats_command(message):
@@ -49,11 +70,21 @@ def mystats_command(message):
 
 @bot.message_handler(commands=['settings'])
 def settings_command(message):
-    menu_handler.handle_settings(bot, message)
+    class CommandMessage:
+        def __init__(self, msg):
+            self.from_user = msg.from_user
+            self.chat = msg.chat
+            self.message_id = None
+    menu_handler.handle_settings(bot, CommandMessage(message))
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
-    menu_handler.handle_help(bot, message)
+    class CommandMessage:
+        def __init__(self, msg):
+            self.from_user = msg.from_user
+            self.chat = msg.chat
+            self.message_id = None
+    menu_handler.handle_help(bot, CommandMessage(message))
 
 @bot.message_handler(commands=['ai_template'])
 def ai_template_command(message):
