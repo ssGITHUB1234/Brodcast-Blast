@@ -550,20 +550,19 @@
             </div>
             
             <div class="section">
-                <h2>🔗 Monetag Ad Links</h2>
-                <div id="ad-links-message"></div>
+                <h2>🎯 Monetag Ad Zones</h2>
+                <div id="ad-zones-message"></div>
                 
                 <div style="margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 15px;">Add New Ad Link</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 15px;">
-                        <input type="text" id="new-link-name" placeholder="Name" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                        <input type="text" id="new-link-zone" placeholder="Zone ID" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                        <input type="text" id="new-link-func" placeholder="Function" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
-                        <button class="btn btn-primary" onclick="addAdLink()" style="padding: 10px 20px;">Add Link</button>
+                    <h3 style="margin-bottom: 15px;">Add New Zone</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 15px;">
+                        <input type="text" id="new-zone-id" placeholder="Zone ID (e.g., 10243712)" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <input type="text" id="new-zone-name" placeholder="Zone Name (optional)" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <button class="btn btn-primary" onclick="addAdZone()" style="padding: 10px 20px;">Add Zone</button>
                     </div>
                 </div>
                 
-                <div id="ad-links-list" style="overflow-x: auto;">
+                <div id="ad-zones-list" style="overflow-x: auto;">
                     <table>
                         <thead>
                             <tr>
@@ -575,7 +574,7 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="ad-links-tbody">
+                        <tbody id="ad-zones-tbody">
                             <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
                         </tbody>
                     </table>
@@ -621,7 +620,7 @@
                 loadChatAnalysis();
             } else if (tabName === 'ads') {
                 loadAdSettings();
-                loadAdLinks();
+                loadAdZones();
             } else if (tabName === 'overview') {
                 loadDashboard();
             }
@@ -1096,103 +1095,103 @@
             }
         }
         
-        async function loadAdLinks() {
+        async function loadAdZones() {
             try {
-                const response = await fetch(`${API_BASE}/ads/links`);
-                const links = await response.json();
-                renderAdLinks(links);
+                const response = await fetch(`${API_BASE}/ads/zones`);
+                const zones = await response.json();
+                renderAdZones(zones);
             } catch (error) {
-                console.error('Error loading ad links:', error);
-                showError('Failed to load ad links');
+                console.error('Error loading ad zones:', error);
+                showError('Failed to load zones');
             }
         }
         
-        function renderAdLinks(links) {
+        function renderAdZones(zones) {
             let html = '<table><thead><tr><th>ID</th><th>Name</th><th>Zone ID</th><th>Function</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
-            if (Array.isArray(links) && links.length > 0) {
-                links.forEach(link => {
-                    const statusBadge = link.active ? 'badge-active' : 'badge-blocked';
-                    const statusText = link.active ? 'ACTIVE' : 'INACTIVE';
+            if (Array.isArray(zones) && zones.length > 0) {
+                zones.forEach(zone => {
+                    const statusBadge = zone.active ? 'badge-active' : 'badge-blocked';
+                    const statusText = zone.active ? 'ACTIVE' : 'INACTIVE';
+                    const functionName = `show_${zone.zone_id}`;
                     html += `<tr>
-                        <td>#${link.id}</td>
-                        <td>${link.name}</td>
-                        <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px;">${link.zone_id}</code></td>
-                        <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px;">${link.link}</code></td>
+                        <td>#${zone.id}</td>
+                        <td>${zone.name}</td>
+                        <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px;">${zone.zone_id}</code></td>
+                        <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px;">${functionName}</code></td>
                         <td><span class="badge ${statusBadge}">${statusText}</span></td>
                         <td>
-                            <button class="btn btn-primary btn-small" onclick="editAdLink(${link.id}, '${link.name}', '${link.zone_id}', '${link.link}')">Edit</button>
-                            <button class="btn btn-danger btn-small" onclick="deleteAdLink(${link.id})">Delete</button>
+                            <button class="btn btn-primary btn-small" onclick="editAdZone(${zone.id}, '${zone.name}')">Edit</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteAdZone(${zone.id})">Delete</button>
                         </td>
                     </tr>`;
                 });
             } else {
-                html += '<tr><td colspan="6" style="text-align: center;">No ad links yet</td></tr>';
+                html += '<tr><td colspan="6" style="text-align: center;">No zones yet</td></tr>';
             }
             html += '</tbody></table>';
-            document.getElementById('ad-links-list').innerHTML = html;
+            document.getElementById('ad-zones-list').innerHTML = html;
         }
         
-        async function addAdLink() {
-            const name = document.getElementById('new-link-name').value.trim();
-            const zone = document.getElementById('new-link-zone').value.trim();
-            const link = document.getElementById('new-link-func').value.trim();
+        async function addAdZone() {
+            const zoneId = document.getElementById('new-zone-id').value.trim();
+            const zoneName = document.getElementById('new-zone-name').value.trim();
             
-            if (!name || !zone || !link) {
-                showError('Please fill in all fields');
+            if (!zoneId) {
+                showError('Zone ID is required');
                 return;
             }
             
             try {
-                const response = await fetch(`${API_BASE}/ads/links`, {
+                const response = await fetch(`${API_BASE}/ads/zones`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({name, zone_id: zone, link})
+                    body: JSON.stringify({zone_id: zoneId, name: zoneName || `Zone ${zoneId}`})
                 });
                 if (response.ok) {
-                    showSuccess('✅ Ad link added');
-                    document.getElementById('new-link-name').value = '';
-                    document.getElementById('new-link-zone').value = '';
-                    document.getElementById('new-link-func').value = '';
-                    loadAdLinks();
+                    showSuccess('✅ Zone added');
+                    document.getElementById('new-zone-id').value = '';
+                    document.getElementById('new-zone-name').value = '';
+                    loadAdZones();
                 } else {
-                    showError('Failed to add link');
+                    const error = await response.json();
+                    showError(error.error || 'Failed to add zone');
                 }
             } catch (error) {
-                showError('Error adding link');
+                showError('Error adding zone');
             }
         }
         
-        function editAdLink(linkId, name, zone, link) {
-            const newName = prompt('Edit link name:', name);
+        function editAdZone(zoneId, name) {
+            const newName = prompt('Edit zone name:', name);
             if (newName === null) return;
             
-            fetch(`${API_BASE}/ads/links/${linkId}`, {
+            fetch(`${API_BASE}/ads/zones/${zoneId}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name: newName, zone_id: zone, link})
+                body: JSON.stringify({name: newName})
             }).then(response => {
                 if (response.ok) {
-                    showSuccess('✅ Ad link updated');
-                    loadAdLinks();
+                    showSuccess('✅ Zone updated');
+                    loadAdZones();
                 } else {
-                    showError('Failed to update link');
+                    showError('Failed to update zone');
                 }
-            }).catch(error => showError('Error updating link'));
+            }).catch(error => showError('Error updating zone'));
         }
         
-        async function deleteAdLink(linkId) {
-            if (!confirm('Delete this ad link?')) return;
+        async function deleteAdZone(zoneId) {
+            if (!confirm('Delete this zone?')) return;
             
             try {
-                const response = await fetch(`${API_BASE}/ads/links/${linkId}`, {method: 'DELETE'});
+                const response = await fetch(`${API_BASE}/ads/zones/${zoneId}`, {method: 'DELETE'});
                 if (response.ok) {
-                    showSuccess('✅ Ad link deleted');
-                    loadAdLinks();
+                    showSuccess('✅ Zone deleted');
+                    loadAdZones();
                 } else {
-                    showError('Failed to delete link');
+                    showError('Failed to delete zone');
                 }
             } catch (error) {
-                showError('Error deleting link');
+                showError('Error deleting zone');
             }
         }
         

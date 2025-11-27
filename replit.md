@@ -50,12 +50,13 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes
-- 2024-11-27: **Admin Monetag Ad Links Management Complete** - Full CRUD for ad links
-  - ✅ Admin can add new Monetag ad links
-  - ✅ Admin can edit existing ad links
-  - ✅ Admin can delete ad links
-  - ✅ Manage multiple ad zones with different functions
-  - ✅ UI in dashboard "Ad Settings" tab
+- 2024-11-27: **Admin Monetag Ad Zones Management Complete** - Simplified Zone ID management
+  - ✅ Admin adds only Zone ID (function auto-generated)
+  - ✅ Add new Monetag zones with just Zone ID
+  - ✅ Edit zone names
+  - ✅ Delete zones
+  - ✅ Function automatically derived (Zone 10243712 → show_10243712)
+  - ✅ UI in dashboard "Ad Settings" tab - "Monetag Ad Zones" section
 - 2024-11-27: **Mandatory Ads Before Broadcast Complete** - Full ad requirement system
   - ✅ Users must watch ad before creating broadcasts
   - ✅ Admin can toggle ads requirement on/off
