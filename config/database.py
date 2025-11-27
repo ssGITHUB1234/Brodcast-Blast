@@ -9,8 +9,7 @@ def get_supabase_client():
         if not SUPABASE_URL or not SUPABASE_KEY:
             raise Exception("Supabase credentials not configured")
         try:
-            options = {}
-            supabase = create_client(SUPABASE_URL, SUPABASE_KEY, options)
+            supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
         except Exception as e:
             print(f"Error connecting to Supabase: {e}")
             print(f"Please verify your SUPABASE_URL and SUPABASE_KEY are correct")
