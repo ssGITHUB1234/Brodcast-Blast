@@ -6,18 +6,15 @@ Runs both the bot and Flask admin dashboard
 
 import os
 import sys
-from multiprocessing import Process
+import threading
 
 def run_bot():
-    """Run the Telegram bot"""
+    """Run the Telegram bot in background"""
     from bot.main import main
-    main()
-
-def run_flask():
-    """Run the Flask admin dashboard"""
-    from backend.app import app
-    from config.settings import FLASK_HOST, FLASK_PORT
-    app.run(host=FLASK_HOST, port=FLASK_PORT, debug=False, use_reloader=False)
+    try:
+        main()
+    except Exception as e:
+        print(f"❌ Bot error: {e}")
 
 if __name__ == '__main__':
     print("=" * 60)
@@ -52,18 +49,22 @@ if __name__ == '__main__':
     print("   http://localhost:5000")
     print()
     print("🤖 Telegram Bot Status:")
-    print("   Starting...")
+    print("   Starting in background...")
     print()
     print("=" * 60)
     print()
     
-    flask_process = Process(target=run_flask)
-    flask_process.start()
+    # Start bot in background thread (not blocking for Render health checks)
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread.start()
     
+    # Run Flask as main app
+    from backend.app import app
+    from config.settings import FLASK_HOST, FLASK_PORT
+    
+    print(f"✓ Starting Flask server on {FLASK_HOST}:{FLASK_PORT}")
     try:
-        run_bot()
+        app.run(host=FLASK_HOST, port=FLASK_PORT, debug=False, use_reloader=False)
     except KeyboardInterrupt:
         print("\n\n🛑 Shutting down...")
-        flask_process.terminate()
-        flask_process.join()
         print("✓ Stopped")
