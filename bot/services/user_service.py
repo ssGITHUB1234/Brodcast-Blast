@@ -37,6 +37,8 @@ class UserService:
     def update_user(self, user_id, **kwargs):
         """Update user details"""
         try:
+            if 'categories' in kwargs and isinstance(kwargs['categories'], list):
+                pass
             response = self.db.table('users').update(kwargs).eq('user_id', user_id).execute()
             return response.data[0] if response.data else None
         except Exception as e:

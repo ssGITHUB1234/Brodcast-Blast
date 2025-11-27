@@ -54,32 +54,46 @@ def help_command(message):
 def ai_template_command(message):
     """Generate AI broadcast template"""
     user_id = message.from_user.id
-    user = user_service.get_user(user_id)
     
-    if not user or user.get('blocked'):
-        bot.reply_to(message, "⛔ Access denied.")
+    try:
+        user = user_service.get_user(user_id)
+    except:
+        user = None
+    
+    if user and user.get('blocked'):
+        bot.reply_to(message, "Access denied.")
         return
     
-    bot.reply_to(message, "🤖 Generating AI template... Please wait.")
+    bot.reply_to(message, "Generating AI template... Please wait.")
+    
+    topic = None
+    country = None
+    if user:
+        cats = user.get('categories', user.get('category'))
+        if isinstance(cats, list) and cats:
+            topic = cats[0]
+        else:
+            topic = cats
+        country = user.get('country')
     
     template = generate_broadcast_template(
-        topic=user.get('category'),
-        target_audience=f"{user.get('country')} users"
+        topic=topic,
+        target_audience=f"{country} users" if country else None
     )
     
     if template:
         bot.send_message(message.chat.id,
-            f"🤖 AI-Generated Template:\n\n{template}\n\n"
+            f"AI-Generated Template:\n\n{template}\n\n"
             f"Feel free to customize this template for your broadcast!")
     else:
         bot.send_message(message.chat.id, 
-            "⚠️ AI service is currently unavailable. Please try again later.")
+            "AI service is currently unavailable. Please try again later.")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('country_'))
 def country_callback(call):
     registration.handle_country_selection(bot, call)
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('category_'))
+@bot.callback_query_handler(func=lambda call: call.data.startswith('cat_'))
 def category_callback(call):
     registration.handle_category_selection(bot, call)
 
@@ -126,10 +140,12 @@ def menu_callback(call):
 @bot.callback_query_handler(func=lambda call: call.data.startswith('settings_'))
 def settings_callback(call):
     setting = call.data.replace('settings_', '')
+    user_id = call.from_user.id
     if setting == 'country':
         registration.show_country_selection(bot, call.message.chat.id)
     elif setting == 'category':
-        registration.show_category_selection(bot, call.message.chat.id)
+        registration.user_categories[user_id] = []
+        registration.show_category_selection(bot, call.message.chat.id, user_id)
 
 @bot.message_handler(content_types=['text'])
 def handle_text(message):

@@ -14,16 +14,18 @@ XROCKET_API_KEY = os.getenv('XROCKET_API_KEY', '')
 MONETAG_SDK_KEY = os.getenv('MONETAG_SDK_KEY', '')
 
 COUNTRIES = [
-    'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',
+    'Sri Lanka', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',
     'France', 'Spain', 'Italy', 'Brazil', 'India', 'China', 'Japan',
     'Russia', 'Mexico', 'South Korea', 'Indonesia', 'Netherlands',
-    'Turkey', 'Saudi Arabia', 'Switzerland', 'Other'
+    'Turkey', 'Saudi Arabia', 'Switzerland', 'Pakistan', 'Bangladesh',
+    'Philippines', 'Vietnam', 'Thailand', 'Malaysia', 'Singapore', 'Other'
 ]
 
 CATEGORIES = [
     'Technology', 'Business', 'Entertainment', 'Sports', 'Education',
     'Health', 'Finance', 'Travel', 'Food', 'Fashion', 'Gaming',
-    'News', 'Music', 'Art', 'Science', 'Lifestyle'
+    'News', 'Music', 'Art', 'Science', 'Lifestyle', 'Crypto',
+    'Marketing', 'Real Estate', 'Automotive'
 ]
 
 PRIORITY_SLOT_PRICES = {

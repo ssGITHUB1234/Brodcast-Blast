@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name TEXT,
     last_name TEXT,
     country TEXT,
-    category TEXT,
+    categories TEXT[],
     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     active BOOLEAN DEFAULT TRUE,
     blocked BOOLEAN DEFAULT FALSE,
