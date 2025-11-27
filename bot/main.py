@@ -217,6 +217,30 @@ def menu_callback(call):
     
     bot.answer_callback_query(call.id)
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith('bc_prev_') or call.data.startswith('bc_next_'))
+def broadcast_pagination_callback(call):
+    """Handle broadcast pagination (previous/next)"""
+    user_id = call.from_user.id
+    
+    # Parse current page from callback data
+    if call.data.startswith('bc_prev_'):
+        current_page = int(call.data.replace('bc_prev_', ''))
+        new_page = current_page - 1
+    else:  # bc_next_
+        current_page = int(call.data.replace('bc_next_', ''))
+        new_page = current_page + 1
+    
+    # Create a message-like object for the handler
+    class CallbackMessage:
+        def __init__(self, callback):
+            self.from_user = callback.from_user
+            self.chat = callback.message.chat
+            self.message_id = callback.message.message_id
+    
+    msg = CallbackMessage(call)
+    menu_handler.handle_my_broadcasts(bot, msg, page=new_page)
+    bot.answer_callback_query(call.id)
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith('settings_'))
 def settings_callback(call):
     setting = call.data.replace('settings_', '')

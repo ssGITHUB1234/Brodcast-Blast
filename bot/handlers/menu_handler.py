@@ -67,13 +67,13 @@ def handle_menu(bot, message):
     else:
         set_user_state(user_id, message_id, 'menu')
 
-def handle_my_broadcasts(bot, message):
-    """Show user's broadcasts"""
+def handle_my_broadcasts(bot, message, page=0):
+    """Show user's broadcasts with pagination (1 per page)"""
     user_id = message.from_user.id
     message_id = getattr(message, 'message_id', None)
     
     try:
-        broadcasts = broadcast_service.get_user_broadcasts(user_id, limit=10)
+        broadcasts = broadcast_service.get_user_broadcasts(user_id, limit=100)
     except:
         broadcasts = []
     
@@ -88,21 +88,46 @@ def handle_my_broadcasts(bot, message):
             set_user_state(user_id, message_id, 'mybroadcasts')
         return
     
-    response = "📢 Your Recent Broadcasts:\n\n"
-    for bc in broadcasts:
-        status_emoji = "✅" if bc['status'] == 'sent' else "⏳" if bc['status'] == 'queued' else "📝"
-        response += f"{status_emoji} #{bc['broadcast_id']}\n"
-        response += f"   {bc.get('views', 0)} 👁️ | {bc.get('sent_count', 0)} 📤\n"
-        text = bc.get('text', '')[:50]
-        response += f"   {text}...\n\n"
+    # Get current broadcast
+    if page >= len(broadcasts):
+        page = len(broadcasts) - 1
+    if page < 0:
+        page = 0
     
-    markup = types.InlineKeyboardMarkup()
+    bc = broadcasts[page]
+    status_emoji = "✅" if bc['status'] == 'sent' else "⏳" if bc['status'] == 'queued' else "📝"
+    
+    # Format broadcast details
+    text_preview = bc.get('text', '')[:100]
+    response = f"📢 Broadcast {page + 1}/{len(broadcasts)}\n\n"
+    response += f"{status_emoji} Status: {bc['status'].upper()}\n"
+    response += f"📝 Text:\n{text_preview}\n\n"
+    response += f"👁️ Views: {bc.get('views', 0)}\n"
+    response += f"📤 Recipients: {bc.get('sent_count', 0)}\n"
+    response += f"⏰ Created: {bc.get('created_at', 'N/A')}"
+    
+    # Pagination buttons
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    
+    # Add prev/next buttons
+    if page > 0:
+        markup.add(types.InlineKeyboardButton("⬅️ Previous", callback_data=f"bc_prev_{page}"))
+    else:
+        markup.add(types.InlineKeyboardButton("⬅️", callback_data="noop"))
+    
+    if page < len(broadcasts) - 1:
+        markup.add(types.InlineKeyboardButton("Next ➡️", callback_data=f"bc_next_{page}"))
+    else:
+        markup.add(types.InlineKeyboardButton("➡️", callback_data="noop"))
+    
+    # Menu button
     add_navigation_buttons(markup, go_back=False, go_menu=True)
+    
     result = edit_or_send(bot, message.chat.id, response, message_id, markup)
     if result:
-        set_user_state(user_id, result.message_id, 'mybroadcasts')
+        set_user_state(user_id, result.message_id, 'mybroadcasts', {'page': page, 'total': len(broadcasts)})
     else:
-        set_user_state(user_id, message_id, 'mybroadcasts')
+        set_user_state(user_id, message_id, 'mybroadcasts', {'page': page, 'total': len(broadcasts)})
 
 def handle_stats(bot, message):
     """Show user statistics"""

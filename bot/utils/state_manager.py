@@ -3,14 +3,14 @@
 # Store user context: {user_id: {'message_id': int, 'context': str, 'previous_context': str}}
 user_state = {}
 
-def set_user_state(user_id, message_id, context, previous_context=None):
+def set_user_state(user_id, message_id, context, extra_data=None):
     """Track user's current context and message ID"""
     if user_id not in user_state:
         user_state[user_id] = {}
     user_state[user_id]['message_id'] = message_id
     user_state[user_id]['context'] = context
-    if previous_context:
-        user_state[user_id]['previous_context'] = previous_context
+    if extra_data:
+        user_state[user_id]['extra_data'] = extra_data
 
 def get_user_state(user_id):
     """Get user's current state"""
