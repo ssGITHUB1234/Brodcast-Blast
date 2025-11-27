@@ -50,6 +50,11 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes
+- 2024-11-27: Fixed Row Level Security (RLS) blocking data persistence - disabled RLS on all tables
+- 2024-11-27: Updated database schema to support categories as TEXT[] array for multi-category selection
+- 2024-11-27: Improved error handling across all handlers for graceful database operation
+- 2024-11-27: Added Sri Lanka and 7 additional countries to country list
+- 2024-11-27: Added Crypto, Marketing, Real Estate, Automotive categories
 - 2024-11-25: Initial project setup
 
 ## User Preferences
