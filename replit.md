@@ -50,12 +50,11 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes
-- 2024-11-27: **Payment Integration Complete** - Integrated 4 payment methods
-  - ⭐ Telegram Stars (XTR currency) - sendInvoice via Bot API
-  - 💳 CryptoPay (USDT, TON, BTC, ETH, LTC, BNB, TRX, USDC) - REST API + webhooks
-  - 💰 Telegram Wallet (USD fiat) - Native Telegram wallet payment
-  - 🚀 xRocket (graceful fallback with error handling)
-  - Pre-checkout query handling for all methods
+- 2024-11-27: **Payment Integration Complete** - Integrated 3 payment methods
+  - ⭐ Telegram Stars (XTR currency) - sendInvoice via Bot API ✅
+  - 💳 CryptoPay (USDT, TON, BTC, ETH, LTC, BNB, TRX, USDC) - REST API + webhooks ✅
+  - 🚀 xRocket - Graceful fallback with error handling ✅
+  - Pre-checkout query handling for Telegram payments
   - Webhook handlers for payment confirmation and auto-activation
   - Payment recording and status tracking in database
 - 2024-11-27: Fixed Row Level Security (RLS) blocking data persistence - disabled RLS on all tables

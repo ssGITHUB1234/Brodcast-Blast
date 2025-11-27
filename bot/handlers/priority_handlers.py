@@ -5,7 +5,6 @@ from bot.services.payment_service import PaymentService
 from bot.services.stars_payment import StarsPaymentService
 from bot.services.cryptopay import CryptoPayService
 from bot.services.xrocket_payment import XRocketPayService
-from bot.services.telegram_wallet import TelegramWalletService
 from config.settings import PRIORITY_SLOT_PRICES
 from bot.utils.helpers import format_price, get_slot_description
 
@@ -15,7 +14,6 @@ payment_service = PaymentService()
 stars_service = StarsPaymentService()
 cryptopay_service = CryptoPayService()
 xrocket_service = XRocketPayService()
-wallet_service = TelegramWalletService()
 
 def handle_priority_slots(bot, message):
     """Show priority slot options"""
@@ -148,8 +146,7 @@ def show_payment_options(bot, chat_id, user_id, slot_type, price, duration_hours
     markup.add(
         types.InlineKeyboardButton("⭐ Telegram Stars", callback_data=f"pay_stars_{slot_data}"),
         types.InlineKeyboardButton("💳 CryptoPay", callback_data=f"pay_crypto_{slot_data}"),
-        types.InlineKeyboardButton("🚀 X Rocket", callback_data=f"pay_xrocket_{slot_data}"),
-        types.InlineKeyboardButton("💰 Telegram Wallet", callback_data=f"pay_wallet_{slot_data}")
+        types.InlineKeyboardButton("🚀 X Rocket", callback_data=f"pay_xrocket_{slot_data}")
     )
     
     bot.send_message(chat_id,
@@ -199,8 +196,6 @@ def handle_payment_gateway_selection(bot, call):
         handle_cryptopay_init(bot, call, slot_id, slot, user_id)
     elif gateway == 'xrocket':
         handle_xrocket_init(bot, call, slot_id, slot, user_id)
-    elif gateway == 'wallet':
-        handle_wallet_init(bot, call, slot_id, slot, user_id)
 
 
 def handle_stars_payment_init(bot, call, slot_id, slot, user_id):
@@ -298,42 +293,3 @@ def handle_xrocket_init(bot, call, slot_id, slot, user_id):
         bot.answer_callback_query(call.id, "Error processing payment")
 
 
-def handle_wallet_init(bot, call, slot_id, slot, user_id):
-    """Initialize Telegram Wallet payment"""
-    try:
-        title = f"{slot['slot_type'].capitalize()} Slot"
-        if slot['slot_type'] == 'time':
-            description = f"Priority broadcast for {slot['duration_hours']} hours"
-        else:
-            description = f"Priority broadcast for {slot['message_count']} messages"
-        
-        # Send invoice via Telegram Wallet
-        invoice = wallet_service.send_invoice(
-            user_id,
-            slot_id,
-            title,
-            description,
-            amount=float(slot['price']),
-            payload=f"slot_{slot_id}"
-        )
-        
-        if invoice:
-            bot.edit_message_text(
-                "💳 Check your Telegram app for the Telegram Wallet invoice.\n\n"
-                "Click the Pay button to complete your purchase!",
-                call.message.chat.id,
-                call.message.message_id
-            )
-            payment_service.record_payment(
-                user_id,
-                slot_id,
-                slot['price'],
-                'telegram_wallet',
-                f"wallet_pending_{slot_id}",
-                'pending'
-            )
-        else:
-            bot.answer_callback_query(call.id, "Error sending invoice")
-    except Exception as e:
-        print(f"Error with wallet payment: {e}")
-        bot.answer_callback_query(call.id, "Error processing payment")
