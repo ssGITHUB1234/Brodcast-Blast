@@ -32,8 +32,9 @@ def handle_broadcast_analytics(bot, message):
         print(f"Error handling broadcast analytics: {e}")
         bot.reply_to(message, "Error loading analytics")
 
-def show_broadcast_analytics(bot, chat_id, user_id, broadcasts, index):
+def show_broadcast_analytics(bot, chat_id, user_id, broadcasts, index, message_id=None):
     """Show single broadcast analytics with navigation"""
+    from bot.utils.nav_helpers import edit_or_send
     if not broadcasts or index < 0 or index >= len(broadcasts):
         return
     
@@ -83,10 +84,9 @@ def show_broadcast_analytics(bot, chat_id, user_id, broadcasts, index):
     add_navigation_buttons(markup, go_back=False, go_menu=True)
     
     try:
-        bot.send_message(chat_id, message_text, reply_markup=markup)
+        edit_or_send(bot, chat_id, message_text, message_id, markup)
     except Exception as e:
-        print(f"Error sending analytics message: {e}")
-        bot.send_message(chat_id, message_text)
+        print(f"Error updating analytics message: {e}")
 
 def handle_analytics_navigation(bot, call):
     """Handle analytics navigation buttons"""
@@ -112,13 +112,8 @@ def handle_analytics_navigation(bot, call):
         
         user_analytics_index[user_id] = new_index
         
-        # Delete old message and show new one
-        try:
-            bot.delete_message(call.message.chat.id, call.message.message_id)
-        except:
-            pass
-        
-        show_broadcast_analytics(bot, call.message.chat.id, user_id, broadcasts, new_index)
+        # Edit existing message
+        show_broadcast_analytics(bot, call.message.chat.id, user_id, broadcasts, new_index, call.message.message_id)
         bot.answer_callback_query(call.id)
         
     except Exception as e:

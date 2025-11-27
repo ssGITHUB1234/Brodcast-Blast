@@ -150,13 +150,15 @@ def handle_priority_slot_selection(bot, call):
     if slot_data.startswith('time_'):
         hours = int(slot_data.split('_')[1].replace('h', ''))
         price = PRICES[slot_data]
-        show_payment_options(bot, call.message.chat.id, user_id, 'time', price, duration_hours=hours)
+        show_payment_options(bot, call.message.chat.id, user_id, 'time', price, duration_hours=hours, message_id=call.message.message_id)
     elif slot_data.startswith('count_'):
         count = int(slot_data.split('_')[1])
         price = PRICES[f'count_{count}']
-        show_payment_options(bot, call.message.chat.id, user_id, 'count', price, message_count=count)
+        show_payment_options(bot, call.message.chat.id, user_id, 'count', price, message_count=count, message_id=call.message.message_id)
+    
+    bot.answer_callback_query(call.id)
 
-def show_payment_options(bot, chat_id, user_id, slot_type, price, duration_hours=None, message_count=None):
+def show_payment_options(bot, chat_id, user_id, slot_type, price, duration_hours=None, message_count=None, message_id=None):
     """Show payment gateway options"""
     markup = types.InlineKeyboardMarkup(row_width=2)
     
@@ -174,8 +176,11 @@ def show_payment_options(bot, chat_id, user_id, slot_type, price, duration_hours
            f"Price: {format_price(price)}\n\n" \
            f"Select your payment method:"
     
-    msg = bot.send_message(chat_id, text, reply_markup=markup)
-    set_user_state(user_id, msg.message_id, 'payment')
+    result = edit_or_send(bot, chat_id, text, message_id, markup)
+    if result:  # Only update state if new message was created
+        set_user_state(user_id, result.message_id, 'payment')
+    else:  # Edit happened
+        set_user_state(user_id, message_id, 'payment')
 
 def handle_payment_gateway_selection(bot, call):
     """Handle payment gateway selection"""
@@ -216,6 +221,8 @@ def handle_payment_gateway_selection(bot, call):
         handle_stars_payment_init(bot, call, slot_id, slot, user_id)
     elif gateway == 'crypto':
         handle_cryptopay_init(bot, call, slot_id, slot, user_id)
+    
+    bot.answer_callback_query(call.id)
 
 
 def handle_stars_payment_init(bot, call, slot_id, slot, user_id):

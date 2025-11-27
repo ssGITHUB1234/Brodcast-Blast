@@ -65,8 +65,9 @@ def handle_broadcast_media_input(bot, message):
         
         show_targeting_options(bot, message.chat.id)
 
-def show_targeting_options(bot, chat_id):
+def show_targeting_options(bot, chat_id, message_id=None):
     """Show targeting options"""
+    from bot.utils.nav_helpers import edit_or_send
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
         types.InlineKeyboardButton("🌍 All Users", callback_data="target_all"),
@@ -74,9 +75,8 @@ def show_targeting_options(bot, chat_id):
         types.InlineKeyboardButton("📂 By Category", callback_data="target_category")
     )
     
-    bot.send_message(chat_id, 
-        "Step 3: Select your target audience:",
-        reply_markup=markup)
+    text = "Step 3: Select your target audience:"
+    edit_or_send(bot, chat_id, text, message_id, markup)
 
 def handle_broadcast_skip_media(bot, call):
     """Handle skip media callback"""
@@ -88,7 +88,7 @@ def handle_broadcast_skip_media(bot, call):
         user_broadcast_state[user_id]['step'] = 'targeting'
         
         bot.answer_callback_query(call.id, "Media skipped")
-        show_targeting_options(bot, call.message.chat.id)
+        show_targeting_options(bot, call.message.chat.id, call.message.message_id)
 
 def handle_target_selection(bot, call):
     """Handle target audience selection"""
@@ -101,13 +101,16 @@ def handle_target_selection(bot, call):
         finalize_broadcast(bot, call.message.chat.id, user_id)
     elif target_type == 'country':
         user_broadcast_state[user_id]['target_type'] = 'country'
-        show_country_targets(bot, call.message.chat.id)
+        show_country_targets(bot, call.message.chat.id, call.message.message_id)
     elif target_type == 'category':
         user_broadcast_state[user_id]['target_type'] = 'category'
-        show_category_targets(bot, call.message.chat.id)
+        show_category_targets(bot, call.message.chat.id, call.message.message_id)
+    
+    bot.answer_callback_query(call.id)
 
-def show_country_targets(bot, chat_id):
+def show_country_targets(bot, chat_id, message_id=None):
     """Show country targeting options"""
+    from bot.utils.nav_helpers import edit_or_send
     markup = types.InlineKeyboardMarkup(row_width=2)
     buttons = []
     
@@ -115,10 +118,11 @@ def show_country_targets(bot, chat_id):
         buttons.append(types.InlineKeyboardButton(country, callback_data=f"targetc_{country}"))
     
     markup.add(*buttons)
-    bot.send_message(chat_id, "Select target country:", reply_markup=markup)
+    edit_or_send(bot, chat_id, "Select target country:", message_id, markup)
 
-def show_category_targets(bot, chat_id):
+def show_category_targets(bot, chat_id, message_id=None):
     """Show category targeting options"""
+    from bot.utils.nav_helpers import edit_or_send
     markup = types.InlineKeyboardMarkup(row_width=2)
     buttons = []
     
@@ -126,7 +130,7 @@ def show_category_targets(bot, chat_id):
         buttons.append(types.InlineKeyboardButton(category, callback_data=f"targetcat_{category}"))
     
     markup.add(*buttons)
-    bot.send_message(chat_id, "Select target category:", reply_markup=markup)
+    edit_or_send(bot, chat_id, "Select target category:", message_id, markup)
 
 def handle_country_target(bot, call):
     """Handle country target selection"""
@@ -136,8 +140,8 @@ def handle_country_target(bot, call):
     user_broadcast_state[user_id]['target_country'] = country
     user_broadcast_state[user_id]['target_category'] = None
     
-    bot.answer_callback_query(call.id, f"Targeting: {country}")
-    finalize_broadcast(bot, call.message.chat.id, user_id)
+    bot.answer_callback_query(call.id, f"✅ Targeting: {country}")
+    finalize_broadcast(bot, call.message.chat.id, user_id, call.message.message_id)
 
 def handle_category_target(bot, call):
     """Handle category target selection"""
@@ -147,11 +151,12 @@ def handle_category_target(bot, call):
     user_broadcast_state[user_id]['target_country'] = None
     user_broadcast_state[user_id]['target_category'] = category
     
-    bot.answer_callback_query(call.id, f"Targeting: {category}")
-    finalize_broadcast(bot, call.message.chat.id, user_id)
+    bot.answer_callback_query(call.id, f"✅ Targeting: {category}")
+    finalize_broadcast(bot, call.message.chat.id, user_id, call.message.message_id)
 
-def finalize_broadcast(bot, chat_id, user_id):
+def finalize_broadcast(bot, chat_id, user_id, message_id=None):
     """Finalize and save broadcast"""
+    from bot.utils.nav_helpers import edit_or_send
     state = user_broadcast_state.get(user_id, {})
     
     broadcast = broadcast_service.create_broadcast(
@@ -175,12 +180,17 @@ def finalize_broadcast(bot, chat_id, user_id):
         if active_slot and active_slot['user_id'] != user_id:
             queue_status = "\n\n⏳ Note: Another user has an active priority slot. Your broadcast will be queued."
         
-        bot.send_message(chat_id,
-            f"✅ Broadcast created successfully!\n\n"
-            f"📝 ID: #{broadcast['broadcast_id']}\n"
-            f"🎯 Target: {target_desc}\n"
-            f"📊 Status: {broadcast['status']}{queue_status}\n\n"
-            f"Your broadcast will be sent to users based on the queue.")
+        text = f"✅ Broadcast created successfully!\n\n" \
+               f"📝 ID: #{broadcast['broadcast_id']}\n" \
+               f"🎯 Target: {target_desc}\n" \
+               f"📊 Status: {broadcast['status']}{queue_status}\n\n" \
+               f"Your broadcast will be sent to users based on the queue."
+        
+        markup = types.InlineKeyboardMarkup()
+        from bot.utils.nav_helpers import add_navigation_buttons
+        add_navigation_buttons(markup, go_back=False, go_menu=True)
+        
+        edit_or_send(bot, chat_id, text, message_id, markup)
         
         del user_broadcast_state[user_id]
     else:

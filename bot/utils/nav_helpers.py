@@ -17,11 +17,17 @@ def edit_or_send(bot, chat_id, text, message_id=None, reply_markup=None):
     """Edit message if message_id exists, otherwise send new"""
     try:
         if message_id:
-            bot.edit_message_text(text, chat_id, message_id, reply_markup=reply_markup)
+            try:
+                bot.edit_message_text(text, chat_id, message_id, reply_markup=reply_markup)
+                return None
+            except Exception as edit_error:
+                # If edit fails (e.g., message too old), send new message
+                if "message to edit not found" in str(edit_error).lower() or "message not modified" in str(edit_error).lower():
+                    return bot.send_message(chat_id, text, reply_markup=reply_markup)
+                raise
         else:
             return bot.send_message(chat_id, text, reply_markup=reply_markup)
     except Exception as e:
         print(f"Message operation error: {e}")
-        # Fallback to send if edit fails
-        if message_id:
+        if not message_id:
             return bot.send_message(chat_id, text, reply_markup=reply_markup)

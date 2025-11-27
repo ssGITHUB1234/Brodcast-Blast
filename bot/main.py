@@ -173,6 +173,8 @@ def menu_callback(call):
         menu_handler.handle_settings(bot, call.message)
     elif menu_action == 'help':
         menu_handler.handle_help(bot, call.message)
+    
+    bot.answer_callback_query(call.id)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('settings_'))
 def settings_callback(call):
