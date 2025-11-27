@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Watch Ad</title>
-    <script src='//libtl.com/sdk.js' data-zone='10243712' data-sdk='show_10243712'></script>
     <style>
         * {
             margin: 0;
@@ -24,27 +23,44 @@
         
         .container {
             text-align: center;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 40px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 50px 40px;
             border-radius: 15px;
-            max-width: 400px;
+            max-width: 450px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        h2 {
+            margin-bottom: 30px;
+            font-size: 24px;
         }
         
         .timer {
-            font-size: 48px;
+            font-size: 64px;
             font-weight: bold;
-            margin: 20px 0;
+            margin: 30px 0;
             color: #4CAF50;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 5px;
         }
         
         .status {
-            font-size: 18px;
+            font-size: 16px;
+            color: #ccc;
             margin: 20px 0;
-            min-height: 60px;
+            min-height: 50px;
+            line-height: 1.5;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+            margin-top: 30px;
         }
         
         button {
-            padding: 12px 30px;
+            padding: 14px 32px;
             background: #4CAF50;
             color: white;
             border: none;
@@ -52,161 +68,168 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
             transition: all 0.3s;
         }
         
-        button:hover {
+        button:hover:not(:disabled) {
             background: #45a049;
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
         }
         
         button:disabled {
             background: #888;
             cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .hidden {
+            display: none !important;
         }
         
         .error {
             color: #ff6b6b;
-            margin-top: 20px;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 5px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🎬 Watch Ad</h2>
-        <div class="timer" id="timer">Loading...</div>
-        <div class="status" id="status">Preparing ad...</div>
-        <button id="showAdBtn" onclick="showAd()">▶️ Show Ad</button>
-        <button id="continueBtn" style="display: none;" onclick="continueToBroadcast()">✅ Ad Complete - Continue</button>
+        <h2>🎬 Watch Advertisement</h2>
+        <div class="timer" id="timer">00:30</div>
+        <div class="status" id="status">Ready to watch ad</div>
+        
+        <div class="button-group">
+            <button id="startBtn" onclick="startAdWatching()">▶️ Start Watching</button>
+            <button id="completeBtn" class="hidden" onclick="completeAd()">✅ Ad Watched - Continue</button>
+        </div>
+        
         <div id="error"></div>
     </div>
+
+    <!-- Monetag SDK - Zone 10243712 -->
+    <script src='//libtl.com/sdk.js' data-zone='10243712' data-sdk='show_10243712'></script>
 
     <script>
         const USER_ID = new URLSearchParams(window.location.search).get('user_id');
         const timerEl = document.getElementById('timer');
         const statusEl = document.getElementById('status');
-        const showAdBtn = document.getElementById('showAdBtn');
-        const continueBtn = document.getElementById('continueBtn');
+        const startBtn = document.getElementById('startBtn');
+        const completeBtn = document.getElementById('completeBtn');
         const errorEl = document.getElementById('error');
         
         let timerInterval = null;
-        let timeRemaining = 0;
-        let adShown = false;
+        let timeRemaining = 30;
+        let adStarted = false;
         let adCompleted = false;
         
-        // Wait for Monetag SDK to load
-        function waitForSdk() {
-            return new Promise((resolve) => {
-                if (typeof show_10243712 !== 'undefined') {
-                    resolve();
-                } else {
-                    const checkInterval = setInterval(() => {
-                        if (typeof show_10243712 !== 'undefined') {
-                            clearInterval(checkInterval);
-                            resolve();
-                        }
-                    }, 100);
-                    setTimeout(() => {
-                        clearInterval(checkInterval);
-                        resolve(); // Continue anyway after 5 seconds
-                    }, 5000);
-                }
-            });
-        }
-        
-        // Show the ad using Monetag SDK
-        async function showAd() {
-            if (adShown) return;
-            adShown = true;
+        function startAdWatching() {
+            if (adStarted) return;
+            adStarted = true;
+            startBtn.disabled = true;
             
-            showAdBtn.disabled = true;
-            statusEl.textContent = '⏱️ Ad playing... (30 seconds)';
+            statusEl.textContent = '⏳ Ad playing... watching time...';
             
-            try {
-                // Wait for SDK
-                await waitForSdk();
-                
-                // Start timer
-                startTimer();
-                
-                // Call Monetag SDK to show ad
-                if (typeof show_10243712 !== 'undefined') {
-                    show_10243712().then(() => {
-                        // Ad completed!
-                        onAdComplete();
-                    }).catch((error) => {
-                        console.error('Ad error:', error);
-                        // Still allow user to continue after timer
-                        statusEl.textContent = '⚠️ Ad issue - please wait';
-                    });
-                } else {
-                    // SDK not available, just use timer
-                    console.log('Monetag SDK not loaded, using timer fallback');
-                    startTimer();
-                }
-            } catch (error) {
-                console.error('Error showing ad:', error);
-                errorEl.innerHTML = '<div class="error">Error showing ad. Using timer instead...</div>';
-                startTimer();
-            }
+            // Start 30-second timer
+            startTimer();
+            
+            // Try to show Monetag Rewarded Interstitial
+            showMonetgAd();
         }
         
         function startTimer() {
             timeRemaining = 30;
-            updateTimer();
+            updateTimerDisplay();
             
             timerInterval = setInterval(() => {
                 timeRemaining--;
-                updateTimer();
+                updateTimerDisplay();
                 
                 if (timeRemaining <= 0) {
                     clearInterval(timerInterval);
-                    onAdComplete();
+                    completeAdWatch();
                 }
             }, 1000);
         }
         
-        function updateTimer() {
-            timerEl.textContent = `${String(Math.floor(timeRemaining / 60)).padStart(2, '0')}:${String(timeRemaining % 60).padStart(2, '0')}`;
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeRemaining / 60);
+            const secs = timeRemaining % 60;
+            timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
         
-        function onAdComplete() {
+        function showMonetgAd() {
+            // Wait for SDK to load
+            setTimeout(() => {
+                if (typeof show_10243712 === 'function') {
+                    console.log('Monetag SDK loaded, showing Rewarded Interstitial...');
+                    
+                    // Call Rewarded Interstitial - SDK returns Promise
+                    show_10243712({
+                        ymid: USER_ID  // Pass user ID for tracking
+                    }).then(() => {
+                        console.log('Monetag ad completed');
+                        if (timeRemaining > 0) {
+                            timeRemaining = 0;  // Force timer to complete
+                            completeAdWatch();
+                        }
+                    }).catch((error) => {
+                        console.log('Monetag ad error or unavailable:', error);
+                        // Continue with timer - user still watching
+                    });
+                } else {
+                    console.log('Monetag SDK not available, using timer only');
+                    statusEl.textContent = '⏳ Watching advertisement... (timer-based)';
+                }
+            }, 500);
+        }
+        
+        function completeAdWatch() {
             if (adCompleted) return;
             adCompleted = true;
             
-            if (timerInterval) clearInterval(timerInterval);
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
             
+            // Update UI
             timerEl.textContent = '✅ Complete!';
-            statusEl.textContent = 'Ad watched successfully!';
-            showAdBtn.style.display = 'none';
-            continueBtn.style.display = 'block';
+            statusEl.textContent = '✅ Ad watched successfully!';
+            startBtn.classList.add('hidden');
+            completeBtn.classList.remove('hidden');
             
-            // Notify backend
+            // Notify backend that user watched ad
             if (USER_ID) {
-                fetch(`/api/ads/watched/${USER_ID}`, { method: 'POST' })
-                    .then(r => r.json())
-                    .catch(e => console.error('Error:', e));
+                fetch(`/api/ads/watched/${USER_ID}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(r => r.json()).catch(e => {
+                    console.error('Error notifying backend:', e);
+                });
             }
         }
         
-        function continueToBroadcast() {
-            // Close the window/redirect back
-            if (window.opener) {
+        function completeAd() {
+            // Return to Telegram or close window
+            if (window.tg && window.tg.close) {
+                // Telegram Mini App context
+                window.tg.close();
+            } else if (window.opener) {
+                // Opened as popup
                 window.close();
-            } else if (window.parent && window.parent !== window) {
-                window.parent.postMessage({ type: 'ad_complete' }, '*');
             } else {
-                // Fallback - just go back
+                // Fallback - go back
                 window.history.back();
             }
         }
         
-        // Start when page loads
+        // Initialize on load
         window.addEventListener('load', () => {
-            timerEl.textContent = '00:30';
-            statusEl.textContent = 'Click button to start watching ad';
-            showAdBtn.style.display = 'block';
+            console.log('Ad viewer loaded, waiting for user to start');
         });
     </script>
 </body>
