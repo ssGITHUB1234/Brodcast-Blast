@@ -26,14 +26,13 @@ def handle_create_broadcast(bot, message):
     if monetag_service.is_enabled and user_id not in users_ads_watched:
         markup = types.InlineKeyboardMarkup()
         markup.add(
-            types.InlineKeyboardButton("🎬 Watch Ad to Continue", callback_data="ad_before_broadcast"),
-            types.InlineKeyboardButton("Skip", callback_data="skip_ad_broadcast")
+            types.InlineKeyboardButton("🎬 Watch Ad Now", callback_data="ad_before_broadcast")
         )
         user_broadcast_state[user_id] = {'step': 'pending_ad', 'action': 'create_broadcast'}
         bot.send_message(message.chat.id,
             "🎬 Watch an Ad First!\n\n"
-            "Before creating your broadcast, please watch a quick ad to earn rewards!\n"
-            "After watching, you can create your broadcast.",
+            "You must watch an ad before creating your broadcast.\n"
+            "Click below to open the ad.",
             reply_markup=markup)
         return
     
