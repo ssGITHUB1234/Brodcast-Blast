@@ -1,0 +1,100 @@
+2025-11-27T13:55:00.464347465Z Downloading storage3-0.7.7-py3-none-any.whl (16 kB)
+2025-11-27T13:55:00.482487168Z Downloading StrEnum-0.4.15-py3-none-any.whl (8.9 kB)
+2025-11-27T13:55:00.501403092Z Downloading supafunc-0.4.7-py3-none-any.whl (6.2 kB)
+2025-11-27T13:55:00.519245748Z Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+2025-11-27T13:55:00.537831553Z Downloading urllib3-2.5.0-py3-none-any.whl (129 kB)
+2025-11-27T13:55:00.560088024Z Downloading websockets-12.0-py3-none-any.whl (118 kB)
+2025-11-27T13:55:00.579625204Z Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+2025-11-27T13:55:00.597393807Z Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2025-11-27T13:55:00.615420308Z Downloading certifi-2025.11.12-py3-none-any.whl (159 kB)
+2025-11-27T13:55:00.63848547Z Downloading click-8.3.1-py3-none-any.whl (108 kB)
+2025-11-27T13:55:00.658392229Z Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2025-11-27T13:55:00.676591514Z Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2025-11-27T13:55:00.694464961Z Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2025-11-27T13:55:00.716145366Z Downloading markupsafe-3.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2025-11-27T13:55:00.735136162Z Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+2025-11-27T13:55:00.752987078Z Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+2025-11-27T13:55:00.774450578Z Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)
+2025-11-27T13:55:00.794643355Z Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+2025-11-27T13:55:00.812403909Z Downloading tzlocal-5.3.1-py3-none-any.whl (18 kB)
+2025-11-27T13:55:00.830273085Z Downloading werkzeug-3.1.3-py3-none-any.whl (224 kB)
+2025-11-27T13:55:00.854678142Z Downloading packaging-25.0-py3-none-any.whl (66 kB)
+2025-11-27T13:55:00.873265027Z Downloading pytz-2025.2-py2.py3-none-any.whl (509 kB)
+2025-11-27T13:55:00.938017107Z Building wheels for collected packages: pyTelegramBotAPI
+2025-11-27T13:55:00.938961552Z   Building wheel for pyTelegramBotAPI (pyproject.toml): started
+2025-11-27T13:55:01.215767716Z   Building wheel for pyTelegramBotAPI (pyproject.toml): finished with status 'done'
+2025-11-27T13:55:01.217068479Z   Created wheel for pyTelegramBotAPI: filename=pytelegrambotapi-4.14.0-py3-none-any.whl size=215341 sha256=bab6bccd6db7d9879fd7462e380dfbb0a626948f0c0c760a4b4ffecf8ecff2de
+2025-11-27T13:55:01.217241594Z   Stored in directory: /opt/render/.cache/wheels/b2/b0/06/966e44371d2a88bba02247797c6529e58589032c57fc2e7977
+2025-11-27T13:55:01.220994022Z Successfully built pyTelegramBotAPI
+2025-11-27T13:55:01.291237285Z Installing collected packages: strenum, pytz, websockets, urllib3, tzlocal, typing-extensions, tqdm, sniffio, six, python-dotenv, packaging, MarkupSafe, jiter, itsdangerous, idna, hyperframe, hpack, h11, distro, click, charset-normalizer, certifi, blinker, annotated-types, Werkzeug, typing-inspection, requests, python-dateutil, pydantic-core, Jinja2, httpcore, h2, gunicorn, deprecation, APScheduler, anyio, realtime, pyTelegramBotAPI, pydantic, httpx, Flask, openai, Flask-CORS, supafunc, storage3, postgrest, gotrue, supabase
+2025-11-27T13:55:03.995775726Z 
+2025-11-27T13:55:04.000867069Z Successfully installed APScheduler-3.10.4 Flask-3.0.0 Flask-CORS-4.0.0 Jinja2-3.1.6 MarkupSafe-3.0.3 Werkzeug-3.1.3 annotated-types-0.7.0 anyio-4.11.0 blinker-1.9.0 certifi-2025.11.12 charset-normalizer-3.4.4 click-8.3.1 deprecation-2.1.0 distro-1.9.0 gotrue-2.9.1 gunicorn-21.2.0 h11-0.16.0 h2-4.3.0 hpack-4.1.0 httpcore-1.0.9 httpx-0.25.2 hyperframe-6.1.0 idna-3.11 itsdangerous-2.2.0 jiter-0.12.0 openai-1.54.3 packaging-25.0 postgrest-0.16.11 pyTelegramBotAPI-4.14.0 pydantic-2.12.5 pydantic-core-2.41.5 python-dateutil-2.9.0.post0 python-dotenv-1.0.0 pytz-2025.2 realtime-1.0.6 requests-2.31.0 six-1.17.0 sniffio-1.3.1 storage3-0.7.7 strenum-0.4.15 supabase-2.4.1 supafunc-0.4.7 tqdm-4.67.1 typing-extensions-4.15.0 typing-inspection-0.4.2 tzlocal-5.3.1 urllib3-2.5.0 websockets-12.0
+2025-11-27T13:55:04.098102447Z 
+2025-11-27T13:55:04.098127327Z [notice] A new release of pip is available: 25.1.1 -> 25.3
+2025-11-27T13:55:04.098131907Z [notice] To update, run: pip install --upgrade pip
+2025-11-27T13:55:08.08381895Z ==> Uploading build...
+2025-11-27T13:55:24.277629316Z ==> Uploaded in 13.1s. Compression took 3.0s
+2025-11-27T13:55:24.354737158Z ==> Build successful 🎉
+2025-11-27T13:55:28.89871432Z ==> Deploying...
+2025-11-27T13:55:58.229493776Z ==> Running 'python run.py'
+2025-11-27T13:55:58.42336761Z ============================================================
+2025-11-27T13:55:58.42338923Z 🚀 TELEGRAM BROADCAST BOT - PRIORITY SLOT SYSTEM
+2025-11-27T13:55:58.42339292Z ============================================================
+2025-11-27T13:55:58.42339557Z 
+2025-11-27T13:55:58.42339883Z ❌ CONFIGURATION ERROR
+2025-11-27T13:55:58.42340171Z 
+2025-11-27T13:55:58.423405001Z Required environment variables are missing!
+2025-11-27T13:55:58.423407271Z 
+2025-11-27T13:55:58.423410291Z Please set the following:
+2025-11-27T13:55:58.423413221Z   - TELEGRAM_BOT_TOKEN: Get from @BotFather on Telegram
+2025-11-27T13:55:58.423416271Z   - SUPABASE_URL: Your Supabase project URL
+2025-11-27T13:55:58.423419171Z   - SUPABASE_KEY: Your Supabase anon key
+2025-11-27T13:55:58.423420751Z 
+2025-11-27T13:55:58.423422391Z Optional (but recommended):
+2025-11-27T13:55:58.423424151Z   - OPENAI_API_KEY: For AI-powered features
+2025-11-27T13:55:58.423425841Z   - ADMIN_USER_ID: Your Telegram user ID for admin access
+2025-11-27T13:55:58.423427381Z 
+2025-11-27T13:55:58.423429071Z Copy .env.example to .env and fill in your values.
+2025-11-27T13:55:58.423430601Z 
+2025-11-27T13:56:04.13801973Z ==> Exited with status 1
+2025-11-27T13:56:04.159907748Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-11-27T13:56:08.649781112Z ==> Running 'python run.py'
+2025-11-27T13:56:08.845012201Z ============================================================
+2025-11-27T13:56:08.845031391Z 🚀 TELEGRAM BROADCAST BOT - PRIORITY SLOT SYSTEM
+2025-11-27T13:56:08.845034732Z ============================================================
+2025-11-27T13:56:08.845037182Z 
+2025-11-27T13:56:08.845040262Z ❌ CONFIGURATION ERROR
+2025-11-27T13:56:08.845042872Z 
+2025-11-27T13:56:08.845046402Z Required environment variables are missing!
+2025-11-27T13:56:08.845048862Z 
+2025-11-27T13:56:08.845051962Z Please set the following:
+2025-11-27T13:56:08.845054752Z   - TELEGRAM_BOT_TOKEN: Get from @BotFather on Telegram
+2025-11-27T13:56:08.845057182Z   - SUPABASE_URL: Your Supabase project URL
+2025-11-27T13:56:08.845059562Z   - SUPABASE_KEY: Your Supabase anon key
+2025-11-27T13:56:08.845061692Z 
+2025-11-27T13:56:08.845068023Z Optional (but recommended):
+2025-11-27T13:56:08.845070692Z   - OPENAI_API_KEY: For AI-powered features
+2025-11-27T13:56:08.845073233Z   - ADMIN_USER_ID: Your Telegram user ID for admin access
+2025-11-27T13:56:08.845075553Z 
+2025-11-27T13:56:08.845078223Z Copy .env.example to .env and fill in your values.
+2025-11-27T13:56:08.845080673Z 
+2025-11-27T13:56:24.911560121Z ==> Running 'python run.py'
+2025-11-27T13:56:25.109108529Z ============================================================
+2025-11-27T13:56:25.10913569Z 🚀 TELEGRAM BROADCAST BOT - PRIORITY SLOT SYSTEM
+2025-11-27T13:56:25.10913879Z ============================================================
+2025-11-27T13:56:25.10914101Z 
+2025-11-27T13:56:25.10914401Z ❌ CONFIGURATION ERROR
+2025-11-27T13:56:25.109146061Z 
+2025-11-27T13:56:25.10914897Z Required environment variables are missing!
+2025-11-27T13:56:25.109150981Z 
+2025-11-27T13:56:25.109153651Z Please set the following:
+2025-11-27T13:56:25.109155781Z   - TELEGRAM_BOT_TOKEN: Get from @BotFather on Telegram
+2025-11-27T13:56:25.109157791Z   - SUPABASE_URL: Your Supabase project URL
+2025-11-27T13:56:25.109159801Z   - SUPABASE_KEY: Your Supabase anon key
+2025-11-27T13:56:25.109161661Z 
+2025-11-27T13:56:25.109163651Z Optional (but recommended):
+2025-11-27T13:56:25.109165861Z   - OPENAI_API_KEY: For AI-powered features
+2025-11-27T13:56:25.109167941Z   - ADMIN_USER_ID: Your Telegram user ID for admin access
+2025-11-27T13:56:25.109169771Z 
+2025-11-27T13:56:25.109171731Z Copy .env.example to .env and fill in your values.
+2025-11-27T13:56:25.109173681Z 
