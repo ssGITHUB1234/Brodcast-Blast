@@ -50,6 +50,12 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes
+- 2024-11-27: **Mandatory Ads Before Broadcast Complete** - Full ad requirement system
+  - ✅ Users must watch ad before creating broadcasts
+  - ✅ Admin can toggle ads requirement on/off
+  - ✅ Ad status tracked per user session
+  - ✅ Broadcast creation blocked until ad viewed
+  - ✅ Admin Dashboard "Ad Settings" tab for control
 - 2024-11-27: **Monetag Ads System Complete** - Full ad integration
   - ✅ `/ads` command for users to watch ads
   - ✅ Two ad formats: Rewarded Interstitial & Popup

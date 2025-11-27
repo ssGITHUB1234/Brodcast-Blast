@@ -2,13 +2,16 @@ from telebot import types
 from bot.services.broadcast_service import BroadcastService
 from bot.services.user_service import UserService
 from bot.services.priority_service import PrioritySlotService
+from bot.services.monetag_service import MonetgService
 from config.settings import COUNTRIES, CATEGORIES
 
 broadcast_service = BroadcastService()
 user_service = UserService()
 priority_service = PrioritySlotService()
+monetag_service = MonetgService()
 
 user_broadcast_state = {}
+users_ads_watched = set()  # Track users who watched ads
 
 def handle_create_broadcast(bot, message):
     """Start broadcast creation process"""
@@ -18,6 +21,24 @@ def handle_create_broadcast(bot, message):
     if not user or user.get('blocked'):
         bot.reply_to(message, "⛔ You don't have permission to create broadcasts.")
         return
+    
+    # Check if ads are required and user hasn't watched one
+    if monetag_service.is_enabled and user_id not in users_ads_watched:
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            types.InlineKeyboardButton("🎬 Watch Ad to Continue", callback_data="ad_before_broadcast"),
+            types.InlineKeyboardButton("Skip", callback_data="skip_ad_broadcast")
+        )
+        user_broadcast_state[user_id] = {'step': 'pending_ad', 'action': 'create_broadcast'}
+        bot.send_message(message.chat.id,
+            "🎬 Watch an Ad First!\n\n"
+            "Before creating your broadcast, please watch a quick ad to earn rewards!\n"
+            "After watching, you can create your broadcast.",
+            reply_markup=markup)
+        return
+    
+    # Clear ad watched flag after using it
+    users_ads_watched.discard(user_id)
     
     user_broadcast_state[user_id] = {'step': 'text'}
     bot.reply_to(message, 

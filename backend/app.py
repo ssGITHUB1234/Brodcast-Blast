@@ -31,6 +31,14 @@ pricing_cache = {
     'count_50': 70.0,
 }
 
+# In-memory ad settings
+ad_settings = {
+    'ads_required': True  # Admin can toggle this
+}
+
+# Track users who watched ads (reset periodically)
+users_ads_watched = set()  # Set of user IDs who watched ads in current session
+
 def is_admin(user_id):
     """Check if user is admin"""
     return user_id in ADMIN_USER_IDS
@@ -323,6 +331,53 @@ def get_top_broadcasting_users():
                 })
         
         return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ads/settings', methods=['GET'])
+def get_ads_settings():
+    """Get ad system settings"""
+    return jsonify(ad_settings)
+
+@app.route('/api/ads/settings', methods=['POST'])
+def update_ads_settings():
+    """Update ad system settings (admin only)"""
+    try:
+        data = request.json
+        ads_required = data.get('ads_required')
+        
+        if ads_required is not None:
+            ad_settings['ads_required'] = bool(ads_required)
+            return jsonify({'message': 'Ad settings updated', 'settings': ad_settings})
+        
+        return jsonify({'error': 'Invalid request'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ads/watched/<int:user_id>', methods=['POST'])
+def mark_ad_watched(user_id):
+    """Mark that user watched an ad and can send broadcast"""
+    try:
+        users_ads_watched.add(user_id)
+        return jsonify({'message': 'Ad marked as watched', 'can_broadcast': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ads/check/<int:user_id>', methods=['GET'])
+def check_ad_watched(user_id):
+    """Check if user watched ad and can broadcast"""
+    try:
+        watched = user_id in users_ads_watched
+        return jsonify({'user_id': user_id, 'watched_ad': watched, 'ads_required': ad_settings['ads_required']})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ads/clear/<int:user_id>', methods=['POST'])
+def clear_ad_watched(user_id):
+    """Clear ad watched status (for next broadcast)"""
+    try:
+        users_ads_watched.discard(user_id)
+        return jsonify({'message': 'Ad status cleared'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

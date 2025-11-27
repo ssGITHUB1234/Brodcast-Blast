@@ -354,6 +354,7 @@
             <button class="tab-btn" onclick="switchTab('broadcasts')">📢 Broadcasts</button>
             <button class="tab-btn" onclick="switchTab('analytics')">📊 Analytics</button>
             <button class="tab-btn" onclick="switchTab('chat-analysis')">💬 Chat Analysis</button>
+            <button class="tab-btn" onclick="switchTab('ads')">🎬 Ad Settings</button>
         </div>
         
         <!-- OVERVIEW TAB -->
@@ -519,6 +520,36 @@
             </div>
         </div>
         
+        <!-- AD SETTINGS TAB -->
+        <div id="ads" class="tab-content">
+            <div class="section">
+                <h2>🎬 Ad System Settings</h2>
+                <div id="ad-message"></div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 15px;">Require Ads Before Broadcasting</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Toggle whether users must watch an ad before sending each broadcast.</p>
+                        
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="checkbox" id="ads-required-toggle" style="width: 20px; height: 20px; cursor: pointer;">
+                            <label for="ads-required-toggle" style="cursor: pointer; font-weight: 600;">
+                                Users must watch ads before broadcasting
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveAdSettings()" style="margin-top: 20px;">Save Settings</button>
+                </div>
+                
+                <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                    <p style="color: #155724; margin: 0;">
+                        💡 <strong>Tip:</strong> When enabled, users see an ad before creating each broadcast and must watch it to continue. After watching, they can create their broadcast normally.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
         <div class="footer">
             <p>🤖 Telegram Broadcast Bot Admin Dashboard</p>
             <p style="font-size: 12px; margin-top: 10px;">Last updated: <span id="last-updated">-</span></p>
@@ -555,6 +586,8 @@
                 loadUserAnalytics();
             } else if (tabName === 'chat-analysis') {
                 loadChatAnalysis();
+            } else if (tabName === 'ads') {
+                loadAdSettings();
             } else if (tabName === 'overview') {
                 loadDashboard();
             }
@@ -996,6 +1029,36 @@
                 }
             } catch (error) {
                 showError('Error updating user');
+            }
+        }
+        
+        async function loadAdSettings() {
+            try {
+                const response = await fetch(`${API_BASE}/ads/settings`);
+                const settings = await response.json();
+                document.getElementById('ads-required-toggle').checked = settings.ads_required;
+            } catch (error) {
+                console.error('Error loading ad settings:', error);
+                showError('Failed to load ad settings');
+            }
+        }
+        
+        async function saveAdSettings() {
+            try {
+                const adsRequired = document.getElementById('ads-required-toggle').checked;
+                const response = await fetch(`${API_BASE}/ads/settings`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ads_required: adsRequired})
+                });
+                if (response.ok) {
+                    showSuccess(`✅ Ad settings updated - Ads ${adsRequired ? 'REQUIRED' : 'OPTIONAL'}`);
+                } else {
+                    showError('Failed to save settings');
+                }
+            } catch (error) {
+                console.error('Error saving ad settings:', error);
+                showError('Error saving settings');
             }
         }
         

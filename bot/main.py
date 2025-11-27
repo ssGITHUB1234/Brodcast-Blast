@@ -305,6 +305,8 @@ def ad_callback(call):
             reply_markup=types.InlineKeyboardMarkup().add(
                 types.InlineKeyboardButton("🏠 Menu", callback_data="nav_menu")
             ))
+        # Mark ad as watched
+        broadcast_handlers.users_ads_watched.add(user_id)
     elif ad_type == 'popup':
         bot.answer_callback_query(call.id, "Opening reward popup...", show_alert=False)
         bot.send_message(call.message.chat.id,
@@ -314,6 +316,34 @@ def ad_callback(call):
             reply_markup=types.InlineKeyboardMarkup().add(
                 types.InlineKeyboardButton("🏠 Menu", callback_data="nav_menu")
             ))
+        # Mark ad as watched
+        broadcast_handlers.users_ads_watched.add(user_id)
+    elif ad_type == 'before_broadcast':
+        bot.answer_callback_query(call.id, "Opening ad...", show_alert=False)
+        bot.send_message(call.message.chat.id,
+            "🎬 Watch Ad Before Broadcasting\n\n"
+            "Please watch this ad to continue creating your broadcast.",
+            reply_markup=types.InlineKeyboardMarkup().add(
+                types.InlineKeyboardButton("✅ Ad Watched", callback_data="ad_watched_continue")
+            ))
+    elif ad_type == 'watched_continue':
+        # Mark ad watched and continue broadcast creation
+        broadcast_handlers.users_ads_watched.add(user_id)
+        bot.answer_callback_query(call.id, "Great! Now creating your broadcast...", show_alert=False)
+        broadcast_handlers.user_broadcast_state[user_id] = {'step': 'text'}
+        bot.send_message(call.message.chat.id,
+            "📝 Let's create your broadcast!\n\n"
+            "Step 1: Send me the text message you want to broadcast.")
+
+@bot.callback_query_handler(func=lambda call: call.data == 'skip_ad_broadcast')
+def skip_ad_callback(call):
+    """Skip ad and go to broadcast creation"""
+    user_id = call.from_user.id
+    bot.answer_callback_query(call.id, "Proceeding without ad...", show_alert=False)
+    broadcast_handlers.user_broadcast_state[user_id] = {'step': 'text'}
+    bot.send_message(call.message.chat.id,
+        "📝 Let's create your broadcast!\n\n"
+        "Step 1: Send me the text message you want to broadcast.")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('settings_'))
 def settings_callback(call):
