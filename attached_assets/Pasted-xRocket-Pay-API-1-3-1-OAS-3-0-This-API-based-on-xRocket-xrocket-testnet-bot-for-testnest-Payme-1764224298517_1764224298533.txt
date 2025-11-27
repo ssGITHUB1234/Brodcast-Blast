@@ -1,0 +1,196 @@
+xRocket Pay API
+ 1.3.1 
+OAS 3.0
+This API based on @xRocket (@xrocket_testnet_bot for testnest) Payment System. In order to use it, you need to get API key from bot. Open it and go to Rocket Pay > Create App > API token.
+
+This page is fully interactive. Provide obtained API key to AUTHORIZE button on the right, and you can try all API methods by simply clicking buttons and filling forms here
+
+API token must be specified in header of each request. Header name is Rocket-Pay-Key. Only exception is /version endpoint
+
+If endpoint can send webhooks in response, it is provided on endpoint page on Callbacks bookmark. Now only /tg-invoices endpoint sends webhooks. You can turn them on in bot in app management page
+In order to verify webhooks information integrity, we send you in headers parameter Rocket-Pay-Signature, which is hex representation of HMAC-SHA-256 signature used to sign request body with a secret key that is SHA256 hash of your app token.
+
+This specification fully complies with OpenAPI 3.0 standard, so if you want to see schemas of request bodies or responses, please click "Schema" inside endpoint. All mandatory fields marked with *, all types and limits also described inside schemas
+
+
+Change Log
+version 1.3
+Added support for multi-invoices:
+post /tg-invoices - added request parameter numPayments (default - 1), added response parameter totalActivations, activationsLeft
+webhook /tg-invoices - added parameter payment (telegram user ID and number of items purchased for this payment)
+get /tg-invoices - added response parameter totalActivations, activationsLeft
+get /tg-invoices/{id} - added response parameter numPayments and payments (list, info about payments that were maid for this invoice)
+version 1.3.1
+Added support for multi-invoices with any amount and any payments number (you can put 0 to amount and numPayments)
+get /tg-invoices/{id} - added to response payments object parameters: paid and payment amount
+webhook /tg-invoices - added to payment object parameters: paid and payment amount
+Servers
+
+https://pay.xrocket.tg/ - Prod
+
+Authorize
+version
+
+
+GET
+/version
+Returns current version of API. You may use it as healthcheck
+
+app
+
+
+GET
+/app/info
+Returns information about your application
+
+
+
+POST
+/app/transfer
+Make transfer of funds to another user
+
+
+
+POST
+/app/withdrawal
+Make withdrawal of funds to external wallet
+
+
+
+GET
+/app/withdrawal/status/{withdrawalId}
+Returns withdrawal status
+
+
+
+GET
+/app/withdrawal/fees
+Returns withdrawal fees
+
+
+multi-cheque
+Here you can save multi-cheque. Referral program also could be set. No additional fees taken.
+
+
+
+POST
+/multi-cheque
+Create multi-cheque
+
+
+
+GET
+/multi-cheque
+Get list of multi-cheques
+
+
+
+GET
+/multi-cheque/{id}
+Get multi-cheque info
+
+
+
+PUT
+/multi-cheque/{id}
+Edit multi-cheque
+
+
+
+DELETE
+/multi-cheque/{id}
+Delete multi-cheque
+
+
+tg-invoices
+Here you can save one-time invoices that can be payed via xRocket bot and get link for these invoices.
+This endpoint sends updates to your webhook if it is enabled. You can find webhook model on Callbacks bookmark below
+If you want to save invoices that can be payed only via attached address (no telegram access required), we will support it soon too
+
+
+
+POST
+/tg-invoices
+Create invoice
+
+
+
+GET
+/tg-invoices
+Get list of invoices
+
+
+
+GET
+/tg-invoices/{id}
+Get invoice info
+
+
+
+DELETE
+/tg-invoices/{id}
+Delete invoice
+
+
+withdrawal-link
+Here you can generate deeplinks for withdrawals for simplified integration. User will confirm withdrawal after following link.
+Perfect for services that already accept crypto payments and need to offer easy top-up via xRocket.
+
+
+
+GET
+/withdrawal-link
+Get withdrawal link
+
+currencies
+
+
+GET
+/currencies/available
+Returns available currencies
+
+health
+
+
+GET
+/health
+
+
+Schemas
+Version
+PropertyError
+ApiBadRequestError
+ApiError
+PaginationDto
+ShortChequeDto
+TgResource
+Cheque
+ResponseDto
+CreateChequeDto
+UpdateChequeDto
+DeleteResponseDto
+WithdrawFeeNetworkFeeDto
+WithdrawalCoinFeesResponseDto
+WithdrawalCoinResponseDto
+WithdrawalDto
+TransferDto
+ResponseMultiDto
+AppBalance
+App
+AppDto
+CreateTransferDto
+AppCreateWithdrawalDto
+FullInvoiceResponseDto
+PayInvoiceStatDto
+FullInvoiceDto
+PayInvoiceDto
+InvoiceDto
+WebhookDto
+Invoice
+CreateInvoiceDto
+WithdrawFeeNetworkDto
+WithdrawFeeDto
+CoinDto
+AvailableCoinsData
+AvailableCoins
+WithdrawalLinkDto
