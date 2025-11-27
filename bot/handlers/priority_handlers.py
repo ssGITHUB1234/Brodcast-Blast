@@ -18,11 +18,28 @@ xrocket_service = XRocketPayService()
 def handle_priority_slots(bot, message):
     """Show priority slot options"""
     user_id = message.from_user.id
-    user = user_service.get_user(user_id)
     
-    if not user or user.get('blocked'):
+    try:
+        user = user_service.get_user(user_id)
+    except:
+        user = None
+    
+    # Check if user is explicitly blocked
+    if user and user.get('blocked'):
         bot.reply_to(message, "⛔ You don't have permission to use this feature.")
         return
+    
+    # Create user if doesn't exist
+    if not user:
+        try:
+            user_service.create_user(
+                user_id,
+                message.from_user.username,
+                message.from_user.first_name,
+                message.from_user.last_name
+            )
+        except:
+            pass
     
     active_slot = priority_service.get_active_priority_slot()
     
