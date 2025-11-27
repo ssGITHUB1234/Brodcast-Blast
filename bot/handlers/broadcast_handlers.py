@@ -12,7 +12,6 @@ priority_service = PrioritySlotService()
 monetag_service = MonetgService()
 
 user_broadcast_state = {}
-users_ads_watched = set()  # Track users who watched ads
 
 def handle_create_broadcast(bot, message):
     """Start broadcast creation process - show ad if required"""
@@ -24,19 +23,27 @@ def handle_create_broadcast(bot, message):
         return
     
     # Check if ads are required and user hasn't watched one
-    # Always check - ads_required setting is managed by admin dashboard
     ads_required = True  # Default to requiring ads
+    user_watched_ad = False
+    
     try:
-        # Get ads setting from backend
         import requests
+        # Check ads settings
         settings_response = requests.get('http://localhost:5000/api/ads/settings')
         if settings_response.ok:
             settings = settings_response.json()
             ads_required = settings.get('ads_required', True)
+        
+        # Check if user already watched ad in this session
+        watched_response = requests.get(f'http://localhost:5000/api/ads/check-watched/{user_id}')
+        if watched_response.ok:
+            watched_data = watched_response.json()
+            user_watched_ad = watched_data.get('watched', False)
     except:
         pass  # Default to requiring ads
     
-    if ads_required and user_id not in users_ads_watched:
+    # Show ad if required and user hasn't watched
+    if ads_required and not user_watched_ad:
         try:
             import requests
             response = requests.get('http://localhost:5000/api/ads/links')
@@ -53,21 +60,20 @@ def handle_create_broadcast(bot, message):
                     types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
                 )
                 bot.send_message(message.chat.id,
-                    "🎬 Watch Ad with Timer\n\n"
-                    "Click to watch - ad auto-completes when timer ends!\n"
-                    "⏱️ 30 seconds total",
+                    "🎬 Watch Ad to Unlock Broadcast\n\n"
+                    "Click to watch - timer auto-completes!\n"
+                    "⏱️ 30 seconds total\n\n"
+                    "After watching, return here and click /create again.",
                     reply_markup=markup)
                 return
             else:
                 # No links, allow broadcast anyway
                 start_broadcast_creation(bot, message, user_id)
         except Exception as e:
+            print(f"Error checking ads: {e}")
             # Error fetching links, allow broadcast
             start_broadcast_creation(bot, message, user_id)
         return
-    
-    # Clear ad watched flag after using it
-    users_ads_watched.discard(user_id)
     
     start_broadcast_creation(bot, message, user_id)
 

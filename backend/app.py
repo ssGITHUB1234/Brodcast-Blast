@@ -36,8 +36,8 @@ ad_settings = {
     'ads_required': True  # Admin can toggle this
 }
 
-# Track users who watched ads (reset periodically)
-users_ads_watched = set()  # Set of user IDs who watched ads in current session
+# Track users who watched ads (this session)
+users_watched_ads_current_session = {}  # {user_id: True} for users who watched ads this session
 
 # Track ad views statistics
 ad_stats = {
@@ -375,7 +375,7 @@ def update_ads_settings():
 def mark_ad_watched(user_id):
     """Mark that user watched an ad and can send broadcast"""
     try:
-        users_ads_watched.add(user_id)
+        users_watched_ads_current_session[user_id] = True
         ad_stats['views_completed'] += 1  # Track completed view
         return jsonify({'message': 'Ad marked as watched', 'can_broadcast': True})
     except Exception as e:
@@ -387,6 +387,25 @@ def mark_ad_started(user_id):
     try:
         ad_stats['views_uncompleted'] += 1  # Track started view
         return jsonify({'message': 'Ad view tracked'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ads/check-watched/<int:user_id>', methods=['GET'])
+def check_user_watched_ad(user_id):
+    """Check if user watched an ad in current session"""
+    try:
+        watched = user_id in users_watched_ads_current_session
+        return jsonify({'user_id': user_id, 'watched': watched})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ads/clear-watched/<int:user_id>', methods=['POST'])
+def clear_user_watched_ad(user_id):
+    """Clear ad watched status for user (for next broadcast)"""
+    try:
+        if user_id in users_watched_ads_current_session:
+            del users_watched_ads_current_session[user_id]
+        return jsonify({'message': 'Ad watched status cleared'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
