@@ -54,22 +54,27 @@ def show_broadcast_analytics(bot, chat_id, user_id, broadcasts, index, message_i
     if text and len(text) > 100:
         text = text[:100] + "..."
     
-    message_text = f"""📊 Broadcast Analytics ({index + 1}/{total})
+    target_info = "All Users"
+    if bc.get('target_country'):
+        target_info = f"Country: {bc['target_country']}"
+    elif bc.get('target_category'):
+        target_info = f"Category: {bc['target_category']}"
+    
+    message_text = f"""📊 Analytics #{bc['broadcast_id']} ({index + 1}/{total})
+{'─' * 40}
+{status_emoji} {bc['status'].upper()}
 
-{status_emoji} Status: {bc['status'].upper()}
+📝 Message:
+{text}
 
-📄 Message: {text}
+📈 Performance:
+   Views: {bc.get('views', 0)} 👁️
+   Sent: {bc.get('sent_count', 0)} 📤
+   Engagement: {engagement_rate:.1f}% ⚡
 
-📈 Statistics:
-  • Views: {bc.get('views', 0)}
-  • Recipients: {bc.get('sent_count', 0)}
-  • Engagement: {engagement_rate:.1f}%
+🎯 Audience: {target_info}
 
-🎯 Target:
-  • Country: {bc.get('target_country', 'All')}
-  • Category: {bc.get('target_category', 'All')}
-
-📅 Created: {str(bc.get('created_at', 'N/A'))[:10]}
+📅 Date: {str(bc.get('created_at', 'N/A'))[:10]}
 """
     
     # Navigation buttons

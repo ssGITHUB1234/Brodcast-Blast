@@ -12,6 +12,7 @@ priority_service = PrioritySlotService()
 def handle_menu(bot, message):
     """Show main menu"""
     user_id = message.from_user.id
+    message_id = getattr(message, 'message_id', None)
     
     try:
         user = user_service.get_user(user_id)
@@ -60,12 +61,16 @@ def handle_menu(bot, message):
            f"Interests: {categories}\n\n" \
            f"Select an option:"
     
-    msg = bot.send_message(message.chat.id, text, reply_markup=markup)
-    set_user_state(user_id, msg.message_id, 'menu')
+    result = edit_or_send(bot, message.chat.id, text, message_id, markup)
+    if result:
+        set_user_state(user_id, result.message_id, 'menu')
+    else:
+        set_user_state(user_id, message_id, 'menu')
 
 def handle_my_broadcasts(bot, message):
     """Show user's broadcasts"""
     user_id = message.from_user.id
+    message_id = getattr(message, 'message_id', None)
     
     try:
         broadcasts = broadcast_service.get_user_broadcasts(user_id, limit=10)
@@ -75,8 +80,12 @@ def handle_my_broadcasts(bot, message):
     if not broadcasts:
         markup = types.InlineKeyboardMarkup()
         add_navigation_buttons(markup, go_back=False, go_menu=True)
-        msg = bot.send_message(message.chat.id, "You haven't created any broadcasts yet.\n\nUse /create to send your first broadcast!", reply_markup=markup)
-        set_user_state(user_id, msg.message_id, 'mybroadcasts')
+        text = "You haven't created any broadcasts yet.\n\nUse /create to send your first broadcast!"
+        result = edit_or_send(bot, message.chat.id, text, message_id, markup)
+        if result:
+            set_user_state(user_id, result.message_id, 'mybroadcasts')
+        else:
+            set_user_state(user_id, message_id, 'mybroadcasts')
         return
     
     response = "📢 Your Recent Broadcasts:\n\n"
@@ -89,12 +98,16 @@ def handle_my_broadcasts(bot, message):
     
     markup = types.InlineKeyboardMarkup()
     add_navigation_buttons(markup, go_back=False, go_menu=True)
-    msg = bot.send_message(message.chat.id, response, reply_markup=markup)
-    set_user_state(user_id, msg.message_id, 'mybroadcasts')
+    result = edit_or_send(bot, message.chat.id, response, message_id, markup)
+    if result:
+        set_user_state(user_id, result.message_id, 'mybroadcasts')
+    else:
+        set_user_state(user_id, message_id, 'mybroadcasts')
 
 def handle_stats(bot, message):
     """Show user statistics"""
     user_id = message.from_user.id
+    message_id = getattr(message, 'message_id', None)
     
     try:
         broadcasts = broadcast_service.get_user_broadcasts(user_id, limit=100)
@@ -121,12 +134,16 @@ def handle_stats(bot, message):
     
     markup = types.InlineKeyboardMarkup()
     add_navigation_buttons(markup, go_back=False, go_menu=True)
-    msg = bot.send_message(message.chat.id, text, reply_markup=markup)
-    set_user_state(user_id, msg.message_id, 'stats')
+    result = edit_or_send(bot, message.chat.id, text, message_id, markup)
+    if result:
+        set_user_state(user_id, result.message_id, 'stats')
+    else:
+        set_user_state(user_id, message_id, 'stats')
 
 def handle_settings(bot, message):
     """Show settings"""
     user_id = message.from_user.id
+    message_id = getattr(message, 'message_id', None)
     
     try:
         user = user_service.get_user(user_id)
@@ -151,12 +168,16 @@ def handle_settings(bot, message):
            f"📂 Categories: {cats}\n\n" \
            f"Select what you want to change:"
     
-    msg = bot.send_message(message.chat.id, text, reply_markup=markup)
-    set_user_state(user_id, msg.message_id, 'settings')
+    result = edit_or_send(bot, message.chat.id, text, message_id, markup)
+    if result:
+        set_user_state(user_id, result.message_id, 'settings')
+    else:
+        set_user_state(user_id, message_id, 'settings')
 
 def handle_help(bot, message):
     """Show help information"""
     user_id = message.from_user.id
+    message_id = getattr(message, 'message_id', None)
     help_text = """❓ Help & Information
 
 📖 What is this bot?
@@ -188,5 +209,8 @@ Contact our admin team for support!"""
     
     markup = types.InlineKeyboardMarkup()
     add_navigation_buttons(markup, go_back=False, go_menu=True)
-    msg = bot.send_message(message.chat.id, help_text, reply_markup=markup)
-    set_user_state(user_id, msg.message_id, 'help')
+    result = edit_or_send(bot, message.chat.id, help_text, message_id, markup)
+    if result:
+        set_user_state(user_id, result.message_id, 'help')
+    else:
+        set_user_state(user_id, message_id, 'help')
