@@ -129,6 +129,13 @@ def analytics_callback(call):
         analytics_handlers.handle_analytics_navigation(bot, call)
     elif call.data == 'analytics_close':
         analytics_handlers.handle_analytics_close(bot, call)
+    else:
+        bot.answer_callback_query(call.id)
+
+@bot.callback_query_handler(func=lambda call: call.data == 'noop')
+def noop_callback(call):
+    """No-op callback for disabled buttons"""
+    bot.answer_callback_query(call.id)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('pay_'))
 def payment_callback(call):

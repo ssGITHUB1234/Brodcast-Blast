@@ -32,7 +32,7 @@ def handle_broadcast_analytics(bot, message):
 
 def show_broadcast_analytics(bot, chat_id, user_id, broadcasts, index):
     """Show single broadcast analytics with navigation"""
-    if index < 0 or index >= len(broadcasts):
+    if not broadcasts or index < 0 or index >= len(broadcasts):
         return
     
     bc = broadcasts[index]
@@ -47,9 +47,9 @@ def show_broadcast_analytics(bot, chat_id, user_id, broadcasts, index):
     status_emoji = "✅" if bc['status'] == 'sent' else "⏳" if bc['status'] == 'queued' else "📝"
     
     # Message content
-    text = bc.get('text', '(No text)')[:100]
-    if len(bc.get('text', '')) > 100:
-        text += "..."
+    text = bc.get('text', '(No text)')
+    if text and len(text) > 100:
+        text = text[:100] + "..."
     
     message_text = f"""📊 Broadcast Analytics ({index + 1}/{total})
 
@@ -66,61 +66,68 @@ def show_broadcast_analytics(bot, chat_id, user_id, broadcasts, index):
   • Country: {bc.get('target_country', 'All')}
   • Category: {bc.get('target_category', 'All')}
 
-📅 Created: {bc.get('created_at', 'N/A')[:10]}
+📅 Created: {str(bc.get('created_at', 'N/A'))[:10]}
 """
     
     # Navigation buttons
     markup = types.InlineKeyboardMarkup(row_width=3)
     
     # Previous, info, next buttons
-    prev_btn = types.InlineKeyboardButton("⬅️ Prev", callback_data=f"analytics_prev_{user_id}_{index}") if index > 0 else types.InlineKeyboardButton("⬅️", callback_data="dummy")
-    next_btn = types.InlineKeyboardButton("Next ➡️", callback_data=f"analytics_next_{user_id}_{index}") if index < total - 1 else types.InlineKeyboardButton("➡️", callback_data="dummy")
-    info_btn = types.InlineKeyboardButton(f"📋 {index + 1}/{total}", callback_data="dummy")
+    prev_btn = types.InlineKeyboardButton("⬅️ Prev", callback_data=f"analytics_prev_{user_id}_{index}") if index > 0 else types.InlineKeyboardButton("⬅️", callback_data="noop")
+    next_btn = types.InlineKeyboardButton("Next ➡️", callback_data=f"analytics_next_{user_id}_{index}") if index < total - 1 else types.InlineKeyboardButton("➡️", callback_data="noop")
+    info_btn = types.InlineKeyboardButton(f"📋 {index + 1}/{total}", callback_data="noop")
     
     markup.add(prev_btn, info_btn, next_btn)
     markup.add(types.InlineKeyboardButton("Close", callback_data="analytics_close"))
     
     try:
         bot.send_message(chat_id, message_text, reply_markup=markup)
-    except:
+    except Exception as e:
+        print(f"Error sending analytics message: {e}")
         bot.send_message(chat_id, message_text)
 
 def handle_analytics_navigation(bot, call):
     """Handle analytics navigation buttons"""
-    data = call.data.split('_')
-    action = data[1]
-    
     try:
+        data = call.data.split('_')
+        action = data[1]
         user_id = int(data[2])
         current_index = int(data[3])
         
         broadcasts = broadcast_service.get_user_broadcasts(user_id, limit=10)
+        
+        if not broadcasts:
+            bot.answer_callback_query(call.id, "No broadcasts found")
+            return
         
         if action == 'prev':
             new_index = max(0, current_index - 1)
         elif action == 'next':
             new_index = min(len(broadcasts) - 1, current_index + 1)
         else:
+            bot.answer_callback_query(call.id)
             return
         
         user_analytics_index[user_id] = new_index
         
-        # Delete old message
+        # Delete old message and show new one
         try:
             bot.delete_message(call.message.chat.id, call.message.message_id)
         except:
             pass
         
-        # Show new analytics
         show_broadcast_analytics(bot, call.message.chat.id, user_id, broadcasts, new_index)
+        bot.answer_callback_query(call.id)
         
     except Exception as e:
         print(f"Error handling analytics navigation: {e}")
+        bot.answer_callback_query(call.id, f"Error: {str(e)}")
 
 def handle_analytics_close(bot, call):
     """Close analytics view"""
     try:
         bot.delete_message(call.message.chat.id, call.message.message_id)
-        bot.send_message(call.message.chat.id, "Analytics closed. Use /stats to view again.")
-    except:
-        pass
+        bot.send_message(call.message.chat.id, "Analytics closed. Use /mystats to view again.")
+    except Exception as e:
+        print(f"Error closing analytics: {e}")
+        bot.answer_callback_query(call.id, "Closed")
