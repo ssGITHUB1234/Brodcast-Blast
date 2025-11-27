@@ -57,17 +57,16 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
   - ✅ Full link validation before adding
   - ✅ UI in dashboard "Ad Settings" tab - "Monetag Ad Links" section
   - ✅ Works with any Monetag link (Dreamy, Perfect, Lovely, etc.)
-- 2024-11-27: **Embedded Ad Viewer with Auto-Timer Completion - LIVE** 🎬⏱️✅
-  - ✅ User: `/create` → Shows "Watch Ad with Timer" button
+- 2024-11-27: **Embedded Ad Viewer with Auto-Timer Completion - FIXED & LIVE** 🎬⏱️✅
+  - ✅ **FIX**: Ads now check `ads_required` backend flag (not SDK key)
+  - ✅ User: `/create` → Shows "Watch Ad Now" button
   - ✅ User: Clicks button → Opens embedded ad viewer
   - ✅ Ads load IN-APP with 30-second countdown timer
   - ✅ Timer shows at top (like native Monetag ads: 00:30 → 00:00)
-  - ✅ When timer reaches 0 → Ad auto-completes (NO button needed)
-  - ✅ Page auto-closes after completion → User returns to Telegram
+  - ✅ When timer reaches 0 → Shows "✅ Ad Complete - Return to Telegram" button
+  - ✅ User clicks button → Returns to Telegram
+  - ✅ Bot auto-marks user as watched and starts broadcast creation
   - ✅ NO SKIP option - Ads mandatory before each broadcast
-  - ✅ Backend calls `/api/ads/watched/<user_id>` when done
-  - ✅ Flask route: `/ad-viewer` with embedded timer + iframe
-  - ✅ Workflow: Simple 3-step (click link → watch → auto-close)
 - 2024-11-27: **Monetag Ads System Complete** - Full ad integration
   - ✅ `/ads` command for users to watch ads
   - ✅ Two ad formats: Rewarded Interstitial & Popup

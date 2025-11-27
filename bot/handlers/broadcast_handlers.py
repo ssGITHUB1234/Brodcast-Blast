@@ -24,7 +24,19 @@ def handle_create_broadcast(bot, message):
         return
     
     # Check if ads are required and user hasn't watched one
-    if monetag_service.is_enabled and user_id not in users_ads_watched:
+    # Always check - ads_required setting is managed by admin dashboard
+    ads_required = True  # Default to requiring ads
+    try:
+        # Get ads setting from backend
+        import requests
+        settings_response = requests.get('http://localhost:5000/api/ads/settings')
+        if settings_response.ok:
+            settings = settings_response.json()
+            ads_required = settings.get('ads_required', True)
+    except:
+        pass  # Default to requiring ads
+    
+    if ads_required and user_id not in users_ads_watched:
         try:
             import requests
             response = requests.get('http://localhost:5000/api/ads/links')

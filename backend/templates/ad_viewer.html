@@ -89,12 +89,15 @@
     <div class="ad-container">
         <div class="timer" id="timer">00:30</div>
         <iframe id="adFrame" class="ad-frame"></iframe>
-        <div class="message">Watch the ad to continue</div>
+        <div class="message" id="message">Watch the ad to continue</div>
+        <button id="continueBtn" style="display: none; margin-top: 20px; padding: 12px 30px; background: #4CAF50; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">
+            ✅ Ad Complete - Return to Telegram
+        </button>
     </div>
     
     <div class="completed" id="completed">
         <h2>✅ Ad Watched!</h2>
-        <p>Broadcast creation starting...</p>
+        <p>Click button above to return to Telegram</p>
     </div>
 
     <script>
@@ -126,9 +129,10 @@
         }, 1000);
         
         function onAdComplete() {
-            // Show completed message
-            completedEl.classList.add('show');
-            adFrame.style.opacity = '0.5';
+            // Show completed message and continue button
+            adFrame.style.opacity = '0.3';
+            document.getElementById('message').style.display = 'none';
+            document.getElementById('continueBtn').style.display = 'block';
             
             // Notify backend that ad was watched
             if (USER_ID) {
@@ -137,10 +141,17 @@
                     .catch(e => console.error('Ad completion error:', e));
             }
             
-            // Close after 2 seconds (user will return to Telegram)
-            setTimeout(() => {
-                window.close();
-            }, 2000);
+            // Add click listener to button
+            document.getElementById('continueBtn').addEventListener('click', () => {
+                // Redirect back to Telegram (window.close won't work in iframe)
+                // User's browser will handle returning to Telegram context
+                if (window.opener) {
+                    window.opener.postMessage({ type: 'ad_complete' }, '*');
+                    window.close();
+                } else {
+                    window.history.back();
+                }
+            });
         }
     </script>
 </body>
