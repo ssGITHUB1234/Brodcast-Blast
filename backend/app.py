@@ -36,14 +36,11 @@ ad_settings = {
     'ads_required': True  # Admin can toggle this
 }
 
-# Track users who watched ads (this session)
-users_watched_ads_current_session = {}  # {user_id: True} for users who watched ads this session
-
-# Track ad views statistics
-ad_stats = {
-    'views_completed': 0,  # Users who completed ad watching
-    'views_uncompleted': 0  # Users who started but didn't complete
-}
+# Import shared ads state
+from config.ads_state import (
+    users_watched_ads, ad_stats, mark_ad_watched, mark_ad_started,
+    user_watched_ad as check_user_watched_ad, clear_watched, get_stats as get_ad_stats_data
+)
 
 # Monetag ad links management (direct links)
 monetag_links = [
@@ -372,53 +369,48 @@ def update_ads_settings():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ads/watched/<int:user_id>', methods=['POST'])
-def mark_ad_watched(user_id):
+def mark_ad_watched_endpoint(user_id):
     """Mark that user watched an ad and can send broadcast"""
     try:
-        users_watched_ads_current_session[user_id] = True
-        ad_stats['views_completed'] += 1  # Track completed view
+        mark_ad_watched(user_id)
         return jsonify({'message': 'Ad marked as watched', 'can_broadcast': True})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ads/started/<int:user_id>', methods=['POST'])
-def mark_ad_started(user_id):
+def mark_ad_started_endpoint(user_id):
     """Track when user starts watching an ad"""
     try:
-        ad_stats['views_uncompleted'] += 1  # Track started view
+        mark_ad_started(user_id)
         return jsonify({'message': 'Ad view tracked'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ads/check-watched/<int:user_id>', methods=['GET'])
-def check_user_watched_ad(user_id):
+def check_ad_watched_endpoint(user_id):
     """Check if user watched an ad in current session"""
     try:
-        watched = user_id in users_watched_ads_current_session
+        watched = check_user_watched_ad(user_id)
         return jsonify({'user_id': user_id, 'watched': watched})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ads/clear-watched/<int:user_id>', methods=['POST'])
-def clear_user_watched_ad(user_id):
+def clear_ad_watched_endpoint(user_id):
     """Clear ad watched status for user (for next broadcast)"""
     try:
-        if user_id in users_watched_ads_current_session:
-            del users_watched_ads_current_session[user_id]
+        clear_watched(user_id)
         return jsonify({'message': 'Ad watched status cleared'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ads/stats', methods=['GET'])
-def get_ad_stats():
+def get_ads_stats_endpoint():
     """Get ad view statistics"""
     try:
-        return jsonify({
-            'views_completed': ad_stats['views_completed'],
-            'views_uncompleted': ad_stats['views_uncompleted'],
-            'total_views': ad_stats['views_completed'] + ad_stats['views_uncompleted'],
-            'completion_rate': round((ad_stats['views_completed'] / max(1, ad_stats['views_uncompleted'] + ad_stats['views_completed'])) * 100, 1)
-        })
+        stats = get_ad_stats_data()
+        stats['completion_rate'] = round((stats['views_completed'] / max(1, stats['views_uncompleted'] + stats['views_completed'])) * 100, 1)
+        return jsonify(stats)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

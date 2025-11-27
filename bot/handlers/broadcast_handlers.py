@@ -4,6 +4,7 @@ from bot.services.user_service import UserService
 from bot.services.priority_service import PrioritySlotService
 from bot.services.monetag_service import MonetgService
 from config.settings import COUNTRIES, CATEGORIES
+from config import ads_state
 import os
 
 broadcast_service = BroadcastService()
@@ -22,37 +23,17 @@ def handle_create_broadcast(bot, message):
         bot.reply_to(message, "⛔ You don't have permission to create broadcasts.")
         return
     
-    # Check if ads are required and user hasn't watched one
-    ads_required = True  # Default to requiring ads
-    user_watched_ad = False
+    # Check if user already watched ad in this session
+    already_watched = ads_state.user_watched_ad(user_id)
     
-    try:
-        import requests
-        # Check ads settings
-        settings_response = requests.get('http://localhost:5000/api/ads/settings')
-        if settings_response.ok:
-            settings = settings_response.json()
-            ads_required = settings.get('ads_required', True)
-        
-        # Check if user already watched ad in this session
-        watched_response = requests.get(f'http://localhost:5000/api/ads/check-watched/{user_id}')
-        if watched_response.ok:
-            watched_data = watched_response.json()
-            user_watched_ad = watched_data.get('watched', False)
-    except:
-        pass  # Default to requiring ads
-    
-    # Show ad if required and user hasn't watched
-    if ads_required and not user_watched_ad:
+    # Always require ads
+    if not already_watched:
         try:
-            import requests
-            response = requests.get('http://localhost:5000/api/ads/links')
-            links = response.json() if response.ok else []
-            
-            if links and len(links) > 0:
-                # Open embedded ad viewer with timer
-                link = links[0].get('link', '')
-                domain = os.environ.get('REPLIT_DOMAIN', 'localhost:5000')
+            domain = os.environ.get('REPLIT_DOMAIN', 'localhost:5000')
+            # Get first ad link
+            from backend.app import monetag_links
+            if monetag_links and len(monetag_links) > 0:
+                link = monetag_links[0].get('link', '')
                 ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={link}"
                 
                 markup = types.InlineKeyboardMarkup()
@@ -66,15 +47,11 @@ def handle_create_broadcast(bot, message):
                     "After watching, return here and click /create again.",
                     reply_markup=markup)
                 return
-            else:
-                # No links, allow broadcast anyway
-                start_broadcast_creation(bot, message, user_id)
         except Exception as e:
-            print(f"Error checking ads: {e}")
-            # Error fetching links, allow broadcast
-            start_broadcast_creation(bot, message, user_id)
-        return
+            print(f"[ERROR] Error showing ad: {e}")
+            # Allow broadcast if ad system fails
     
+    # User watched ad or system failed - allow broadcast
     start_broadcast_creation(bot, message, user_id)
 
 def start_broadcast_creation(bot, message, user_id):
