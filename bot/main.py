@@ -269,7 +269,7 @@ def send_broadcast(broadcast):
                 print(f"Error sending to user {user['user_id']}: {e}")
         
         broadcast_service.update_broadcast_status(broadcast['broadcast_id'], 'sent')
-        broadcast_service.increment_broadcast_stats(broadcast['broadcast_id'], sent_count=sent_count)
+        broadcast_service.increment_broadcast_stats(broadcast['broadcast_id'], sent_count=sent_count, views=sent_count)
         
         print(f"✓ Broadcast #{broadcast['broadcast_id']} sent to {sent_count} users")
     
