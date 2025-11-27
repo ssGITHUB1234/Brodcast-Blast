@@ -134,6 +134,12 @@
             
             statusEl.textContent = '⏳ Ad playing... watching time...';
             
+            // Track that user started watching ad
+            if (USER_ID) {
+                fetch(`/api/ads/started/${USER_ID}`, { method: 'POST' })
+                    .catch(e => console.error('Error tracking ad start:', e));
+            }
+            
             // Start 30-second timer
             startTimer();
             

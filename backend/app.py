@@ -39,6 +39,12 @@ ad_settings = {
 # Track users who watched ads (reset periodically)
 users_ads_watched = set()  # Set of user IDs who watched ads in current session
 
+# Track ad views statistics
+ad_stats = {
+    'views_completed': 0,  # Users who completed ad watching
+    'views_uncompleted': 0  # Users who started but didn't complete
+}
+
 # Monetag ad links management (direct links)
 monetag_links = [
     {'id': 1, 'name': 'Default Link', 'link': 'https://linkmoneta.g.com/?link=10243712', 'active': True}
@@ -370,7 +376,30 @@ def mark_ad_watched(user_id):
     """Mark that user watched an ad and can send broadcast"""
     try:
         users_ads_watched.add(user_id)
+        ad_stats['views_completed'] += 1  # Track completed view
         return jsonify({'message': 'Ad marked as watched', 'can_broadcast': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ads/started/<int:user_id>', methods=['POST'])
+def mark_ad_started(user_id):
+    """Track when user starts watching an ad"""
+    try:
+        ad_stats['views_uncompleted'] += 1  # Track started view
+        return jsonify({'message': 'Ad view tracked'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ads/stats', methods=['GET'])
+def get_ad_stats():
+    """Get ad view statistics"""
+    try:
+        return jsonify({
+            'views_completed': ad_stats['views_completed'],
+            'views_uncompleted': ad_stats['views_uncompleted'],
+            'total_views': ad_stats['views_completed'] + ad_stats['views_uncompleted'],
+            'completion_rate': round((ad_stats['views_completed'] / max(1, ad_stats['views_uncompleted'] + ad_stats['views_completed'])) * 100, 1)
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

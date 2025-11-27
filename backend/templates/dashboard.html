@@ -384,6 +384,14 @@
                     <div class="stat-label">Total Revenue</div>
                     <div class="stat-value" id="stat-revenue">-</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-label">🎬 Ads Completed</div>
+                    <div class="stat-value" id="stat-ads-completed">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">📺 Ads Uncompleted</div>
+                    <div class="stat-value" id="stat-ads-uncompleted">-</div>
+                </div>
             </div>
             
             <div class="section">
@@ -649,6 +657,16 @@
                 document.getElementById('stat-views').textContent = (data.total_views || 0).toLocaleString();
                 document.getElementById('stat-active-slots').textContent = data.active_priority_slots || 0;
                 document.getElementById('stat-revenue').textContent = '$' + (data.total_revenue || 0).toFixed(2);
+                
+                // Load ad stats
+                try {
+                    const adStatsResponse = await fetch(`${API_BASE}/ads/stats`);
+                    const adStats = await adStatsResponse.json();
+                    document.getElementById('stat-ads-completed').textContent = adStats.views_completed || 0;
+                    document.getElementById('stat-ads-uncompleted').textContent = adStats.views_uncompleted || 0;
+                } catch (e) {
+                    console.log('Ad stats not available yet');
+                }
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
