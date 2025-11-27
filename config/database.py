@@ -6,7 +6,15 @@ supabase = None
 def get_supabase_client():
     global supabase
     if supabase is None:
-        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        if not SUPABASE_URL or not SUPABASE_KEY:
+            raise Exception("Supabase credentials not configured")
+        try:
+            supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        except Exception as e:
+            print(f"Error connecting to Supabase: {e}")
+            print(f"Please verify your SUPABASE_URL and SUPABASE_KEY are correct")
+            print(f"Make sure you're using the 'anon/public' key, not the service_role key")
+            raise
     return supabase
 
 SCHEMA_SQL = """

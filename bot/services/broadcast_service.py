@@ -3,7 +3,13 @@ from config.database import get_supabase_client
 
 class BroadcastService:
     def __init__(self):
-        self.db = get_supabase_client()
+        self._db = None
+    
+    @property
+    def db(self):
+        if self._db is None:
+            self._db = get_supabase_client()
+        return self._db
     
     def create_broadcast(self, user_id, text, media_url=None, media_type=None, 
                         target_country=None, target_category=None):

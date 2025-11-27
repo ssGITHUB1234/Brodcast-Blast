@@ -2,7 +2,13 @@ from config.database import get_supabase_client
 
 class UserService:
     def __init__(self):
-        self.db = get_supabase_client()
+        self._db = None
+    
+    @property
+    def db(self):
+        if self._db is None:
+            self._db = get_supabase_client()
+        return self._db
     
     def get_user(self, user_id):
         """Get user by ID"""

@@ -3,7 +3,13 @@ from config.database import get_supabase_client
 
 class PrioritySlotService:
     def __init__(self):
-        self.db = get_supabase_client()
+        self._db = None
+    
+    @property
+    def db(self):
+        if self._db is None:
+            self._db = get_supabase_client()
+        return self._db
     
     def create_priority_slot(self, user_id, slot_type, price, duration_hours=None, message_count=None, payment_gateway=None):
         """Create a new priority slot"""
