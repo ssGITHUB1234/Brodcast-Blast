@@ -57,14 +57,14 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
   - ✅ Full link validation before adding
   - ✅ UI in dashboard "Ad Settings" tab - "Monetag Ad Links" section
   - ✅ Works with any Monetag link (Dreamy, Perfect, Lovely, etc.)
-- 2024-11-27: **Mandatory Ads Before Broadcast - COMPLETE & WORKING** 🎬
-  - ✅ Users MUST watch ads before creating broadcasts (NO SKIP option)
-  - ✅ Bot fetches & displays actual Monetag ad links
-  - ✅ Users click link to watch real ads on Monetag
-  - ✅ Admin can toggle ads requirement on/off
-  - ✅ Ad status tracked per user session
-  - ✅ Broadcast creation blocked until ad viewed
-  - ✅ Admin Dashboard "Ad Settings" tab for control
+- 2024-11-27: **Mandatory Ads Before Broadcast - SIMPLE & WORKING** 🎬
+  - ✅ User: `/create` → Sees ad link
+  - ✅ User: Clicks link → Watches Monetag ad
+  - ✅ User: Returns → Clicks "Done - Create Broadcast"
+  - ✅ Bot: Starts broadcast creation
+  - ✅ NO SKIP option - Ads are mandatory
+  - ✅ Minimal steps - Direct ad link + one button
+  - ✅ Bot fetches actual Monetag links from dashboard
 - 2024-11-27: **Monetag Ads System Complete** - Full ad integration
   - ✅ `/ads` command for users to watch ads
   - ✅ Two ad formats: Rewarded Interstitial & Popup

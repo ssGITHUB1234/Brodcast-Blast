@@ -318,56 +318,16 @@ def ad_callback(call):
             ))
         # Mark ad as watched
         broadcast_handlers.users_ads_watched.add(user_id)
-    elif ad_type == 'before_broadcast':
-        bot.answer_callback_query(call.id, "Loading ad...", show_alert=False)
-        try:
-            # Fetch monetag links from backend
-            import requests
-            response = requests.get('http://localhost:5000/api/ads/links')
-            links = response.json() if response.ok else []
-            
-            if links and len(links) > 0:
-                # Show first available link
-                link = links[0]
-                markup = types.InlineKeyboardMarkup()
-                markup.add(
-                    types.InlineKeyboardButton("🔗 Open Ad Link", url=link.get('link', ''))
-                )
-                markup.add(
-                    types.InlineKeyboardButton("✅ Ad Watched", callback_data="ad_watched_continue")
-                )
-                bot.send_message(call.message.chat.id,
-                    f"🎬 Watch Ad - {link.get('name', 'Monetag Ad')}\n\n"
-                    "Click the link below to watch the ad.\n"
-                    "After watching, click 'Ad Watched' to continue.",
-                    reply_markup=markup)
-            else:
-                # No links available, show generic message
-                markup = types.InlineKeyboardMarkup()
-                markup.add(
-                    types.InlineKeyboardButton("✅ Ad Watched", callback_data="ad_watched_continue")
-                )
-                bot.send_message(call.message.chat.id,
-                    "🎬 Please watch an ad to continue.\n\n"
-                    "When done, click 'Ad Watched'.",
-                    reply_markup=markup)
-        except Exception as e:
-            markup = types.InlineKeyboardMarkup()
-            markup.add(
-                types.InlineKeyboardButton("✅ Ad Watched", callback_data="ad_watched_continue")
-            )
-            bot.send_message(call.message.chat.id,
-                "🎬 Please watch an ad to continue.\n\n"
-                "When done, click 'Ad Watched'.",
-                reply_markup=markup)
     elif ad_type == 'watched_continue':
-        # Mark ad watched and continue broadcast creation
+        # User finished watching ad, mark watched and start broadcast
         broadcast_handlers.users_ads_watched.add(user_id)
-        bot.answer_callback_query(call.id, "Great! Now creating your broadcast...", show_alert=False)
+        bot.answer_callback_query(call.id, "Creating broadcast...", show_alert=False)
+        
+        # Start broadcast creation
         broadcast_handlers.user_broadcast_state[user_id] = {'step': 'text'}
         bot.send_message(call.message.chat.id,
-            "📝 Let's create your broadcast!\n\n"
-            "Step 1: Send me the text message you want to broadcast.")
+            "📝 Send your broadcast message.\n\n"
+            "Text only or with media (image/video/document).")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('settings_'))
 def settings_callback(call):

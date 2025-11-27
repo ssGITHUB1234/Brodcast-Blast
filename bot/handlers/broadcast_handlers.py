@@ -14,7 +14,7 @@ user_broadcast_state = {}
 users_ads_watched = set()  # Track users who watched ads
 
 def handle_create_broadcast(bot, message):
-    """Start broadcast creation process"""
+    """Start broadcast creation process - show ad if required"""
     user_id = message.from_user.id
     user = user_service.get_user(user_id)
     
@@ -24,25 +24,44 @@ def handle_create_broadcast(bot, message):
     
     # Check if ads are required and user hasn't watched one
     if monetag_service.is_enabled and user_id not in users_ads_watched:
-        markup = types.InlineKeyboardMarkup()
-        markup.add(
-            types.InlineKeyboardButton("🎬 Watch Ad Now", callback_data="ad_before_broadcast")
-        )
-        user_broadcast_state[user_id] = {'step': 'pending_ad', 'action': 'create_broadcast'}
-        bot.send_message(message.chat.id,
-            "🎬 Watch an Ad First!\n\n"
-            "You must watch an ad before creating your broadcast.\n"
-            "Click below to open the ad.",
-            reply_markup=markup)
+        try:
+            import requests
+            response = requests.get('http://localhost:5000/api/ads/links')
+            links = response.json() if response.ok else []
+            
+            if links and len(links) > 0:
+                # Show first available link
+                link = links[0]
+                markup = types.InlineKeyboardMarkup()
+                markup.add(
+                    types.InlineKeyboardButton("🔗 " + link.get('name', 'Watch Ad'), url=link.get('link', ''))
+                )
+                markup.add(
+                    types.InlineKeyboardButton("✅ Done - Create Broadcast", callback_data="ad_watched_continue")
+                )
+                bot.send_message(message.chat.id,
+                    "🎬 Watch Ad to Continue\n\n"
+                    "Click the link below to watch an ad, then come back and click 'Done'.",
+                    reply_markup=markup)
+            else:
+                # No links, allow broadcast anyway
+                start_broadcast_creation(bot, message, user_id)
+        except Exception as e:
+            # Error fetching links, allow broadcast
+            start_broadcast_creation(bot, message, user_id)
         return
     
     # Clear ad watched flag after using it
     users_ads_watched.discard(user_id)
     
+    start_broadcast_creation(bot, message, user_id)
+
+def start_broadcast_creation(bot, message, user_id):
+    """Start the actual broadcast creation flow"""
     user_broadcast_state[user_id] = {'step': 'text'}
     bot.reply_to(message, 
-        "📝 Let's create your broadcast!\n\n"
-        "Step 1: Send me the text message you want to broadcast.")
+        "📝 Send your broadcast message.\n\n"
+        "Text only or with media (image/video/document).")
 
 def handle_broadcast_text_input(bot, message):
     """Handle text input for broadcast"""
