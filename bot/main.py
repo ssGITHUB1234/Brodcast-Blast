@@ -145,6 +145,7 @@ def nav_menu_callback(call):
         def __init__(self, callback):
             self.from_user = callback.from_user
             self.chat = callback.message.chat
+            self.message_id = callback.message.message_id
     
     menu_handler.handle_menu(bot, FakeMessage(call))
     bot.answer_callback_query(call.id)
