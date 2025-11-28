@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start Telegram Bot"
+args = "Dashboard Dev Server"
 
 [[workflows.workflow]]
-name = "Start Telegram Bot"
+name = "Dashboard Dev Server"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python run.py"
+args = "python -c \"import sys, os; sys.path.insert(0, '/root/project'); os.chdir('/root/project'); from backend.app import app; app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)\""
 waitForPort = 5000
 
 [workflows.workflow.metadata]
@@ -33,11 +33,3 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 36325
-externalPort = 3002
-
-[[ports]]
-localPort = 45947
-externalPort = 3000
