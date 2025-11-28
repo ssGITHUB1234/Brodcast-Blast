@@ -19,8 +19,25 @@ def handle_create_broadcast(bot, message):
     user_id = message.from_user.id
     user = user_service.get_user(user_id)
     
-    if not user or user.get('blocked'):
-        bot.reply_to(message, "⛔ You don't have permission to create broadcasts.")
+    # Auto-register user if they don't exist
+    if not user:
+        try:
+            user_service.create_user(
+                user_id,
+                message.from_user.username,
+                message.from_user.first_name,
+                message.from_user.last_name
+            )
+            bot.reply_to(message, f"Welcome! Quick registration:\n\nPlease use /start to select your country & interests.\n\nThen come back to /create")
+            return
+        except Exception as e:
+            print(f"Auto-register error: {e}")
+            bot.reply_to(message, "❌ Registration failed. Please try /start")
+            return
+    
+    # Check if user is blocked
+    if user.get('blocked'):
+        bot.reply_to(message, "⛔ You have been blocked and cannot create broadcasts.")
         return
     
     # Check if user already watched ad in this session
