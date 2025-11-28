@@ -10,72 +10,6 @@ stars_service = StarsPaymentService()
 cryptopay_service = CryptoPayService()
 priority_service = PrioritySlotService()
 
-def handle_priority_payment(bot, call):
-    """Handle priority slot purchase button click"""
-    user_id = call.from_user.id
-    data_parts = call.data.split('_')
-    
-    if len(data_parts) < 3:
-        bot.answer_callback_query(call.id, "Invalid selection")
-        return
-    
-    slot_type = data_parts[1]
-    duration = data_parts[2]
-    slot_key = f"{slot_type}_{duration}"
-    
-    price = PRIORITY_SLOT_PRICES.get(slot_key)
-    if not price:
-        bot.answer_callback_query(call.id, "Invalid slot type")
-        return
-    
-    try:
-        # Create priority slot record
-        if slot_type == 'time':
-            duration_hours = int(duration)
-            slot = priority_service.create_priority_slot(
-                user_id,
-                'time',
-                price,
-                duration_hours=duration_hours,
-                payment_gateway='pending'
-            )
-        else:  # count
-            message_count = int(duration)
-            slot = priority_service.create_priority_slot(
-                user_id,
-                'count',
-                price,
-                message_count=message_count,
-                payment_gateway='pending'
-            )
-        
-        if not slot:
-            bot.answer_callback_query(call.id, "Error creating slot")
-            return
-        
-        slot_id = slot['slot_id']
-        
-        # Show payment method selection
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(
-            types.InlineKeyboardButton("⭐ Telegram Stars", callback_data=f"pay_stars_{slot_id}"),
-            types.InlineKeyboardButton("🪙 CryptoPay", callback_data=f"pay_crypto_{slot_id}"),
-            types.InlineKeyboardButton("❌ Cancel", callback_data="cancel_payment")
-        )
-        
-        bot.edit_message_text(
-            f"Select payment method:\n\n"
-            f"Amount: ${price}\n"
-            f"Slot Type: {slot_type.capitalize()} - {duration}\n\n"
-            f"Choose your preferred payment gateway:",
-            call.message.chat.id,
-            call.message.message_id,
-            reply_markup=markup
-        )
-    except Exception as e:
-        print(f"Error handling priority payment: {e}")
-        bot.answer_callback_query(call.id, "Error processing request")
-
 
 def handle_stars_payment(bot, call):
     """Initiate Telegram Stars payment"""
@@ -183,11 +117,17 @@ def handle_cryptopay_payment(bot, call):
 def handle_payment_cancel(bot, call):
     """Cancel payment"""
     try:
-        bot.edit_message_text(
-            "❌ Payment cancelled.\n\n"
-            "Use /menu to return to main menu.",
-            call.message.chat.id,
-            call.message.message_id
-        )
-    except:
-        pass
+        from bot.handlers.menu_handler import handle_menu
+        # Create a fake message object from callback
+        class FakeMessage:
+            def __init__(self, callback):
+                self.from_user = callback.from_user
+                self.chat = callback.message.chat
+                self.message_id = callback.message.message_id
+        
+        msg = FakeMessage(call)
+        handle_menu(bot, msg)
+        bot.answer_callback_query(call.id, "Payment cancelled")
+    except Exception as e:
+        print(f"Error cancelling payment: {e}")
+        bot.answer_callback_query(call.id, "Cancelled")

@@ -219,12 +219,35 @@ def nav_menu_callback(call):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'nav_back')
 def nav_back_callback(call):
-    """Navigate back to previous menu"""
-    bot.answer_callback_query(call.id, "Back navigation coming soon")
+    """Navigate back to main menu when back button clicked"""
+    user_id = call.from_user.id
+    # For now, navigate to main menu (safe fallback)
+    class FakeMessage:
+        def __init__(self, callback):
+            self.from_user = callback.from_user
+            self.chat = callback.message.chat
+            self.message_id = callback.message.message_id
+    
+    msg = FakeMessage(call)
+    menu_handler.handle_menu(bot, msg)
+    bot.answer_callback_query(call.id)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('pay_'))
 def payment_callback(call):
-    priority_handlers.handle_payment_gateway_selection(bot, call)
+    if 'stars' in call.data:
+        from bot.handlers.payment_handler import handle_stars_payment
+        handle_stars_payment(bot, call)
+    elif 'crypto' in call.data:
+        from bot.handlers.payment_handler import handle_cryptopay_payment
+        handle_cryptopay_payment(bot, call)
+    else:
+        priority_handlers.handle_payment_gateway_selection(bot, call)
+
+@bot.callback_query_handler(func=lambda call: call.data == 'cancel_payment')
+def cancel_payment_callback(call):
+    """Handle payment cancellation"""
+    from bot.handlers.payment_handler import handle_payment_cancel
+    handle_payment_cancel(bot, call)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('menu_'))
 def menu_callback(call):
