@@ -13,6 +13,7 @@ priority_service = PrioritySlotService()
 monetag_service = MonetgService()
 
 user_broadcast_state = {}
+users_ads_watched = set()
 
 def handle_create_broadcast(bot, message):
     """Start broadcast creation process - show ad if required"""
@@ -68,12 +69,13 @@ def handle_create_broadcast(bot, message):
                         "After watching, return here and click /create again.",
                         reply_markup=markup)
                     return
+            except ImportError as e:
+                print(f"[INFO] Backend monetag_links not available: {e}, allowing broadcast")
             except Exception as e:
                 print(f"[ERROR] Error showing ad button: {e}")
-        else:
-            # No valid domain for ad viewer - for now allow broadcast
-            # In production, set REPLIT_DOMAIN environment variable
-            print(f"[INFO] No valid domain for ads (REPLIT_DOMAIN={domain}), allowing broadcast")
+        
+        # No valid domain or ad failed - mark as watched and proceed
+        users_ads_watched.add(user_id)
     
     # User watched ad or system failed - allow broadcast
     start_broadcast_creation(bot, message, user_id)
