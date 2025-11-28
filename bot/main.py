@@ -234,14 +234,7 @@ def nav_back_callback(call):
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('pay_'))
 def payment_callback(call):
-    if 'stars' in call.data:
-        from bot.handlers.payment_handler import handle_stars_payment
-        handle_stars_payment(bot, call)
-    elif 'crypto' in call.data:
-        from bot.handlers.payment_handler import handle_cryptopay_payment
-        handle_cryptopay_payment(bot, call)
-    else:
-        priority_handlers.handle_payment_gateway_selection(bot, call)
+    priority_handlers.handle_payment_gateway_selection(bot, call)
 
 @bot.callback_query_handler(func=lambda call: call.data == 'cancel_payment')
 def cancel_payment_callback(call):
