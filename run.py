@@ -15,6 +15,8 @@ def run_bot():
         main()
     except Exception as e:
         print(f"❌ Bot error: {e}")
+        import traceback
+        traceback.print_exc()
 
 if __name__ == '__main__':
     print("=" * 60)
@@ -54,8 +56,8 @@ if __name__ == '__main__':
     print("=" * 60)
     print()
     
-    # Start bot in background thread (not blocking for Render health checks)
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    # Start bot in background thread (non-daemon so it stays alive)
+    bot_thread = threading.Thread(target=run_bot, daemon=False)
     bot_thread.start()
     
     # Run Flask as main app
