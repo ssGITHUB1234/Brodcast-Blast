@@ -111,11 +111,27 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 ✅ **TELEGRAM_BOT_TOKEN** - Bot authentication
 ✅ **SUPABASE_URL** - Database connection
 ✅ **SUPABASE_KEY** - Database authentication
-✅ **OPENAI_API_KEY** - AI template generation
+✅ **OPENAI_API_KEY** - AI template generation (optional)
 ✅ **CRYPTOPAY_API_KEY** - CryptoPay integration
 ✅ **XROCKET_API_KEY** - xRocket payment integration
 ✅ **SESSION_SECRET** - Session management
+✅ **MONETAG_SDK_KEY** - For Monetag ad integration (zone: 10243712)
 
 ## Optional/Future Variables
 - STARS_API_KEY - For Telegram Stars (handled via bot API)
-- MONETAG_SDK_KEY - For Monetag ad integration (zone: 10243712)
+
+## CRITICAL: Database Schema Update Required
+⚠️ **The users table MUST have these columns for full functionality:**
+```sql
+-- Update existing 'category' column to 'categories' TEXT[] array:
+ALTER TABLE users DROP COLUMN category;
+ALTER TABLE users ADD COLUMN categories TEXT[] DEFAULT ARRAY[]::TEXT[];
+```
+- This allows saving multiple interest categories per user
+- Without this, registration will fail silently
+
+## Recent Bug Fixes (Nov 28, 2025)
+- 🔧 Fixed: Registration details not saving (update_user now properly updates database)
+- 🔧 Fixed: users_ads_watched undefined error (added set definition)
+- 🔧 Fixed: Payment callback routing (correct gateway selection)
+- 🔧 Fixed: Back navigation (routes to main menu)

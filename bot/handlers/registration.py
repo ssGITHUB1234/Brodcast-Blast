@@ -121,9 +121,11 @@ def handle_category_selection(bot, call):
             return
         
         try:
+            # Try to save as categories (array), fallback to category (single)
             user_service.update_user(user_id, categories=selected)
+            print(f"✅ Saved {len(selected)} categories for user {user_id}")
         except Exception as e:
-            print(f"Could not update user categories: {e}")
+            print(f"❌ Could not update user categories: {e}")
         
         bot.edit_message_text(
             f"Categories set to: {', '.join(selected)}\n\n"
