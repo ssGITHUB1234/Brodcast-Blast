@@ -48,8 +48,12 @@ def handle_create_broadcast(bot, message):
     if not already_watched:
         domain = os.environ.get('REPLIT_DOMAIN', '').strip()
         
-        # Only show ad button if we have a valid domain (not localhost)
-        if domain and 'localhost' not in domain and domain != '':
+        # For local dev, use localhost for testing
+        if not domain or domain == '':
+            domain = 'localhost:5000'
+        
+        # Show ad button if we have a domain
+        if domain:
             try:
                 from backend.app import monetag_links
                 if monetag_links and len(monetag_links) > 0:
@@ -69,6 +73,8 @@ def handle_create_broadcast(bot, message):
                         "After watching, return here and click /create again.",
                         reply_markup=markup)
                     return
+                else:
+                    print(f"[WARNING] No monetag_links available, skipping ad")
             except ImportError as e:
                 print(f"[INFO] Backend monetag_links not available: {e}, allowing broadcast")
             except Exception as e:
@@ -76,6 +82,7 @@ def handle_create_broadcast(bot, message):
         
         # No valid domain or ad failed - mark as watched and proceed
         users_ads_watched.add(user_id)
+        print(f"[INFO] Ad skipped for user {user_id}, proceeding with broadcast")
     
     # User watched ad or system failed - allow broadcast
     start_broadcast_creation(bot, message, user_id)
