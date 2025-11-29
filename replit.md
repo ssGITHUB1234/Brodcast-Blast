@@ -50,6 +50,16 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes (Nov 29, 2025)
+- ✅ **ADS SYSTEM COMPLETE** 🎬⏱️✅
+  - ✅ Monetag SDK integration with 30-second countdown timer
+  - ✅ `/ad-viewer` page with auto-completion button
+  - ✅ Backend API routes: `/api/ads/watched`, `/api/ads/stats`, `/api/ads/check`, etc
+  - ✅ Ad state tracking via `config/ads_state.py`
+  - ✅ Mandatory ads before each broadcast creation
+  - ✅ User gets "Watch Ad Now" button when using `/create` command
+  - ✅ Timer shows countdown (30s → 0s)
+  - ✅ Auto-marks user as watched when timer completes
+  - ✅ Returns to Telegram to continue broadcast creation
 - ✅ **CRITICAL FIX: Registration Now Saves Correctly** 🔧
   - Fixed Supabase update query order in user_service.py
   - Changed: `.update(kwargs).eq('user_id', user_id)` → `.eq('user_id', user_id).update(kwargs)`
