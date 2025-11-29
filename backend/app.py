@@ -11,6 +11,12 @@ import hashlib
 import json
 import os
 import telebot
+# Import bot to access registered handlers
+try:
+    from bot.main import bot as telegram_bot
+except Exception as e:
+    print(f"Warning: Could not import telegram_bot: {e}")
+    telegram_bot = None
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 CORS(app)
@@ -562,15 +568,23 @@ def xrocket_webhook():
 def telegram_webhook():
     """Handle Telegram bot webhook updates (webhook mode for production)"""
     try:
-        if not TELEGRAM_BOT_TOKEN:
-            return jsonify({'error': 'Bot token not configured'}), 400
+        if not telegram_bot:
+            print("❌ Telegram bot not initialized")
+            return jsonify({'ok': True})
         
         json_data = request.get_json()
         if not json_data:
             return jsonify({'ok': True})
         
-        # Process webhook asynchronously to avoid blocking
-        print(f"✓ Webhook update received: {json_data.get('update_id', 'unknown')}")
+        # Convert JSON to Update object and process through registered handlers
+        try:
+            update = telebot.types.Update.de_json(json_data)
+            if update:
+                telegram_bot.process_new_updates([update])
+                print(f"✓ Webhook processed update {json_data.get('update_id', '?')}")
+        except Exception as e:
+            print(f"Error processing webhook update: {e}")
+        
         return jsonify({'ok': True})
     except Exception as e:
         print(f"Telegram webhook error: {e}")

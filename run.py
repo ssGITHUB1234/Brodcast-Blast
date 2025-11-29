@@ -26,6 +26,7 @@ if __name__ == '__main__':
     
     telegram_token = os.getenv('TELEGRAM_BOT_TOKEN', '')
     supabase_url = os.getenv('SUPABASE_URL', '')
+    is_production = bool(os.getenv('RENDER', False))
     
     if not telegram_token or not supabase_url:
         print("❌ CONFIGURATION ERROR")
@@ -46,27 +47,35 @@ if __name__ == '__main__':
         sys.exit(1)
     
     print("✓ Configuration loaded")
+    print(f"✓ Environment: {'PRODUCTION (Render)' if is_production else 'LOCAL DEV'}")
     print()
     print("📊 Admin Dashboard will be available at:")
     print("   http://localhost:5000")
     print()
     print("🤖 Telegram Bot Status:")
-    print("   Starting in background...")
+    if is_production:
+        print("   ✓ Webhook mode enabled (Render)")
+        print("   ✓ Bot ready for Telegram webhook updates")
+    else:
+        print("   ✓ Starting polling mode (local dev)...")
     print()
     print("=" * 60)
     print()
     
-    # Start bot in background thread (non-daemon so it stays alive)
-    bot_thread = threading.Thread(target=run_bot, daemon=False)
-    bot_thread.start()
+    # Only start bot thread on local dev (polling mode)
+    # On Render (webhook mode), Flask webhook handler receives updates
+    if not is_production:
+        bot_thread = threading.Thread(target=run_bot, daemon=False)
+        bot_thread.start()
     
     # Run Flask as main app
     from backend.app import app
     from config.settings import FLASK_HOST, FLASK_PORT
     
-    print(f"✓ Starting Flask server on {FLASK_HOST}:{FLASK_PORT}")
+    port = int(os.getenv('PORT', FLASK_PORT))
+    print(f"✓ Starting Flask server on {FLASK_HOST}:{port}")
     try:
-        app.run(host=FLASK_HOST, port=FLASK_PORT, debug=False, use_reloader=False)
+        app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
     except KeyboardInterrupt:
         print("\n\n🛑 Shutting down...")
         print("✓ Stopped")

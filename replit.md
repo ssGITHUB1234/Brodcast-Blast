@@ -49,7 +49,22 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **payments**: Payment transaction logs
 - **admin_logs**: Administrative action logs
 
-## Recent Changes
+## Recent Changes (Nov 29, 2025)
+- ✅ **CRITICAL FIX: Webhook Support for Render Production**
+  - Disabled polling on Render (was causing 409 conflicts)
+  - Implemented webhook handler in Flask (/api/webhook/telegram)
+  - Webhook routes Telegram updates through registered bot handlers
+  - run.py detects Render environment and disables polling
+  - Bot handlers in bot/main.py process updates via webhook
+- ✅ **Fixed run.py for Render Deployment**
+  - Detects production environment automatically
+  - Handles PORT environment variable for Render
+  - Local dev still uses polling mode
+  - Webhook mode on Render (no threading conflicts)
+- ✅ **Registration Save Bug Fixed**
+  - Removed useless pass statement in update_user()
+  - Categories array properly saves to database
+  - Error messages added for debugging
 - 2024-11-27: **Admin Monetag Ad Links Management Complete** - Direct links from Monetag
   - ✅ Admin pastes direct Monetag links (from Monetag Direct Links page)
   - ✅ Add, edit, delete ad links
