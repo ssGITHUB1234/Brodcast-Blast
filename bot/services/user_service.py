@@ -14,9 +14,17 @@ class UserService:
         """Get user by ID"""
         try:
             response = self.db.table('users').select('*').eq('user_id', user_id).execute()
-            return response.data[0] if response.data else None
+            if response.data:
+                user = response.data[0]
+                print(f"✅ Retrieved user {user_id}: country={user.get('country')}, categories={user.get('categories')}")
+                return user
+            else:
+                print(f"❌ User {user_id} not found in database")
+                return None
         except Exception as e:
-            print(f"Error getting user: {e}")
+            print(f"❌ Database error getting user {user_id}: {e}")
+            import traceback
+            traceback.print_exc()
             return None
     
     def create_user(self, user_id, username, first_name, last_name):

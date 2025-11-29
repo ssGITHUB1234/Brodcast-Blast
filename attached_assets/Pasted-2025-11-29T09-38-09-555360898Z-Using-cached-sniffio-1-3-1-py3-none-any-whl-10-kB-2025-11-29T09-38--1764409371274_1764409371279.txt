@@ -1,0 +1,57 @@
+2025-11-29T09:38:09.555360898Z Using cached sniffio-1.3.1-py3-none-any.whl (10 kB)
+2025-11-29T09:38:09.657701796Z Installing collected packages: strenum, pytz, websockets, urllib3, tzlocal, typing-extensions, tqdm, sniffio, six, python-dotenv, packaging, MarkupSafe, jiter, itsdangerous, idna, hyperframe, hpack, h11, distro, click, charset-normalizer, certifi, blinker, annotated-types, Werkzeug, typing-inspection, requests, python-dateutil, pydantic-core, Jinja2, httpcore, h2, gunicorn, deprecation, APScheduler, anyio, realtime, pyTelegramBotAPI, pydantic, httpx, Flask, openai, Flask-CORS, supafunc, storage3, postgrest, gotrue, supabase
+2025-11-29T09:38:12.256215637Z 
+2025-11-29T09:38:12.261182849Z Successfully installed APScheduler-3.10.4 Flask-3.0.0 Flask-CORS-4.0.0 Jinja2-3.1.6 MarkupSafe-3.0.3 Werkzeug-3.1.4 annotated-types-0.7.0 anyio-4.12.0 blinker-1.9.0 certifi-2025.11.12 charset-normalizer-3.4.4 click-8.3.1 deprecation-2.1.0 distro-1.9.0 gotrue-2.9.1 gunicorn-21.2.0 h11-0.16.0 h2-4.3.0 hpack-4.1.0 httpcore-1.0.9 httpx-0.25.2 hyperframe-6.1.0 idna-3.11 itsdangerous-2.2.0 jiter-0.12.0 openai-1.54.3 packaging-25.0 postgrest-0.16.11 pyTelegramBotAPI-4.14.0 pydantic-2.12.5 pydantic-core-2.41.5 python-dateutil-2.9.0.post0 python-dotenv-1.0.0 pytz-2025.2 realtime-1.0.6 requests-2.31.0 six-1.17.0 sniffio-1.3.1 storage3-0.7.7 strenum-0.4.15 supabase-2.4.1 supafunc-0.4.7 tqdm-4.67.1 typing-extensions-4.15.0 typing-inspection-0.4.2 tzlocal-5.3.1 urllib3-2.5.0 websockets-12.0
+2025-11-29T09:38:12.273925571Z 
+2025-11-29T09:38:12.273948501Z [notice] A new release of pip is available: 25.1.1 -> 25.3
+2025-11-29T09:38:12.273951461Z [notice] To update, run: pip install --upgrade pip
+2025-11-29T09:38:18.950523655Z ==> Uploading build...
+2025-11-29T09:38:34.890685081Z ==> Uploaded in 12.8s. Compression took 3.2s
+2025-11-29T09:38:34.97013802Z ==> Build successful 🎉
+2025-11-29T09:38:38.449320468Z ==> Deploying...
+2025-11-29T09:39:10.622470816Z ==> Running 'python run.py'
+2025-11-29T09:39:22.230303462Z ============================================================
+2025-11-29T09:39:22.230334483Z 🚀 TELEGRAM BROADCAST BOT - PRIORITY SLOT SYSTEM
+2025-11-29T09:39:22.230340683Z ============================================================
+2025-11-29T09:39:22.230346343Z 
+2025-11-29T09:39:22.230352603Z ✓ Configuration loaded
+2025-11-29T09:39:22.230358834Z ✓ Environment: PRODUCTION (Render)
+2025-11-29T09:39:22.230362204Z 
+2025-11-29T09:39:22.230365624Z 📊 Admin Dashboard will be available at:
+2025-11-29T09:39:22.230369044Z    http://localhost:5000
+2025-11-29T09:39:22.230372294Z 
+2025-11-29T09:39:22.230376344Z 🤖 Telegram Bot Status:
+2025-11-29T09:39:22.230379904Z    ✓ Webhook mode enabled (Render)
+2025-11-29T09:39:22.230383284Z    ✓ Bot ready for Telegram webhook updates
+2025-11-29T09:39:22.230386524Z 
+2025-11-29T09:39:22.230389864Z ============================================================
+2025-11-29T09:39:22.230393114Z 
+2025-11-29T09:39:22.230396495Z ✓ Starting Flask server on 0.0.0.0:10000
+2025-11-29T09:39:22.230399955Z  * Serving Flask app 'backend.app'
+2025-11-29T09:39:22.230403375Z  * Debug mode: off
+2025-11-29T09:39:22.231996079Z WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+2025-11-29T09:39:22.23201402Z  * Running on all addresses (0.0.0.0)
+2025-11-29T09:39:22.2320188Z  * Running on http://127.0.0.1:10000
+2025-11-29T09:39:22.23202358Z  * Running on http://10.17.93.28:10000
+2025-11-29T09:39:22.232040271Z Press CTRL+C to quit
+2025-11-29T09:39:22.721249666Z 127.0.0.1 - - [29/Nov/2025 09:39:22] "HEAD / HTTP/1.1" 200 -
+2025-11-29T09:39:29.574484483Z ==> Your service is live 🎉
+2025-11-29T09:39:29.605260151Z ==> 
+2025-11-29T09:39:29.641259088Z ==> ///////////////////////////////////////////////////////////
+2025-11-29T09:39:29.675171685Z ==> 
+2025-11-29T09:39:29.704307611Z ==> Available at your primary URL https://brodcast-blast.onrender.com
+2025-11-29T09:39:29.732448489Z ==> 
+2025-11-29T09:39:29.763104926Z ==> ///////////////////////////////////////////////////////////
+2025-11-29T09:39:30.885341123Z 127.0.0.1 - - [29/Nov/2025 09:39:30] "GET / HTTP/1.1" 200 -
+2025-11-29T09:40:40.823540718Z 127.0.0.1 - - [29/Nov/2025 09:40:40] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:40:56.691450417Z 127.0.0.1 - - [29/Nov/2025 09:40:56] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:41:01.487364526Z 127.0.0.1 - - [29/Nov/2025 09:41:01] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:41:05.392289653Z 127.0.0.1 - - [29/Nov/2025 09:41:05] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:41:09.257301803Z 127.0.0.1 - - [29/Nov/2025 09:41:09] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:41:47.53249875Z 127.0.0.1 - - [29/Nov/2025 09:41:47] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:41:51.182938494Z 127.0.0.1 - - [29/Nov/2025 09:41:51] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:42:05.223237827Z 127.0.0.1 - - [29/Nov/2025 09:42:05] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:42:07.467195174Z 127.0.0.1 - - [29/Nov/2025 09:42:07] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:42:12.816107753Z 127.0.0.1 - - [29/Nov/2025 09:42:12] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:42:17.415162617Z 127.0.0.1 - - [29/Nov/2025 09:42:17] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T09:42:19.180472959Z 127.0.0.1 - - [29/Nov/2025 09:42:19] "POST /api/webhook/telegram HTTP/1.1" 200 -
