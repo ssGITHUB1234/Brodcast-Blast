@@ -16,23 +16,25 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Dashboard Dev Server"
+args = "Admin Dashboard"
 
 [[workflows.workflow]]
-name = "Dashboard Dev Server"
+name = "Admin Dashboard"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python run.py"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
 
 [[ports]]
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 8000
-externalPort = 8000
+[userenv]
+
+[userenv.shared]
+SKIP_BOT_POLLING = "true"

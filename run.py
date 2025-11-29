@@ -53,18 +53,21 @@ if __name__ == '__main__':
     print("   http://localhost:5000")
     print()
     print("🤖 Telegram Bot Status:")
+    skip_bot_polling = os.getenv('SKIP_BOT_POLLING', '').lower() == 'true'
     if is_production:
         print("   ✓ Webhook mode enabled (Render)")
         print("   ✓ Bot ready for Telegram webhook updates")
+    elif skip_bot_polling:
+        print("   ✓ Polling disabled (dashboard-only mode)")
     else:
         print("   ✓ Starting polling mode (local dev)...")
     print()
     print("=" * 60)
     print()
     
-    # Only start bot thread on local dev (polling mode)
+    # Only start bot thread on local dev (polling mode) if not explicitly disabled
     # On Render (webhook mode), Flask webhook handler receives updates
-    if not is_production:
+    if not is_production and not skip_bot_polling:
         bot_thread = threading.Thread(target=run_bot, daemon=False)
         bot_thread.start()
     
