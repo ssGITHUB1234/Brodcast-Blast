@@ -1,0 +1,150 @@
+2025-11-29T13:03:29.458877535Z         ^^^^^
+2025-11-29T13:03:29.458879686Z     ...<4 lines>...
+2025-11-29T13:03:29.458881795Z         proxy=proxy,
+2025-11-29T13:03:29.458883886Z         ^^^^^^^^^^^^
+2025-11-29T13:03:29.458886056Z     )
+2025-11-29T13:03:29.458888196Z     ^
+2025-11-29T13:03:29.458890416Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/gotrue/_sync/gotrue_base_api.py", line 28, in __init__
+2025-11-29T13:03:29.458892846Z     self._http_client = http_client or SyncClient(
+2025-11-29T13:03:29.458895116Z                                        ~~~~~~~~~~^
+2025-11-29T13:03:29.458897316Z         verify=bool(verify),
+2025-11-29T13:03:29.458899786Z         ^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:29.458901946Z     ...<2 lines>...
+2025-11-29T13:03:29.458904086Z         http2=True,
+2025-11-29T13:03:29.458906226Z         ^^^^^^^^^^^
+2025-11-29T13:03:29.458908496Z     )
+2025-11-29T13:03:29.458910646Z     ^
+2025-11-29T13:03:29.458924637Z TypeError: Client.__init__() got an unexpected keyword argument 'proxy'
+2025-11-29T13:03:36.152417982Z 127.0.0.1 - - [29/Nov/2025 13:03:36] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T13:03:36.153833286Z Traceback (most recent call last):
+2025-11-29T13:03:36.155361732Z   File "/opt/render/project/src/bot/services/user_service.py", line 16, in get_user
+2025-11-29T13:03:36.155376643Z     response = self.db.table('users').select('*').eq('user_id', user_id).execute()
+2025-11-29T13:03:36.155380963Z                ^^^^^^^
+2025-11-29T13:03:36.155386523Z   File "/opt/render/project/src/bot/services/user_service.py", line 10, in db
+2025-11-29T13:03:36.155392043Z     self._db = get_supabase_client()
+2025-11-29T13:03:36.155395893Z                ~~~~~~~~~~~~~~~~~~~^^
+2025-11-29T13:03:36.155425314Z   File "/opt/render/project/src/config/database.py", line 12, in get_supabase_client
+2025-11-29T13:03:36.155429504Z     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+2025-11-29T13:03:36.155433734Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/client.py", line 313, in create_client
+2025-11-29T13:03:36.155437984Z     return SyncClient.create(
+2025-11-29T13:03:36.155440324Z            ~~~~~~~~~~~~~~~~~^
+2025-11-29T13:03:36.155442524Z         supabase_url=supabase_url, supabase_key=supabase_key, options=options
+2025-11-29T13:03:36.155445274Z         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:36.155447404Z     )
+2025-11-29T13:03:36.155449584Z     ^
+2025-11-29T13:03:36.155452274Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/client.py", line 102, in create
+2025-11-29T13:03:36.155454324Z     client = cls(supabase_url, supabase_key, options)
+2025-11-29T13:03:36.155456694Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/client.py", line 80, in __init__
+2025-11-29T13:03:36.155458794Z     self.auth = self._init_supabase_auth_client(
+2025-11-29T13:03:36.155460794Z                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+2025-11-29T13:03:36.155462814Z         auth_url=self.auth_url,
+2025-11-29T13:03:36.155464865Z         ^^^^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:36.155466945Z         client_options=options,
+2025-11-29T13:03:36.155469235Z         ^^^^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:36.155471245Z     )
+2025-11-29T13:03:36.155473275Z     ^
+2025-11-29T13:03:36.155483285Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/client.py", line 226, in _init_supabase_auth_client
+2025-11-29T13:03:36.155485935Z     return SyncSupabaseAuthClient(
+2025-11-29T13:03:36.155488115Z         url=auth_url,
+2025-11-29T13:03:36.155490135Z     ...<4 lines>...
+2025-11-29T13:03:36.155492175Z         flow_type=client_options.flow_type,
+2025-11-29T13:03:36.155494235Z     )
+2025-11-29T13:03:36.155496505Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/auth_client.py", line 31, in __init__
+2025-11-29T13:03:36.155498655Z     SyncGoTrueClient.__init__(
+2025-11-29T13:03:36.155500786Z     ~~~~~~~~~~~~~~~~~~~~~~~~~^
+2025-11-29T13:03:36.155502846Z         self,
+2025-11-29T13:03:36.155504886Z         ^^^^^
+2025-11-29T13:03:36.155507046Z     ...<7 lines>...
+2025-11-29T13:03:36.155509216Z         flow_type=flow_type,
+2025-11-29T13:03:36.155511336Z         ^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:36.155513376Z     )
+2025-11-29T13:03:36.155515386Z     ^
+2025-11-29T13:03:36.155517536Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/gotrue/_sync/gotrue_client.py", line 101, in __init__
+2025-11-29T13:03:36.155519666Z     SyncGoTrueBaseAPI.__init__(
+2025-11-29T13:03:36.155521676Z     ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+2025-11-29T13:03:36.155523696Z         self,
+2025-11-29T13:03:36.155525756Z         ^^^^^
+2025-11-29T13:03:36.155527906Z     ...<4 lines>...
+2025-11-29T13:03:36.155530036Z         proxy=proxy,
+2025-11-29T13:03:36.155532146Z         ^^^^^^^^^^^^
+2025-11-29T13:03:36.155534226Z     )
+2025-11-29T13:03:36.155536286Z     ^
+2025-11-29T13:03:36.155538446Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/gotrue/_sync/gotrue_base_api.py", line 28, in __init__
+2025-11-29T13:03:36.155540676Z     self._http_client = http_client or SyncClient(
+2025-11-29T13:03:36.155542736Z                                        ~~~~~~~~~~^
+2025-11-29T13:03:36.155544707Z         verify=bool(verify),
+2025-11-29T13:03:36.155552437Z         ^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:36.155554727Z     ...<2 lines>...
+2025-11-29T13:03:36.155556997Z         http2=True,
+2025-11-29T13:03:36.155559137Z         ^^^^^^^^^^^
+2025-11-29T13:03:36.155561257Z     )
+2025-11-29T13:03:36.155563327Z     ^
+2025-11-29T13:03:36.155565487Z TypeError: Client.__init__() got an unexpected keyword argument 'proxy'
+2025-11-29T13:03:39.897075734Z 127.0.0.1 - - [29/Nov/2025 13:03:39] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T13:03:43.731434873Z 127.0.0.1 - - [29/Nov/2025 13:03:43] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T13:03:45.649178592Z 127.0.0.1 - - [29/Nov/2025 13:03:45] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T13:03:47.699051084Z 127.0.0.1 - - [29/Nov/2025 13:03:47] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-29T13:03:47.700094369Z Traceback (most recent call last):
+2025-11-29T13:03:47.701604135Z   File "/opt/render/project/src/bot/services/user_service.py", line 16, in get_user
+2025-11-29T13:03:47.701617685Z     response = self.db.table('users').select('*').eq('user_id', user_id).execute()
+2025-11-29T13:03:47.701623385Z                ^^^^^^^
+2025-11-29T13:03:47.701633465Z   File "/opt/render/project/src/bot/services/user_service.py", line 10, in db
+2025-11-29T13:03:47.701640195Z     self._db = get_supabase_client()
+2025-11-29T13:03:47.701668466Z                ~~~~~~~~~~~~~~~~~~~^^
+2025-11-29T13:03:47.701672576Z   File "/opt/render/project/src/config/database.py", line 12, in get_supabase_client
+2025-11-29T13:03:47.701677316Z     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+2025-11-29T13:03:47.701683056Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/client.py", line 313, in create_client
+2025-11-29T13:03:47.701688146Z     return SyncClient.create(
+2025-11-29T13:03:47.701692086Z            ~~~~~~~~~~~~~~~~~^
+2025-11-29T13:03:47.701696127Z         supabase_url=supabase_url, supabase_key=supabase_key, options=options
+2025-11-29T13:03:47.701700157Z         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:47.701704247Z     )
+2025-11-29T13:03:47.701779479Z     ^
+2025-11-29T13:03:47.701791049Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/client.py", line 102, in create
+2025-11-29T13:03:47.701795419Z     client = cls(supabase_url, supabase_key, options)
+2025-11-29T13:03:47.70182818Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/client.py", line 80, in __init__
+2025-11-29T13:03:47.70183456Z     self.auth = self._init_supabase_auth_client(
+2025-11-29T13:03:47.70183857Z                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+2025-11-29T13:03:47.70184326Z         auth_url=self.auth_url,
+2025-11-29T13:03:47.7018476Z         ^^^^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:47.70185204Z         client_options=options,
+2025-11-29T13:03:47.70185599Z         ^^^^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:47.701860161Z     )
+2025-11-29T13:03:47.701864141Z     ^
+2025-11-29T13:03:47.701871881Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/client.py", line 226, in _init_supabase_auth_client
+2025-11-29T13:03:47.701876221Z     return SyncSupabaseAuthClient(
+2025-11-29T13:03:47.701881151Z         url=auth_url,
+2025-11-29T13:03:47.701885211Z     ...<4 lines>...
+2025-11-29T13:03:47.701889001Z         flow_type=client_options.flow_type,
+2025-11-29T13:03:47.701893071Z     )
+2025-11-29T13:03:47.701900371Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/supabase/_sync/auth_client.py", line 31, in __init__
+2025-11-29T13:03:47.701916422Z     SyncGoTrueClient.__init__(
+2025-11-29T13:03:47.701919182Z     ~~~~~~~~~~~~~~~~~~~~~~~~~^
+2025-11-29T13:03:47.701921812Z         self,
+2025-11-29T13:03:47.701924282Z         ^^^^^
+2025-11-29T13:03:47.701926842Z     ...<7 lines>...
+2025-11-29T13:03:47.701929382Z         flow_type=flow_type,
+2025-11-29T13:03:47.701932002Z         ^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:47.701934572Z     )
+2025-11-29T13:03:47.701937022Z     ^
+2025-11-29T13:03:47.701939723Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/gotrue/_sync/gotrue_client.py", line 101, in __init__
+2025-11-29T13:03:47.701942323Z     SyncGoTrueBaseAPI.__init__(
+2025-11-29T13:03:47.701945012Z     ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+2025-11-29T13:03:47.701947293Z         self,
+2025-11-29T13:03:47.701949933Z         ^^^^^
+2025-11-29T13:03:47.701952343Z     ...<4 lines>...
+2025-11-29T13:03:47.701954713Z         proxy=proxy,
+2025-11-29T13:03:47.701957173Z         ^^^^^^^^^^^^
+2025-11-29T13:03:47.701959513Z     )
+2025-11-29T13:03:47.701961893Z     ^
+2025-11-29T13:03:47.701967243Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/gotrue/_sync/gotrue_base_api.py", line 28, in __init__
+2025-11-29T13:03:47.701970583Z     self._http_client = http_client or SyncClient(
+2025-11-29T13:03:47.701973063Z                                        ~~~~~~~~~~^
+2025-11-29T13:03:47.701975453Z         verify=bool(verify),
+2025-11-29T13:03:47.701977753Z         ^^^^^^^^^^^^^^^^^^^^
+2025-11-29T13:03:47.701980464Z     ...<2 lines>...
+2025-11-29T13:03:47.701982793Z         http2=True,
+2025-11-29T13:03:47.701985184Z         ^^^^^^^^^^^
+2025-11-29T13:03:47.701987453Z     )
+2025-11-29T13:03:47.701989884Z     ^
+2025-11-29T13:03:47.702057975Z TypeError: Client.__init__() got an unexpected keyword argument 'proxy'

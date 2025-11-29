@@ -1,7 +1,7 @@
 pyTelegramBotAPI==4.14.0
 Flask==3.0.0
 Flask-CORS==4.0.0
-supabase==2.4.1
+supabase==2.0.3
 openai==1.54.3
 APScheduler==3.10.4
 requests==2.31.0
