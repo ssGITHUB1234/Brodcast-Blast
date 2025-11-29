@@ -50,6 +50,11 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes (Nov 29, 2025)
+- ✅ **CRITICAL FIX: Registration Now Saves Correctly** 🔧
+  - Fixed Supabase update query order in user_service.py
+  - Changed: `.update(kwargs).eq('user_id', user_id)` → `.eq('user_id', user_id).update(kwargs)`
+  - Users can now complete registration (country + categories)
+  - Can now create broadcasts after registration ✅
 - ✅ **RENDER DEPLOYMENT COMPLETE** 🚀
   - Bot running on Render: https://brodcast-blast.onrender.com
   - Webhook configured: /api/webhook/telegram
@@ -62,10 +67,6 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
   - Webhook handler processes all Telegram updates
   - Bot handlers in bot/main.py process via webhook
   - Local Replit dev: Dashboard only (no polling conflicts)
-- ✅ **Previous Session Fixes**
-  - Fixed run.py for Render Deployment
-  - Fixed Registration Save Bug
-  - Webhook Support for Render Production
 - 2024-11-27: **Admin Monetag Ad Links Management Complete** - Direct links from Monetag
   - ✅ Admin pastes direct Monetag links (from Monetag Direct Links page)
   - ✅ Add, edit, delete ad links

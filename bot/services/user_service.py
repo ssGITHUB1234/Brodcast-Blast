@@ -37,7 +37,7 @@ class UserService:
     def update_user(self, user_id, **kwargs):
         """Update user details"""
         try:
-            response = self.db.table('users').update(kwargs).eq('user_id', user_id).execute()
+            response = self.db.table('users').eq('user_id', user_id).update(kwargs).execute()
             print(f"✅ Updated user {user_id}: {kwargs}")
             return response.data[0] if response.data else None
         except Exception as e:
