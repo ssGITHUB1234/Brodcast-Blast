@@ -494,8 +494,16 @@ def main():
     scheduler.start()
     print("✓ Broadcast queue processor started")
     
-    print("✓ Bot is running... Press Ctrl+C to stop")
-    bot.infinity_polling()
+    # Check if using webhooks (production) or polling (dev)
+    import os
+    if os.getenv('RENDER', False):
+        print("✓ Running on Render - using webhook mode")
+        print("✓ Bot ready for webhooks (set webhook URL in Telegram Bot API)")
+        # Don't start polling, let Flask handle updates via webhook
+        return
+    else:
+        print("✓ Bot is running... Press Ctrl+C to stop")
+        bot.infinity_polling()
 
 if __name__ == '__main__':
     main()

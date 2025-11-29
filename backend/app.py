@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from config.database import get_supabase_client
-from config.settings import FLASK_HOST, FLASK_PORT, ADMIN_USER_IDS
+from config.settings import FLASK_HOST, FLASK_PORT, ADMIN_USER_IDS, TELEGRAM_BOT_TOKEN
 from bot.services.user_service import UserService
 from bot.services.broadcast_service import BroadcastService
 from bot.services.priority_service import PrioritySlotService
@@ -10,6 +10,7 @@ import hmac
 import hashlib
 import json
 import os
+import telebot
 
 app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 CORS(app)
@@ -555,6 +556,31 @@ def xrocket_webhook():
         return jsonify({'ok': True})
     except Exception as e:
         print(f"xRocket webhook error: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/webhook/telegram', methods=['POST'])
+def telegram_webhook():
+    """Handle Telegram bot webhook updates"""
+    try:
+        if not TELEGRAM_BOT_TOKEN:
+            return jsonify({'error': 'Bot token not configured'}), 400
+        
+        # Create bot instance for webhook
+        if not hasattr(telegram_webhook, 'bot'):
+            telegram_webhook.bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+        
+        json_data = request.get_json()
+        update = telebot.types.Update.de_json(json_data)
+        
+        # Import all handlers
+        from bot.handlers import registration, broadcast_handlers, priority_handlers, menu_handler, analytics_handlers
+        
+        # Process the update through the bot
+        telegram_webhook.bot.process_new_updates([update])
+        
+        return jsonify({'ok': True})
+    except Exception as e:
+        print(f"Telegram webhook error: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
