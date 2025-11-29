@@ -14,10 +14,15 @@ def handle_menu(bot, message):
     user_id = message.from_user.id
     message_id = getattr(message, 'message_id', None)
     
+    user = None
     try:
         user = user_service.get_user(user_id)
-    except:
-        user = None
+        if not user:
+            print(f"❌ User {user_id} not found in database")
+        else:
+            print(f"✅ User {user_id} retrieved: country={user.get('country')}, categories={user.get('categories')}")
+    except Exception as e:
+        print(f"❌ Error retrieving user {user_id}: {e}")
     
     if user and user.get('blocked'):
         bot.reply_to(message, "Access denied. You have been blocked.")
@@ -49,12 +54,15 @@ def handle_menu(bot, message):
     
     if user:
         first_name = user.get('first_name', first_name)
-        country = user.get('country', 'Not set')
-        cats = user.get('categories', user.get('category', 'Not set'))
+        country = user.get('country') or 'Not set'
+        # Handle both 'categories' (array) and 'category' (old format)
+        cats = user.get('categories') or user.get('category')
         if isinstance(cats, list):
-            categories = ', '.join(cats)
+            categories = ', '.join(filter(None, cats)) if cats else 'Not set'
+        elif cats:
+            categories = str(cats)
         else:
-            categories = cats if cats else 'Not set'
+            categories = 'Not set'
     
     text = f"Main Menu{slot_msg}\n\n" \
            f"Welcome, {first_name}!\n" \
