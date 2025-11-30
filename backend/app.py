@@ -45,7 +45,7 @@ ad_settings = {
 
 # Import shared ads state
 from config.ads_state import (
-    users_watched_ads, ad_stats, mark_ad_watched, mark_ad_started,
+    users_watched_ads as users_ads_watched, ad_stats, mark_ad_watched, mark_ad_started,
     user_watched_ad as check_user_watched_ad, clear_watched, get_stats as get_ad_stats_data
 )
 
@@ -78,7 +78,7 @@ def get_pricing():
 def update_pricing(slot_key):
     """Update pricing for a slot"""
     try:
-        data = request.json
+        data = request.json or {}
         price = float(data.get('price', 0))
         
         if slot_key not in pricing_cache:
@@ -160,7 +160,7 @@ def get_user(user_id):
 def block_user(user_id):
     """Block/unblock a user"""
     try:
-        data = request.json
+        data = request.json or {}
         blocked = data.get('blocked', True)
         
         user = user_service.update_user(user_id, blocked=blocked)
@@ -449,7 +449,7 @@ def add_ad_link():
     """Add new Monetag ad link"""
     global next_link_id
     try:
-        data = request.json
+        data = request.json or {}
         link = data.get('link', '').strip()
         name = data.get('name', 'New Link')
         
@@ -476,7 +476,7 @@ def add_ad_link():
 def update_ad_link(link_id):
     """Update Monetag ad link name"""
     try:
-        data = request.json
+        data = request.json or {}
         link = next((l for l in monetag_links if l['id'] == link_id), None)
         
         if not link:
