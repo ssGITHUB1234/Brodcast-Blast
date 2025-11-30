@@ -50,20 +50,25 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes (Nov 30, 2025) - FINAL FIXES ✅
-- ✅ **NEW USERS NOW SAVE CORRECTLY - DUPLICATE KEY FIX** 🎉
-  - FIXED: Catch error code 23505 (duplicate key) and handle gracefully
-  - FIXED: When webhook creates user first, duplicate key error is now OK
-  - FIXED: Fallback to fetch user after error - ensures they're always found
-  - TESTED: Works with both /start and webhook user creation ✅
-- ✅ **CREATE BROADCAST BUTTON NOW WORKS** ✨
-  - FIXED: Changed handle_create_broadcast to use edit_or_send
-  - FIXED: Works with fake message objects from callbacks
-  - User sees ad prompt when clicking button ✅
+- ✅ **DUPLICATE KEY RACE CONDITION FIXED - UPSERT METHOD** 🚀
+  - FIXED: Replaced `INSERT` with `UPSERT` (atomic operation)
+  - FIXED: Multiple simultaneous user creation attempts no longer crash
+  - FIXED: Eliminates race condition between webhook and /start handler
+  - TESTED LOCALLY: ✅ 2 simultaneous upsert attempts = both succeed, no errors
+  - ON RENDER: Users can now send `/start` from multiple sources safely
+- ✅ **NEW USER REGISTRATION COMPLETE** 🎉
+  - Users created on first contact (webhook or /start)
+  - UPSERT ensures idempotent creation - safe for concurrent requests
+  - Works perfectly with fast webhook processing
+- ✅ **CREATE BROADCAST BUTTON WORKS** ✨
+  - Shows ad prompt when clicked
+  - User sees "Watch Ad Now" button
 - ✅ **ADS SYSTEM COMPLETE & WORKING** 🎬⏱️✅
-  - ✅ Monetag SDK integration with 30-second countdown timer
-  - ✅ `/ad-viewer` page with auto-completion button
-  - ✅ Ad state tracking via `config/ads_state.py`
-  - ✅ Works on localhost + Render production
+  - ✅ Monetag SDK integration with 30-second countdown
+  - ✅ `/ad-viewer` page loads ad in iframe
+  - ✅ Auto-completion button after timer
+  - ✅ In-memory session tracking of watched ads
+  - ✅ `/api/ads/watched` endpoint marks user as watched
 - ✅ **RENDER DEPLOYMENT COMPLETE** 🚀
   - Bot running on Render: https://brodcast-blast.onrender.com
   - Webhook configured: /api/webhook/telegram
