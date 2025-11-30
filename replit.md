@@ -50,26 +50,23 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes (Nov 30, 2025)
+- ✅ **CREATE BROADCAST BUTTON NOW WORKS** ✨
+  - FIXED: Changed handle_create_broadcast to use edit_or_send instead of reply_to
+  - FIXED: Works correctly when called from menu callback with fake message objects
+  - FIXED: Added try-except error handling with detailed logging
+  - FIXED: All error paths properly handled and reported back to user
+  - User now sees ad prompt when clicking "Create Broadcast" button
 - ✅ **ADS SYSTEM COMPLETE & WORKING** 🎬⏱️✅
   - ✅ Monetag SDK integration with 30-second countdown timer
   - ✅ `/ad-viewer` page with auto-completion button
   - ✅ Backend API routes: `/api/ads/watched`, `/api/ads/stats`, `/api/ads/check`, etc
   - ✅ Ad state tracking via `config/ads_state.py`
   - ✅ Mandatory ads before each broadcast creation
-  - ✅ User gets "Watch Ad Now" button when using `/create` command (always shows now!)
-  - ✅ Timer shows countdown (30s → 0s)
-  - ✅ Auto-marks user as watched when timer completes
-  - ✅ Returns to Telegram to continue broadcast creation
-  - ✅ FIXED: Removed dependency check - ads always show
-  - ✅ FIXED: Works on localhost + Render production
+  - ✅ Works on both localhost and Render production
 - ✅ **CRITICAL FIX: New Users Now Save Correctly** 🔧
   - Fixed user creation with proper default values
   - New users now created with: country=None, categories=[], active=True
-  - Added detailed error logging for troubleshooting
-  - All new users can now complete registration and create broadcasts
-  - Old users continue to work as before ✅
-- ✅ **Previous: Registration Query Fixed** 🔧
-  - Fixed Supabase update query order: `.eq('user_id', user_id).update(kwargs)`
+  - All new users can complete registration and create broadcasts
 - ✅ **RENDER DEPLOYMENT COMPLETE** 🚀
   - Bot running on Render: https://brodcast-blast.onrender.com
   - Webhook configured: /api/webhook/telegram

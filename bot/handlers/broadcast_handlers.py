@@ -17,60 +17,69 @@ users_ads_watched = set()
 
 def handle_create_broadcast(bot, message):
     """Start broadcast creation process - show ad if required"""
+    from bot.utils.nav_helpers import edit_or_send
+    
     user_id = message.from_user.id
-    user = user_service.get_user(user_id)
+    message_id = getattr(message, 'message_id', None)
+    chat_id = message.chat.id
     
-    # Auto-register user if they don't exist
-    if not user:
-        try:
-            user_service.create_user(
-                user_id,
-                message.from_user.username,
-                message.from_user.first_name,
-                message.from_user.last_name
+    try:
+        user = user_service.get_user(user_id)
+        
+        # Auto-register user if they don't exist
+        if not user:
+            try:
+                user_service.create_user(
+                    user_id,
+                    message.from_user.username,
+                    message.from_user.first_name,
+                    message.from_user.last_name
+                )
+                edit_or_send(bot, chat_id, f"Welcome! Quick registration:\n\nPlease use /start to select your country & interests.\n\nThen come back to /create", message_id)
+                return
+            except Exception as e:
+                print(f"❌ Auto-register error: {e}")
+                edit_or_send(bot, chat_id, "❌ Registration failed. Please try /start", message_id)
+                return
+        
+        # Check if user is blocked
+        if user.get('blocked'):
+            edit_or_send(bot, chat_id, "⛔ You have been blocked and cannot create broadcasts.", message_id)
+            return
+        
+        # Check if user already watched ad in this session
+        already_watched = ads_state.user_watched_ad(user_id)
+        
+        # Always require ads
+        if not already_watched:
+            domain = os.environ.get('REPLIT_DOMAIN', '').strip()
+            
+            # For local dev, use localhost for testing
+            if not domain or domain == '':
+                domain = 'localhost:5000'
+            
+            # Use default Monetag link
+            default_link = 'https://linkmoneta.g.com/?link=10243712'
+            import urllib.parse
+            ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={urllib.parse.quote(default_link, safe='')}"
+            
+            markup = types.InlineKeyboardMarkup()
+            markup.add(
+                types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
             )
-            bot.reply_to(message, f"Welcome! Quick registration:\n\nPlease use /start to select your country & interests.\n\nThen come back to /create")
+            edit_or_send(bot, chat_id,
+                "🎬 Watch Ad to Unlock Broadcast\n\n"
+                "Click to watch - timer auto-completes!\n"
+                "⏱️ 30 seconds total\n\n"
+                "After watching, return here and click /create again.",
+                message_id, markup)
             return
-        except Exception as e:
-            print(f"Auto-register error: {e}")
-            bot.reply_to(message, "❌ Registration failed. Please try /start")
-            return
-    
-    # Check if user is blocked
-    if user.get('blocked'):
-        bot.reply_to(message, "⛔ You have been blocked and cannot create broadcasts.")
-        return
-    
-    # Check if user already watched ad in this session
-    already_watched = ads_state.user_watched_ad(user_id)
-    
-    # Always require ads
-    if not already_watched:
-        domain = os.environ.get('REPLIT_DOMAIN', '').strip()
         
-        # For local dev, use localhost for testing
-        if not domain or domain == '':
-            domain = 'localhost:5000'
-        
-        # Use default Monetag link
-        default_link = 'https://linkmoneta.g.com/?link=10243712'
-        import urllib.parse
-        ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={urllib.parse.quote(default_link, safe='')}"
-        
-        markup = types.InlineKeyboardMarkup()
-        markup.add(
-            types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
-        )
-        bot.send_message(message.chat.id,
-            "🎬 Watch Ad to Unlock Broadcast\n\n"
-            "Click to watch - timer auto-completes!\n"
-            "⏱️ 30 seconds total\n\n"
-            "After watching, return here and click /create again.",
-            reply_markup=markup)
-        return
-    
-    # User watched ad or system failed - allow broadcast
-    start_broadcast_creation(bot, message, user_id)
+        # User watched ad or system failed - allow broadcast
+        start_broadcast_creation(bot, message, user_id)
+    except Exception as e:
+        print(f"❌ handle_create_broadcast error: {e}")
+        edit_or_send(bot, chat_id, f"❌ Error: {str(e)[:50]}", message_id)
 
 def start_broadcast_creation(bot, message, user_id):
     """Start the actual broadcast creation flow"""
