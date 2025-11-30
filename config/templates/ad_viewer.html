@@ -187,16 +187,25 @@
         // Get parameters from URL
         const params = new URLSearchParams(window.location.search);
         const userId = params.get('user_id');
-        const adLink = params.get('link');
+        const sessionToken = params.get('token');
         
         let timeRemaining = 30;
         let adCompleted = false;
         
+        // Check if running in Telegram WebApp context
+        const isTelegramWebApp = typeof window.Telegram !== 'undefined' && window.Telegram.WebApp;
+        
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            if (!userId || !adLink) {
-                showError('Invalid ad link parameters');
+            if (!userId || !sessionToken) {
+                showError('Invalid session parameters');
                 return;
+            }
+            
+            if (isTelegramWebApp) {
+                // Setup Telegram WebApp
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
             }
             
             // Start timer
@@ -264,17 +273,20 @@
         }
         
         function markAdAsWatched() {
-            if (!userId) return;
+            if (!userId || !sessionToken) return;
             
-            // Call backend to mark as watched
+            // Call backend to mark as watched with session token
             fetch(`/api/ads/watched/${userId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    token: sessionToken,
                     timestamp: new Date().toISOString()
                 })
+            }).then(resp => {
+                console.log('Ad marked as watched:', resp.status);
             }).catch(err => console.error('Error marking ad watched:', err));
         }
         
@@ -295,16 +307,15 @@
         }
         
         function returnToTelegram() {
-            // Construct deep link to return to bot
-            const deepLink = `tg://user?id=${userId}`;
-            
-            // Try to open Telegram
-            window.location.href = `tg://resolve?domain=BroadcastBlastBot`;
-            
-            // Fallback: Just tell user to return
-            setTimeout(() => {
-                alert('Please return to Telegram and click /create again to start your broadcast!');
-            }, 1000);
+            if (isTelegramWebApp) {
+                // Close WebApp and return to Telegram bot
+                window.Telegram.WebApp.close();
+            } else {
+                // Fallback for non-WebApp context
+                setTimeout(() => {
+                    alert('Ad complete! Please return to Telegram and click /create again to start your broadcast!');
+                }, 500);
+            }
         }
         
         function showError(message) {

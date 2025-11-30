@@ -18,6 +18,7 @@ users_ads_watched = set()
 def handle_create_broadcast(bot, message):
     """Start broadcast creation process - show ad if required"""
     from bot.utils.nav_helpers import edit_or_send
+    import secrets
     
     user_id = message.from_user.id
     message_id = getattr(message, 'message_id', None)
@@ -52,26 +53,35 @@ def handle_create_broadcast(bot, message):
         
         # Always require ads
         if not already_watched:
-            domain = os.environ.get('REPLIT_DOMAIN', '').strip()
+            # Generate unique session token for this ad session
+            session_token = secrets.token_urlsafe(32)
             
-            # For local dev, use localhost for testing
-            if not domain or domain == '':
-                domain = 'localhost:5000'
+            # Get domain - support both Render and Replit
+            webhook_url = os.environ.get('WEBHOOK_URL', '').strip()
+            if webhook_url:
+                # Render deployment
+                base_url = webhook_url.rstrip('/')
+            else:
+                # Replit deployment
+                replit_domain = os.environ.get('REPLIT_DOMAIN', '').strip()
+                if replit_domain:
+                    base_url = f"https://{replit_domain}"
+                else:
+                    base_url = "http://localhost:5000"
             
-            # Use default Monetag link
-            default_link = 'https://linkmoneta.g.com/?link=10243712'
-            import urllib.parse
-            ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={urllib.parse.quote(default_link, safe='')}"
+            # Create WebApp URL with session token
+            ad_viewer_url = f"{base_url}/ad-viewer?user_id={user_id}&token={session_token}"
             
+            # Use WebApp button instead of URL button (more reliable in Telegram)
             markup = types.InlineKeyboardMarkup()
             markup.add(
-                types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
+                types.InlineKeyboardButton("▶️ Watch Ad & Unlock", web_app=types.WebAppInfo(url=ad_viewer_url))
             )
             edit_or_send(bot, chat_id,
-                "🎬 Watch Ad to Unlock Broadcast\n\n"
-                "Click to watch - timer auto-completes!\n"
-                "⏱️ 30 seconds total\n\n"
-                "After watching, return here and click /create again.",
+                "🎬 Watch Ad to Create Broadcast\n\n"
+                "Click the button below to watch a quick ad.\n"
+                "⏳ Takes about 30 seconds\n\n"
+                "Your broadcast will be ready to create immediately after!",
                 message_id, markup)
             return
         

@@ -1,0 +1,235 @@
+"""
+Advertisement manager for rotating and playing ads
+"""
+
+import logging
+import random
+import asyncio
+import re
+import os
+import secrets
+from datetime import datetime
+from typing import TYPE_CHECKING
+from telegram import Bot, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
+
+if TYPE_CHECKING:
+    from storage_postgres import PostgreSQLStorage
+    from storage_json import JSONStorage
+
+logger = logging.getLogger(__name__)
+
+class AdManager:
+    def __init__(self, storage):
+        self.storage = storage
+        self._initialize_default_ads()
+
+    def _initialize_default_ads(self):
+        """Initialize default text-based ads if none exist"""
+        existing_ads = self.storage.get_ads()
+        
+        if not existing_ads:
+            default_ads = [
+                {
+                    'id': 'ad_1',
+                    'type': 'text',
+                    'content': '🎯 Special Offer! Get 50% off premium subscriptions!\n\nUse code: SAVE50\n\n⏰ Limited time offer!',
+                    'duration': 5,
+                    'active': True,
+                    'created_at': datetime.now().isoformat()
+                },
+                {
+                    'id': 'ad_5',
+                    'type': 'text',
+                    'content': '🎮 Gamers unite! New gaming accessories available!\n\nProfessional grade equipment for serious players.\n\n🏆 Level up your game!',
+                    'duration': 5,
+                    'active': True,
+                    'created_at': datetime.now().isoformat()
+                }
+            ]
+            
+            for ad in default_ads:
+                self.storage.save_ad(ad)
+            
+            logger.info(f"Initialized {len(default_ads)} default ads")
+
+    def get_next_ad(self) -> dict:
+        """Get next ad in rotation"""
+        ads = self.storage.get_ads()
+        active_ads = [ad for ad in ads.values() if ad.get('active', True)]
+        
+        if not active_ads:
+            logger.warning("No active ads available")
+            return {}
+        
+        # Random selection for better variety
+        selected_ad = random.choice(active_ads)
+        
+        # Update last shown timestamp
+        selected_ad['last_shown'] = datetime.now().isoformat()
+        self.storage.save_ad(selected_ad)
+        
+        logger.info(f"Selected ad: {selected_ad['id']}")
+        return selected_ad
+
+    async def send_ad_to_user(self, bot: Bot, user_id: int, video_id: str = "") -> tuple[bool, str]:
+        """Send ad to user before video"""
+        try:
+            ad = self.get_next_ad()
+            if not ad:
+                logger.error("No ad available to send")
+                return False, ""
+            
+            # Generate unique session token
+            session_token = secrets.token_urlsafe(32)
+            
+            # Get domain from environment
+            # For Render (webhook mode): use WEBHOOK_URL
+            # For Replit: use REPLIT_DOMAINS
+            webhook_url = os.environ.get('WEBHOOK_URL')
+            if webhook_url:
+                # Render deployment - use WEBHOOK_URL
+                base_url = webhook_url.rstrip('/')
+            else:
+                # Replit deployment - use REPLIT_DOMAINS
+                domains = os.environ.get('REPLIT_DOMAINS', 'localhost:5000')
+                domain = domains.split(',')[0].strip() if ',' in domains else domains
+                protocol = 'https://' if 'replit.dev' in domain else 'http://'
+                base_url = f"{protocol}{domain}"
+            
+            # Create WebApp URL with user_id, ad_id, video_id, and session_token
+            webapp_url = f"{base_url}/ad?user_id={user_id}&ad_id={ad['id']}&video_id={video_id}&token={session_token}"
+            
+            # Create inline keyboard with WebApp button (no popup)
+            keyboard = InlineKeyboardMarkup([
+                [InlineKeyboardButton("▶️ Watch Ad & Get Video", web_app=WebAppInfo(url=webapp_url))]
+            ])
+            
+            # Message that explains the ad
+            ad_message = "🎯 Click the button below to watch the ad.\n\n⏳ Your video will be sent automatically after 15 seconds!"
+            
+            # Send ad message with button
+            try:
+                message = await bot.send_message(
+                    chat_id=user_id,
+                    text=ad_message,
+                    reply_markup=keyboard
+                )
+            except Exception as send_error:
+                error_msg = str(send_error).lower()
+                if "forbidden" in error_msg or "bot can't initiate conversation" in error_msg:
+                    logger.warning(f"User {user_id} hasn't started the bot yet. Cannot send ad.")
+                    return False, "user_not_started"
+                raise
+            
+            # Start ad session in storage only after successful DM send
+            self.storage.start_ad_session(user_id, ad['id'], video_id, session_token)
+            
+            # Update ad statistics
+            self._update_ad_stats(ad['id'])
+            
+            logger.info(f"Ad {ad['id']} sent to user {user_id} with WebApp and session token")
+            return True, ad['id']
+            
+        except Exception as e:
+            logger.error(f"Error sending ad to user {user_id}: {e}")
+            return False, ""
+
+    async def _delete_ad_message(self, bot: Bot, user_id: int, message_id: int, delay: int):
+        """Delete ad message after specified delay"""
+        try:
+            await asyncio.sleep(delay)
+            await bot.delete_message(chat_id=user_id, message_id=message_id)
+            logger.debug(f"Ad message {message_id} deleted for user {user_id}")
+        except Exception as e:
+            logger.debug(f"Failed to delete ad message: {e}")
+
+    def _update_ad_stats(self, ad_id: str):
+        """Update ad view statistics"""
+        try:
+            ad = self.storage.get_ad(ad_id)
+            if ad:
+                ad['views'] = ad.get('views', 0) + 1
+                ad['last_shown'] = datetime.now().isoformat()
+                self.storage.save_ad(ad)
+        except Exception as e:
+            logger.error(f"Error updating ad stats for {ad_id}: {e}")
+
+    def add_ad(self, ad_data: dict) -> str:
+        """Add new ad to rotation"""
+        try:
+            ad_id = ad_data.get('id') or f"ad_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+            ad = {
+                'id': ad_id,
+                'type': ad_data.get('type', 'text'),
+                'content': ad_data['content'],
+                'duration': ad_data.get('duration', 5),
+                'active': ad_data.get('active', True),
+                'created_at': datetime.now().isoformat(),
+                'views': 0
+            }
+            
+            self.storage.save_ad(ad)
+            logger.info(f"New ad added: {ad_id}")
+            return ad_id
+            
+        except Exception as e:
+            logger.error(f"Error adding ad: {e}")
+            return ""
+
+    def update_ad(self, ad_id: str, updates: dict) -> bool:
+        """Update existing ad"""
+        try:
+            ad = self.storage.get_ad(ad_id)
+            if not ad:
+                return False
+            
+            ad.update(updates)
+            ad['updated_at'] = datetime.now().isoformat()
+            
+            self.storage.save_ad(ad)
+            logger.info(f"Ad updated: {ad_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error updating ad {ad_id}: {e}")
+            return False
+
+    def delete_ad(self, ad_id: str) -> bool:
+        """Delete ad from rotation"""
+        try:
+            self.storage.delete_ad(ad_id)
+            logger.info(f"Ad deleted: {ad_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error deleting ad {ad_id}: {e}")
+            return False
+
+    def get_ad_statistics(self) -> dict:
+        """Get advertisement statistics"""
+        ads = self.storage.get_ads()
+        
+        total_ads = len(ads)
+        active_ads = sum(1 for ad in ads.values() if ad.get('active', True))
+        total_views = sum(ad.get('views', 0) for ad in ads.values())
+        
+        # Most popular ad
+        most_popular = None
+        if ads:
+            most_popular = max(ads.values(), key=lambda a: a.get('views', 0))
+        
+        return {
+            'total_ads': total_ads,
+            'active_ads': active_ads,
+            'total_views': total_views,
+            'most_popular_ad': most_popular['id'] if most_popular else None,
+            'most_popular_views': most_popular.get('views', 0) if most_popular else 0
+        }
+
+    def list_ads(self) -> list:
+        """List all ads"""
+        return list(self.storage.get_ads().values())
+
+    def get_ad(self, ad_id: str) -> dict:
+        """Get specific ad by ID"""
+        return self.storage.get_ad(ad_id)

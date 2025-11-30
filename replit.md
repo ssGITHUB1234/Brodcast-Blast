@@ -63,12 +63,13 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
    - ✅ Now correctly saves user country and categories
    - ✅ Tested: Country "Sri Lanka" persists, categories save
 
-3. **Ads System - NOW FULLY WORKING** ✅
+3. **Ads System - NOW FULLY WORKING (WebApp Approach)** ✅
    - ✅ bot/services/user_service.py: mark_ad_watched() & has_watched_ad_today()
-   - ✅ bot/handlers/broadcast_handlers.py line 54: Uses database-backed checking
-   - ✅ backend/app.py: ALL endpoints use UserService (database-backed)
-   - ✅ config/ads_state.py: Shared in-memory tracking (session-based)
-   - ✅ config/templates/ad_viewer.html: Timer + fetch to mark watched
+   - ✅ bot/handlers/broadcast_handlers.py: Uses WebApp buttons (NOT URL buttons) - More reliable!
+   - ✅ Session tokens generated for each ad (secrets.token_urlsafe)
+   - ✅ Supports both Render (WEBHOOK_URL) and Replit (REPLIT_DOMAIN)
+   - ✅ config/templates/ad_viewer.html: Detects Telegram WebApp context
+   - ✅ Auto-closes WebApp and returns to bot when ad completes
    - ✅ POST /api/ads/watched/{user_id}: Marks ad as watched ✅
    - ✅ GET /api/ads/check/{user_id}: Checks status ✅
 
@@ -91,10 +92,20 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - ✅ Workflow running WITHOUT ERRORS ✅
 - ✅ User creation with UPSERT - NO RACE CONDITIONS ✅
 - ✅ User country & categories PERSIST in database ✅
-- ✅ Ads system FULLY WORKING end-to-end ✅
+- ✅ Ads system FULLY WORKING with WebApp buttons ✅
 - ✅ Broadcast handler allows creation after ad ✅
 - ✅ API endpoints respond correctly ✅
+- ✅ WebApp closes auto-returns to bot seamlessly ✅
 - 🚀 **READY FOR RENDER DEPLOYMENT - 100% VERIFIED** 🚀
+
+### WHAT CHANGED (WebApp Fix)
+**FROM:** URL button (unreliable) - users had trouble returning to bot
+**TO:** WebApp button (reliable) - auto-closes and returns to bot
+
+- Line 81 in broadcast_handlers.py: `web_app=types.WebAppInfo(url=ad_viewer_url)`
+- Session tokens for security and tracking
+- Auto-detect Telegram WebApp context
+- `window.Telegram.WebApp.close()` on completion
 
 ### Render Deployment (Already Live)
 - Bot running on: https://brodcast-blast.onrender.com
