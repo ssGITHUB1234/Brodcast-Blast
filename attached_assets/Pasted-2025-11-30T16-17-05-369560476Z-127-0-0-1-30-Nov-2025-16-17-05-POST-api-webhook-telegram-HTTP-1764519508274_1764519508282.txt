@@ -1,0 +1,126 @@
+2025-11-30T16:17:05.369560476Z 127.0.0.1 - - [30/Nov/2025 16:17:05] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T16:17:10.4003067Z 127.0.0.1 - - [30/Nov/2025 16:17:10] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T16:17:13.374695283Z 127.0.0.1 - - [30/Nov/2025 16:17:13] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T16:17:15.693553676Z 127.0.0.1 - - [30/Nov/2025 16:17:15] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T16:17:18.365287689Z 127.0.0.1 - - [30/Nov/2025 16:17:18] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T16:17:19.920403443Z 127.0.0.1 - - [30/Nov/2025 16:17:19] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T16:17:21.54701577Z 127.0.0.1 - - [30/Nov/2025 16:17:21] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T16:17:23.128599225Z 127.0.0.1 - - [30/Nov/2025 16:17:23] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T16:17:23.129547769Z 
+2025-11-30T16:17:23.12958019Z [WEBHOOK] Received update 162628919
+2025-11-30T16:17:23.12958576Z [WEBHOOK] telegram_bot initialized: True
+2025-11-30T16:17:23.12959257Z [WEBHOOK] Message update from user 5034792759
+2025-11-30T16:17:23.12959737Z [WEBHOOK] Converting JSON to Update object...
+2025-11-30T16:17:23.12960172Z [WEBHOOK] Update object created, processing...
+2025-11-30T16:17:23.12960699Z ✓ [WEBHOOK] Processed update 162628919 successfully
+2025-11-30T16:17:23.129611961Z ✅ Retrieved user 5034792759: country=United States, categories=['Finance']
+2025-11-30T16:17:23.129616241Z ✅ User 5034792759 retrieved: country=United States, categories=['Finance']
+2025-11-30T16:17:23.129620161Z 
+2025-11-30T16:17:23.129624371Z [WEBHOOK] Received update 162628920
+2025-11-30T16:17:23.129628781Z [WEBHOOK] telegram_bot initialized: True
+2025-11-30T16:17:23.129633341Z [WEBHOOK] Callback query from user 5034792759: data=menu_create
+2025-11-30T16:17:23.129647391Z [WEBHOOK] Converting JSON to Update object...
+2025-11-30T16:17:23.129650301Z [WEBHOOK] Update object created, processing...
+2025-11-30T16:17:23.129652751Z ✓ [WEBHOOK] Processed update 162628920 successfully
+2025-11-30T16:17:23.129655451Z [CREATE_BROADCAST] User 5034792759 triggered create broadcast (message_id=695, chat_id=5034792759)
+2025-11-30T16:17:23.129659221Z [CREATE_BROADCAST] Getting user 5034792759...
+2025-11-30T16:17:23.129662471Z ✅ Retrieved user 5034792759: country=United States, categories=['Finance']
+2025-11-30T16:17:23.129665401Z [CREATE_BROADCAST] Checking if user 5034792759 watched ad...
+2025-11-30T16:17:23.129668741Z [CREATE_BROADCAST] User 5034792759 already_watched=False
+2025-11-30T16:17:23.129670701Z [CREATE_BROADCAST] User 5034792759 must watch ad first
+2025-11-30T16:17:23.129672471Z [CREATE_BROADCAST] Using localhost domain: http://localhost:5000
+2025-11-30T16:17:23.129674551Z [CREATE_BROADCAST] Ad viewer URL: http://localhost:5000/ad-viewer?user_id=5034792759&token=SG_2FDDQ31vf8mFrroRRk33_-gqsHcquuWtGa2nqsVk
+2025-11-30T16:17:23.129676871Z Message operation error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: inline keyboard button Web App URL 'http://localhost:5000/ad-viewer?user_id=5034792759&token=SG_2FDDQ31vf8mFrroRRk33_-gqsHcquuWtGa2nqsVk' is invalid: Only HTTPS links are allowed
+2025-11-30T16:17:23.129680582Z [CREATE_BROADCAST] Ad button sent to user 5034792759
+2025-11-30T16:17:23.129682282Z 
+2025-11-30T16:17:23.129684091Z [WEBHOOK] Received update 162628921
+2025-11-30T16:17:23.129685802Z [WEBHOOK] telegram_bot initialized: True
+2025-11-30T16:17:23.129687511Z [WEBHOOK] Callback query from user 5034792759: data=menu_create
+2025-11-30T16:17:23.129689211Z [WEBHOOK] Converting JSON to Update object...
+2025-11-30T16:17:23.129690942Z [WEBHOOK] Update object created, processing...
+2025-11-30T16:17:23.129692682Z ✓ [WEBHOOK] Processed update 162628921 successfully
+2025-11-30T16:17:23.129694462Z [CREATE_BROADCAST] User 5034792759 triggered create broadcast (message_id=695, chat_id=5034792759)
+2025-11-30T16:17:23.129696212Z [CREATE_BROADCAST] Getting user 5034792759...
+2025-11-30T16:17:23.129698002Z ✅ Retrieved user 5034792759: country=United States, categories=['Finance']
+2025-11-30T16:17:23.129699682Z [CREATE_BROADCAST] Checking if user 5034792759 watched ad...
+2025-11-30T16:17:23.129701392Z [CREATE_BROADCAST] User 5034792759 already_watched=False
+2025-11-30T16:17:23.129703072Z [CREATE_BROADCAST] User 5034792759 must watch ad first
+2025-11-30T16:17:23.129704812Z [CREATE_BROADCAST] Using localhost domain: http://localhost:5000
+2025-11-30T16:17:23.129706542Z [CREATE_BROADCAST] Ad viewer URL: http://localhost:5000/ad-viewer?user_id=5034792759&token=A0GJYukD3c4onT6qrx4DwlTPo8Gd_QTAoQ37ft70cLM
+2025-11-30T16:17:23.129708312Z Message operation error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: inline keyboard button Web App URL 'http://localhost:5000/ad-viewer?user_id=5034792759&token=A0GJYukD3c4onT6qrx4DwlTPo8Gd_QTAoQ37ft70cLM' is invalid: Only HTTPS links are allowed
+2025-11-30T16:17:23.129710082Z [CREATE_BROADCAST] Ad button sent to user 5034792759
+2025-11-30T16:17:23.129711682Z 
+2025-11-30T16:17:23.129713382Z [WEBHOOK] Received update 162628922
+2025-11-30T16:17:23.129715102Z [WEBHOOK] telegram_bot initialized: True
+2025-11-30T16:17:23.129716782Z [WEBHOOK] Callback query from user 5034792759: data=menu_create
+2025-11-30T16:17:23.129718472Z [WEBHOOK] Converting JSON to Update object...
+2025-11-30T16:17:23.129720162Z [WEBHOOK] Update object created, processing...
+2025-11-30T16:17:23.129721832Z ✓ [WEBHOOK] Processed update 162628922 successfully
+2025-11-30T16:17:23.129727282Z [CREATE_BROADCAST] User 5034792759 triggered create broadcast (message_id=695, chat_id=5034792759)
+2025-11-30T16:17:23.129730132Z [CREATE_BROADCAST] Getting user 5034792759...
+2025-11-30T16:17:23.129731992Z ✅ Retrieved user 5034792759: country=United States, categories=['Finance']
+2025-11-30T16:17:23.129733712Z [CREATE_BROADCAST] Checking if user 5034792759 watched ad...
+2025-11-30T16:17:23.129735372Z [CREATE_BROADCAST] User 5034792759 already_watched=False
+2025-11-30T16:17:23.129737062Z [CREATE_BROADCAST] User 5034792759 must watch ad first
+2025-11-30T16:17:23.129738832Z [CREATE_BROADCAST] Using localhost domain: http://localhost:5000
+2025-11-30T16:17:23.129740622Z [CREATE_BROADCAST] Ad viewer URL: http://localhost:5000/ad-viewer?user_id=5034792759&token=VXjW0Q0anClfUaoQYBqsh_DWzAGy-R-wktaTrnxHDMI
+2025-11-30T16:17:23.129742572Z Message operation error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: inline keyboard button Web App URL 'http://localhost:5000/ad-viewer?user_id=5034792759&token=VXjW0Q0anClfUaoQYBqsh_DWzAGy-R-wktaTrnxHDMI' is invalid: Only HTTPS links are allowed
+2025-11-30T16:17:23.129753132Z [CREATE_BROADCAST] Ad button sent to user 5034792759
+2025-11-30T16:17:23.129754972Z 
+2025-11-30T16:17:23.129756693Z [WEBHOOK] Received update 162628923
+2025-11-30T16:17:23.129758433Z [WEBHOOK] telegram_bot initialized: True
+2025-11-30T16:17:23.129760123Z [WEBHOOK] Callback query from user 5034792759: data=menu_create
+2025-11-30T16:17:23.129761833Z [WEBHOOK] Converting JSON to Update object...
+2025-11-30T16:17:23.129763563Z [WEBHOOK] Update object created, processing...
+2025-11-30T16:17:23.129765253Z ✓ [WEBHOOK] Processed update 162628923 successfully
+2025-11-30T16:17:23.129767053Z [CREATE_BROADCAST] User 5034792759 triggered create broadcast (message_id=695, chat_id=5034792759)
+2025-11-30T16:17:23.129768763Z [CREATE_BROADCAST] Getting user 5034792759...
+2025-11-30T16:17:23.129770483Z ✅ Retrieved user 5034792759: country=United States, categories=['Finance']
+2025-11-30T16:17:23.129772233Z [CREATE_BROADCAST] Checking if user 5034792759 watched ad...
+2025-11-30T16:17:23.129773913Z [CREATE_BROADCAST] User 5034792759 already_watched=False
+2025-11-30T16:17:23.129775583Z [CREATE_BROADCAST] User 5034792759 must watch ad first
+2025-11-30T16:17:23.129777283Z [CREATE_BROADCAST] Using localhost domain: http://localhost:5000
+2025-11-30T16:17:23.129779133Z [CREATE_BROADCAST] Ad viewer URL: http://localhost:5000/ad-viewer?user_id=5034792759&token=43qKZ_qQuaZe6lpJcSbFntoaj1C7IDLcCYR7JrSRfVg
+2025-11-30T16:17:23.129780963Z Message operation error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: inline keyboard button Web App URL 'http://localhost:5000/ad-viewer?user_id=5034792759&token=43qKZ_qQuaZe6lpJcSbFntoaj1C7IDLcCYR7JrSRfVg' is invalid: Only HTTPS links are allowed
+2025-11-30T16:17:23.129782673Z [CREATE_BROADCAST] Ad button sent to user 5034792759
+2025-11-30T16:17:23.129784233Z 
+2025-11-30T16:17:23.129785903Z [WEBHOOK] Received update 162628924
+2025-11-30T16:17:23.129787603Z [WEBHOOK] telegram_bot initialized: True
+2025-11-30T16:17:23.129789303Z [WEBHOOK] Callback query from user 5034792759: data=menu_create
+2025-11-30T16:17:23.129791033Z [WEBHOOK] Converting JSON to Update object...
+2025-11-30T16:17:23.129792793Z [WEBHOOK] Update object created, processing...
+2025-11-30T16:17:23.129823594Z ✓ [WEBHOOK] Processed update 162628924 successfully
+2025-11-30T16:17:23.129833454Z [CREATE_BROADCAST] User 5034792759 triggered create broadcast (message_id=695, chat_id=5034792759)
+2025-11-30T16:17:23.129836484Z [CREATE_BROADCAST] Getting user 5034792759...
+2025-11-30T16:17:23.129847104Z ✅ Retrieved user 5034792759: country=United States, categories=['Finance']
+2025-11-30T16:17:23.129850294Z [CREATE_BROADCAST] Checking if user 5034792759 watched ad...
+2025-11-30T16:17:23.129853264Z [CREATE_BROADCAST] User 5034792759 already_watched=False
+2025-11-30T16:17:23.129855984Z [CREATE_BROADCAST] User 5034792759 must watch ad first
+2025-11-30T16:17:23.129857704Z [CREATE_BROADCAST] Using localhost domain: http://localhost:5000
+2025-11-30T16:17:23.129859504Z [CREATE_BROADCAST] Ad viewer URL: http://localhost:5000/ad-viewer?user_id=5034792759&token=nXukbi7FlzOwBPaebu-aZJeYyb990DwXkvDXYJ8Jj7s
+2025-11-30T16:17:23.129861314Z Message operation error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: inline keyboard button Web App URL 'http://localhost:5000/ad-viewer?user_id=5034792759&token=nXukbi7FlzOwBPaebu-aZJeYyb990DwXkvDXYJ8Jj7s' is invalid: Only HTTPS links are allowed
+2025-11-30T16:17:23.129863084Z [CREATE_BROADCAST] Ad button sent to user 5034792759
+2025-11-30T16:17:23.129864684Z 
+2025-11-30T16:17:23.129866444Z [WEBHOOK] Received update 162628925
+2025-11-30T16:17:23.129868224Z [WEBHOOK] telegram_bot initialized: True
+2025-11-30T16:17:23.129869964Z [WEBHOOK] Callback query from user 5034792759: data=menu_create
+2025-11-30T16:17:23.129871714Z [WEBHOOK] Converting JSON to Update object...
+2025-11-30T16:17:23.129873474Z [WEBHOOK] Update object created, processing...
+2025-11-30T16:17:23.129875154Z ✓ [WEBHOOK] Processed update 162628925 successfully
+2025-11-30T16:17:23.129876854Z [CREATE_BROADCAST] User 5034792759 triggered create broadcast (message_id=695, chat_id=5034792759)
+2025-11-30T16:17:23.129878545Z [CREATE_BROADCAST] Getting user 5034792759...
+2025-11-30T16:17:23.129880245Z ✅ Retrieved user 5034792759: country=United States, categories=['Finance']
+2025-11-30T16:17:23.129881925Z [CREATE_BROADCAST] Checking if user 5034792759 watched ad...
+2025-11-30T16:17:23.129883694Z [CREATE_BROADCAST] User 5034792759 already_watched=False
+2025-11-30T16:17:23.129885425Z [CREATE_BROADCAST] User 5034792759 must watch ad first
+2025-11-30T16:17:23.129887194Z [CREATE_BROADCAST] Using localhost domain: http://localhost:5000
+2025-11-30T16:17:23.129888915Z [CREATE_BROADCAST] Ad viewer URL: http://localhost:5000/ad-viewer?user_id=5034792759&token=L8VbULkLntA9An2U88PYBFiGGxpHjwGQs4SapX92YAw
+2025-11-30T16:17:23.129890685Z Message operation error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: inline keyboard button Web App URL 'http://localhost:5000/ad-viewer?user_id=5034792759&token=L8VbULkLntA9An2U88PYBFiGGxpHjwGQs4SapX92YAw' is invalid: Only HTTPS links are allowed
+2025-11-30T16:17:23.129892385Z [CREATE_BROADCAST] Ad button sent to user 5034792759
+2025-11-30T16:17:23.129893975Z 
+2025-11-30T16:17:23.129895665Z [WEBHOOK] Received update 162628926
+2025-11-30T16:17:23.129897395Z [WEBHOOK] telegram_bot initialized: True
+2025-11-30T16:17:23.129899105Z [WEBHOOK] Callback query from user 5034792759: data=menu_create
+2025-11-30T16:17:23.129900795Z [WEBHOOK] Converting JSON to Update object...
+2025-11-30T16:17:23.129902515Z [WEBHOOK] Update object created, processing...
+2025-11-30T16:17:23.129904215Z ✓ [WEBHOOK] Processed update 162628926 successfully

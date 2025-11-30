@@ -8,6 +8,25 @@ SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 
+# Domain detection - priority: WEBHOOK_URL (Render) > RENDER_EXTERNAL_URL > REPLIT_DOMAINS > fallback
+def _get_app_domain():
+    webhook = os.getenv('WEBHOOK_URL', '').strip()
+    if webhook:
+        return webhook.rstrip('/')
+    
+    render_url = os.getenv('RENDER_EXTERNAL_URL', '').strip()
+    if render_url:
+        return render_url.rstrip('/')
+    
+    replit_domains = os.getenv('REPLIT_DOMAINS', '').strip()
+    if replit_domains:
+        domain = replit_domains.split(',')[0].strip()
+        return f'https://{domain}'
+    
+    return 'https://localhost:5000'  # Fallback - Telegram requires HTTPS
+
+APP_DOMAIN = _get_app_domain()
+
 STARS_API_KEY = os.getenv('STARS_API_KEY', '')
 CRYPTOPAY_API_KEY = os.getenv('CRYPTOPAY_API_KEY', '')
 XROCKET_API_KEY = os.getenv('XROCKET_API_KEY', '')

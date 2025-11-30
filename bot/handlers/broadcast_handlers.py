@@ -3,7 +3,7 @@ from bot.services.broadcast_service import BroadcastService
 from bot.services.user_service import UserService
 from bot.services.priority_service import PrioritySlotService
 from bot.services.monetag_service import MonetgService
-from config.settings import COUNTRIES, CATEGORIES
+from config.settings import COUNTRIES, CATEGORIES, APP_DOMAIN
 from config import ads_state
 import os
 
@@ -66,21 +66,9 @@ def handle_create_broadcast(bot, message):
             # Generate unique session token for this ad session
             session_token = secrets.token_urlsafe(32)
             
-            # Get domain - support both Render and Replit
-            webhook_url = os.environ.get('WEBHOOK_URL', '').strip()
-            if webhook_url:
-                # Render deployment
-                base_url = webhook_url.rstrip('/')
-                print(f"[CREATE_BROADCAST] Using Render domain: {base_url}")
-            else:
-                # Replit deployment
-                replit_domain = os.environ.get('REPLIT_DOMAIN', '').strip()
-                if replit_domain:
-                    base_url = f"https://{replit_domain}"
-                    print(f"[CREATE_BROADCAST] Using Replit domain: {base_url}")
-                else:
-                    base_url = "http://localhost:5000"
-                    print(f"[CREATE_BROADCAST] Using localhost domain: {base_url}")
+            # Use APP_DOMAIN from config (auto-detects Render, Replit, or fallback)
+            base_url = APP_DOMAIN
+            print(f"[CREATE_BROADCAST] Using domain: {base_url}")
             
             # Create WebApp URL with session token
             ad_viewer_url = f"{base_url}/ad-viewer?user_id={user_id}&token={session_token}"
