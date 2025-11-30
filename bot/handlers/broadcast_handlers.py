@@ -55,42 +55,32 @@ def handle_create_broadcast(bot, message):
             edit_or_send(bot, chat_id, "⛔ You have been blocked and cannot create broadcasts.", message_id)
             return
         
-        # Check if user already watched ad today (database-backed)
-        print(f"[CREATE_BROADCAST] Checking if user {user_id} watched ad...")
-        already_watched = user_service.has_watched_ad_today(user_id)
-        print(f"[CREATE_BROADCAST] User {user_id} already_watched={already_watched}")
+        # Always show ad before each broadcast creation (no daily limit)
+        print(f"[CREATE_BROADCAST] User {user_id} must watch ad to create broadcast")
+        # Generate unique session token for this ad session
+        session_token = secrets.token_urlsafe(32)
         
-        # Always require ads
-        if not already_watched:
-            print(f"[CREATE_BROADCAST] User {user_id} must watch ad first")
-            # Generate unique session token for this ad session
-            session_token = secrets.token_urlsafe(32)
-            
-            # Use APP_DOMAIN from config (auto-detects Render, Replit, or fallback)
-            base_url = APP_DOMAIN
-            print(f"[CREATE_BROADCAST] Using domain: {base_url}")
-            
-            # Create WebApp URL with session token
-            ad_viewer_url = f"{base_url}/ad-viewer?user_id={user_id}&token={session_token}"
-            print(f"[CREATE_BROADCAST] Ad viewer URL: {ad_viewer_url}")
-            
-            # Use WebApp button instead of URL button (more reliable in Telegram)
-            markup = types.InlineKeyboardMarkup()
-            markup.add(
-                types.InlineKeyboardButton("▶️ Watch Ad & Unlock", web_app=types.WebAppInfo(url=ad_viewer_url))
-            )
-            edit_or_send(bot, chat_id,
-                "🎬 Watch Ad to Create Broadcast\n\n"
-                "Click the button below to watch a quick ad.\n"
-                "⏳ Takes about 30 seconds\n\n"
-                "Your broadcast will be ready to create immediately after!",
-                message_id, markup)
-            print(f"[CREATE_BROADCAST] Ad button sent to user {user_id}")
-            return
+        # Use APP_DOMAIN from config (auto-detects Render, Replit, or fallback)
+        base_url = APP_DOMAIN
+        print(f"[CREATE_BROADCAST] Using domain: {base_url}")
         
-        print(f"[CREATE_BROADCAST] User {user_id} already watched ad, starting broadcast creation")
-        # User watched ad or system failed - allow broadcast
-        start_broadcast_creation(bot, message, user_id)
+        # Create WebApp URL with session token
+        ad_viewer_url = f"{base_url}/ad-viewer?user_id={user_id}&token={session_token}"
+        print(f"[CREATE_BROADCAST] Ad viewer URL: {ad_viewer_url}")
+        
+        # Use WebApp button instead of URL button (more reliable in Telegram)
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            types.InlineKeyboardButton("▶️ Watch Ad & Unlock", web_app=types.WebAppInfo(url=ad_viewer_url))
+        )
+        edit_or_send(bot, chat_id,
+            "🎬 Watch Ad to Create Broadcast\n\n"
+            "Click the button below to watch a quick ad.\n"
+            "⏳ Takes about 30 seconds\n\n"
+            "Your broadcast will be ready to create immediately after!",
+            message_id, markup)
+        print(f"[CREATE_BROADCAST] Ad button sent to user {user_id}")
+        return
     except Exception as e:
         print(f"❌ handle_create_broadcast error for user {user_id}: {e}")
         traceback.print_exc()

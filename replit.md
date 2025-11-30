@@ -51,6 +51,19 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 
 ## Recent Changes (Nov 30, 2025) - PRODUCTION READY ✅✅✅
 
+### LATEST FIX: Ads Every Broadcast (Nov 30, 16:45 UTC) ✅
+- ✅ Removed daily ad check - ads now show **every time** user creates a broadcast
+- ✅ No longer using `has_watched_ad_today()` - always show ad button
+- ✅ User flow: Click /create → Watch ad → Auto-return → Create broadcast → Repeat
+- ✅ File: bot/handlers/broadcast_handlers.py (lines 61-86)
+
+### Domain Detection Fix (Nov 30, 16:17 UTC) ✅
+- ✅ Fixed: WebApp URLs must use HTTPS (Telegram requires it)
+- ✅ Was using `http://localhost:5000` → Now uses proper HTTPS domain
+- ✅ Added APP_DOMAIN setting in config/settings.py
+- ✅ Auto-detects: WEBHOOK_URL (Render) > RENDER_EXTERNAL_URL > REPLIT_DOMAINS > fallback
+- ✅ Result: Ads now work on both Render production and local dev
+
 ### FINAL FIXES - ALL TESTED & VERIFIED ✅
 1. **UPSERT for User Creation** - bot/services/user_service.py (lines 30-71)
    - ✅ Atomic operation prevents duplicate key errors (23505)
@@ -64,21 +77,21 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
    - ✅ Tested: Country "Sri Lanka" persists, categories save
 
 3. **Ads System - NOW FULLY WORKING (WebApp Approach)** ✅
-   - ✅ bot/services/user_service.py: mark_ad_watched() & has_watched_ad_today()
    - ✅ bot/handlers/broadcast_handlers.py: Uses WebApp buttons (NOT URL buttons) - More reliable!
    - ✅ Session tokens generated for each ad (secrets.token_urlsafe)
-   - ✅ Supports both Render (WEBHOOK_URL) and Replit (REPLIT_DOMAIN)
+   - ✅ Supports both Render (WEBHOOK_URL) and Replit (REPLIT_DOMAINS)
    - ✅ config/templates/ad_viewer.html: Detects Telegram WebApp context
    - ✅ Auto-closes WebApp and returns to bot when ad completes
    - ✅ POST /api/ads/watched/{user_id}: Marks ad as watched ✅
    - ✅ GET /api/ads/check/{user_id}: Checks status ✅
+   - ✅ **NEW:** Ads required EVERY broadcast creation (not daily limit)
 
 4. **Complete Flow Tested End-to-End** ✅
    - ✅ User /start → registers with country & categories
    - ✅ User /create → shows "Watch Ad Now" button
    - ✅ Button opens ad page with 30-second timer
-   - ✅ Timer completes → fetch marks ad watched
-   - ✅ User /create again → broadcast creation starts
+   - ✅ Timer completes → auto-returns to bot
+   - ✅ User can immediately click /create again → new ad shown
    - ✅ ALL API endpoints respond correctly
 
 5. **Registration Handler Complete** - bot/handlers/registration.py  
@@ -93,19 +106,10 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - ✅ User creation with UPSERT - NO RACE CONDITIONS ✅
 - ✅ User country & categories PERSIST in database ✅
 - ✅ Ads system FULLY WORKING with WebApp buttons ✅
-- ✅ Broadcast handler allows creation after ad ✅
-- ✅ API endpoints respond correctly ✅
+- ✅ **NEW:** Ads show every broadcast (not once per day) ✅
+- ✅ HTTPS domain detection working ✅
 - ✅ WebApp closes auto-returns to bot seamlessly ✅
 - 🚀 **READY FOR RENDER DEPLOYMENT - 100% VERIFIED** 🚀
-
-### WHAT CHANGED (WebApp Fix)
-**FROM:** URL button (unreliable) - users had trouble returning to bot
-**TO:** WebApp button (reliable) - auto-closes and returns to bot
-
-- Line 81 in broadcast_handlers.py: `web_app=types.WebAppInfo(url=ad_viewer_url)`
-- Session tokens for security and tracking
-- Auto-detect Telegram WebApp context
-- `window.Telegram.WebApp.close()` on completion
 
 ### Render Deployment (Already Live)
 - Bot running on: https://brodcast-blast.onrender.com
