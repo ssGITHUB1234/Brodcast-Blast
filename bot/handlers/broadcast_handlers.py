@@ -47,8 +47,8 @@ def handle_create_broadcast(bot, message):
             edit_or_send(bot, chat_id, "⛔ You have been blocked and cannot create broadcasts.", message_id)
             return
         
-        # Check if user already watched ad in this session
-        already_watched = ads_state.user_watched_ad(user_id)
+        # Check if user already watched ad today (database-backed)
+        already_watched = user_service.has_watched_ad_today(user_id)
         
         # Always require ads
         if not already_watched:

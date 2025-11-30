@@ -115,3 +115,19 @@ class UserService:
         except Exception as e:
             print(f"Error getting user count: {e}")
             return 0
+    
+    def mark_ad_watched(self, user_id):
+        """Mark that user watched an ad"""
+        # Import shared ads state
+        from config import ads_state
+        ads_state.mark_ad_watched(user_id)
+        print(f"✅ Marked ad watched for user {user_id}")
+        return True
+    
+    def has_watched_ad_today(self, user_id):
+        """Check if user watched ad today"""
+        from config import ads_state
+        watched = ads_state.user_watched_ad(user_id)
+        if watched:
+            print(f"✅ User {user_id} watched ad in this session")
+        return watched

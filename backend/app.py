@@ -379,8 +379,11 @@ def update_ads_settings():
 def mark_ad_watched_endpoint(user_id):
     """Mark that user watched an ad and can send broadcast"""
     try:
-        mark_ad_watched(user_id)
-        return jsonify({'message': 'Ad marked as watched', 'can_broadcast': True})
+        success = user_service.mark_ad_watched(user_id)
+        if success:
+            return jsonify({'message': 'Ad marked as watched', 'can_broadcast': True})
+        else:
+            return jsonify({'error': 'Failed to mark ad as watched'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -425,7 +428,7 @@ def get_ads_stats_endpoint():
 def check_ad_watched(user_id):
     """Check if user watched ad and can broadcast"""
     try:
-        watched = user_id in users_ads_watched
+        watched = user_service.has_watched_ad_today(user_id)
         return jsonify({'user_id': user_id, 'watched_ad': watched, 'ads_required': ad_settings['ads_required']})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
