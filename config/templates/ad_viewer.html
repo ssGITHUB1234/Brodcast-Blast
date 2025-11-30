@@ -230,12 +230,13 @@
                 
                 if (timeRemaining <= 0) {
                     clearInterval(interval);
-                    continueBtn.disabled = false;
-                    continueBtn.textContent = '✅ Ad Complete - Return to Telegram';
-                    continueBtn.classList.add('button-success');
-                    continueBtn.classList.remove('button-primary');
                     adCompleted = true;
                     markAdAsWatched();
+                    
+                    // Auto-return to Telegram after 1 second
+                    setTimeout(() => {
+                        returnToTelegram();
+                    }, 1000);
                 }
             }, 1000);
         }
