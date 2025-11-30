@@ -28,14 +28,8 @@ class UserService:
             return None
     
     def create_user(self, user_id, username, first_name, last_name):
-        """Create new user - idempotent (create or get existing)"""
+        """Create new user - idempotent using UPSERT (atomic operation)"""
         try:
-            # First check if user already exists
-            existing = self.get_user(user_id)
-            if existing:
-                print(f"✅ User {user_id} already exists, returning existing user")
-                return existing
-            
             data = {
                 'user_id': user_id,
                 'username': username or 'unknown',
@@ -46,35 +40,31 @@ class UserService:
                 'active': True,
                 'blocked': False
             }
-            response = self.db.table('users').insert(data).execute()
+            
+            # UPSERT: Insert if not exists, do nothing if already exists (atomic & fast)
+            response = self.db.table('users').upsert(data, ignore_duplicates=True).execute()
             if response.data:
-                print(f"✅ User {user_id} created successfully")
+                print(f"✅ User {user_id} created/found via upsert")
                 return response.data[0]
             else:
-                print(f"✅ User {user_id} inserted but no response data")
-                return None
+                # Upsert succeeded but no response data - fetch user to confirm
+                user = self.get_user(user_id)
+                if user:
+                    print(f"✅ User {user_id} exists (upsert success)")
+                    return user
+                else:
+                    print(f"⚠️ User {user_id} upserted but not found on retrieval")
+                    return None
         except Exception as e:
-            error_str = str(e)
-            # Handle duplicate key error gracefully (user already exists)
-            if '23505' in error_str or 'duplicate key' in error_str.lower():
-                print(f"✅ User {user_id} already exists in database (duplicate key error is OK)")
-                try:
-                    user = self.get_user(user_id)
-                    if user:
-                        return user
-                except:
-                    pass
-                return None
-            
-            print(f"❌ Error creating user {user_id}: {e}")
+            print(f"❌ Error in user upsert {user_id}: {e}")
             import traceback
             traceback.print_exc()
             
-            # Final fallback - try to get the user anyway
+            # Fallback: Try to get user anyway (might have been created by another process)
             try:
                 user = self.get_user(user_id)
                 if user:
-                    print(f"✅ User {user_id} found after error (probably from webhook)")
+                    print(f"✅ User {user_id} found after upsert error")
                     return user
             except:
                 pass
