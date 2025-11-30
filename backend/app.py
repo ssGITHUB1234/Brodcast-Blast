@@ -570,27 +570,50 @@ def xrocket_webhook():
 @app.route('/api/webhook/telegram', methods=['POST'])
 def telegram_webhook():
     """Handle Telegram bot webhook updates (webhook mode for production)"""
+    import traceback
     try:
+        json_data = request.get_json()
+        update_id = json_data.get('update_id', '?') if json_data else '?'
+        
+        print(f"\n[WEBHOOK] Received update {update_id}")
+        print(f"[WEBHOOK] telegram_bot initialized: {telegram_bot is not None}")
+        
         if not telegram_bot:
-            print("❌ Telegram bot not initialized")
+            print("❌ [WEBHOOK] Telegram bot NOT initialized - cannot process!")
             return jsonify({'ok': True})
         
-        json_data = request.get_json()
         if not json_data:
+            print(f"[WEBHOOK] No JSON data in update {update_id}")
             return jsonify({'ok': True})
+        
+        # Log what type of update this is
+        if 'message' in json_data:
+            print(f"[WEBHOOK] Message update from user {json_data['message'].get('from', {}).get('id', '?')}")
+        elif 'callback_query' in json_data:
+            callback_data = json_data['callback_query'].get('data', '?')
+            user_id = json_data['callback_query'].get('from', {}).get('id', '?')
+            print(f"[WEBHOOK] Callback query from user {user_id}: data={callback_data}")
+        else:
+            print(f"[WEBHOOK] Other update type: {list(json_data.keys())}")
         
         # Convert JSON to Update object and process through registered handlers
         try:
+            print(f"[WEBHOOK] Converting JSON to Update object...")
             update = telebot.types.Update.de_json(json_data)
             if update:
+                print(f"[WEBHOOK] Update object created, processing...")
                 telegram_bot.process_new_updates([update])
-                print(f"✓ Webhook processed update {json_data.get('update_id', '?')}")
+                print(f"✓ [WEBHOOK] Processed update {update_id} successfully")
+            else:
+                print(f"❌ [WEBHOOK] Failed to create Update object from {update_id}")
         except Exception as e:
-            print(f"Error processing webhook update: {e}")
+            print(f"❌ [WEBHOOK] Error processing update {update_id}: {e}")
+            traceback.print_exc()
         
         return jsonify({'ok': True})
     except Exception as e:
-        print(f"Telegram webhook error: {e}")
+        print(f"❌ [WEBHOOK] Telegram webhook error: {e}")
+        traceback.print_exc()
         return jsonify({'ok': True})  # Always return 200 to Telegram
 
 if __name__ == '__main__':
