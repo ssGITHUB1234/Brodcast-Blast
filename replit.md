@@ -49,23 +49,21 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **payments**: Payment transaction logs
 - **admin_logs**: Administrative action logs
 
-## Recent Changes (Nov 30, 2025)
-- ✅ **NEW USERS NOW SAVE CORRECTLY** 🎉
-  - FIXED: Made create_user idempotent (checks if exists first)
-  - FIXED: Improved registration handler to handle duplicate user creation attempts
-  - FIXED: Added fallback logic in case user created by webhook
-  - TESTED: New users saved successfully with all fields
-  - Users now complete registration → select country → select categories ✅
+## Recent Changes (Nov 30, 2025) - FINAL FIXES ✅
+- ✅ **NEW USERS NOW SAVE CORRECTLY - DUPLICATE KEY FIX** 🎉
+  - FIXED: Catch error code 23505 (duplicate key) and handle gracefully
+  - FIXED: When webhook creates user first, duplicate key error is now OK
+  - FIXED: Fallback to fetch user after error - ensures they're always found
+  - TESTED: Works with both /start and webhook user creation ✅
 - ✅ **CREATE BROADCAST BUTTON NOW WORKS** ✨
-  - FIXED: Changed handle_create_broadcast to use edit_or_send instead of reply_to
-  - FIXED: Works correctly when called from menu callback with fake message objects
-  - FIXED: Added try-except error handling with detailed logging
-  - User now sees ad prompt when clicking "Create Broadcast" button ✅
+  - FIXED: Changed handle_create_broadcast to use edit_or_send
+  - FIXED: Works with fake message objects from callbacks
+  - User sees ad prompt when clicking button ✅
 - ✅ **ADS SYSTEM COMPLETE & WORKING** 🎬⏱️✅
   - ✅ Monetag SDK integration with 30-second countdown timer
   - ✅ `/ad-viewer` page with auto-completion button
   - ✅ Ad state tracking via `config/ads_state.py`
-  - ✅ Mandatory ads before each broadcast creation
+  - ✅ Works on localhost + Render production
 - ✅ **RENDER DEPLOYMENT COMPLETE** 🚀
   - Bot running on Render: https://brodcast-blast.onrender.com
   - Webhook configured: /api/webhook/telegram

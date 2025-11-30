@@ -48,16 +48,29 @@ class UserService:
             }
             response = self.db.table('users').insert(data).execute()
             if response.data:
-                print(f"✅ User {user_id} created successfully: {response.data[0]}")
+                print(f"✅ User {user_id} created successfully")
                 return response.data[0]
             else:
                 print(f"✅ User {user_id} inserted but no response data")
                 return None
         except Exception as e:
+            error_str = str(e)
+            # Handle duplicate key error gracefully (user already exists)
+            if '23505' in error_str or 'duplicate key' in error_str.lower():
+                print(f"✅ User {user_id} already exists in database (duplicate key error is OK)")
+                try:
+                    user = self.get_user(user_id)
+                    if user:
+                        return user
+                except:
+                    pass
+                return None
+            
             print(f"❌ Error creating user {user_id}: {e}")
             import traceback
             traceback.print_exc()
-            # Final fallback - try to get the user again (might have been created by webhook)
+            
+            # Final fallback - try to get the user anyway
             try:
                 user = self.get_user(user_id)
                 if user:

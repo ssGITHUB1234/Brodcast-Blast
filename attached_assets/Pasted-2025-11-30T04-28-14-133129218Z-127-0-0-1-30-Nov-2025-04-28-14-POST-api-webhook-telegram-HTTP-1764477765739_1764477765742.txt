@@ -1,0 +1,50 @@
+2025-11-30T04:28:14.133129218Z 127.0.0.1 - - [30/Nov/2025 04:28:14] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:28:21.273142701Z ==> Detected service running on port 10000
+2025-11-30T04:28:21.41117059Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-11-30T04:29:11.860549997Z 127.0.0.1 - - [30/Nov/2025 04:29:11] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:29:29.5697935Z 127.0.0.1 - - [30/Nov/2025 04:29:29] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:29:32.631356585Z 127.0.0.1 - - [30/Nov/2025 04:29:32] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:29:38.159282578Z 127.0.0.1 - - [30/Nov/2025 04:29:38] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:29:38.742178457Z Traceback (most recent call last):
+2025-11-30T04:29:38.742529405Z   File "/opt/render/project/src/bot/services/user_service.py", line 43, in create_user
+2025-11-30T04:29:38.742553055Z     response = self.db.table('users').insert(data).execute()
+2025-11-30T04:29:38.742560726Z   File "/opt/render/project/src/.venv/lib/python3.13/site-packages/postgrest/_sync/request_builder.py", line 70, in execute
+2025-11-30T04:29:38.742565576Z     raise APIError(r.json())
+2025-11-30T04:29:38.742571606Z postgrest.exceptions.APIError: {'code': '23505', 'details': 'Key (user_id)=(7705938727) already exists.', 'hint': None, 'message': 'duplicate key value violates unique constraint "users_pkey"'}
+2025-11-30T04:29:42.00499079Z 127.0.0.1 - - [30/Nov/2025 04:29:42] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:29:54.537790489Z 127.0.0.1 - - [30/Nov/2025 04:29:54] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:29:57.127293347Z 127.0.0.1 - - [30/Nov/2025 04:29:57] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:29:59.873248865Z 127.0.0.1 - - [30/Nov/2025 04:29:59] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:39:19.789830246Z ==> Deploying...
+2025-11-30T04:40:02.575702631Z 🤖 Telegram Bot Status:
+2025-11-30T04:40:02.575707551Z    ✓ Webhook mode enabled (Render)
+2025-11-30T04:40:02.575712252Z    ✓ Bot ready for Telegram webhook updates
+2025-11-30T04:40:02.575715982Z 
+2025-11-30T04:40:02.575720062Z ============================================================
+2025-11-30T04:40:02.575724043Z 
+2025-11-30T04:40:02.575728693Z ✓ Starting Flask server on 0.0.0.0:10000
+2025-11-30T04:40:02.575733043Z  * Serving Flask app 'backend.app'
+2025-11-30T04:40:02.575737233Z  * Debug mode: off
+2025-11-30T04:40:02.583062617Z WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+2025-11-30T04:40:02.583082368Z  * Running on all addresses (0.0.0.0)
+2025-11-30T04:40:02.583086779Z  * Running on http://127.0.0.1:10000
+2025-11-30T04:40:02.583090619Z  * Running on http://10.16.108.53:10000
+2025-11-30T04:40:02.58310237Z Press CTRL+C to quit
+2025-11-30T04:40:03.441434375Z 127.0.0.1 - - [30/Nov/2025 04:40:03] "HEAD / HTTP/1.1" 200 -
+2025-11-30T04:40:10.854359504Z ==> Your service is live 🎉
+2025-11-30T04:40:10.880638361Z ==> 
+2025-11-30T04:40:10.907850179Z ==> ///////////////////////////////////////////////////////////
+2025-11-30T04:40:10.934592137Z ==> 
+2025-11-30T04:40:10.961406714Z ==> Available at your primary URL https://brodcast-blast.onrender.com
+2025-11-30T04:40:10.987368122Z ==> 
+2025-11-30T04:40:11.01541099Z ==> ///////////////////////////////////////////////////////////
+2025-11-30T04:40:12.289695156Z 127.0.0.1 - - [30/Nov/2025 04:40:12] "GET / HTTP/1.1" 200 -
+2025-11-30T04:40:57.734479842Z 127.0.0.1 - - [30/Nov/2025 04:40:57] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:41:01.514029028Z 127.0.0.1 - - [30/Nov/2025 04:41:01] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:41:03.475901248Z 127.0.0.1 - - [30/Nov/2025 04:41:03] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:41:15.722411698Z 127.0.0.1 - - [30/Nov/2025 04:41:15] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:41:28.149347804Z 127.0.0.1 - - [30/Nov/2025 04:41:28] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:41:31.719144459Z 127.0.0.1 - - [30/Nov/2025 04:41:31] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:41:37.383510704Z 127.0.0.1 - - [30/Nov/2025 04:41:37] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:41:39.554996136Z 127.0.0.1 - - [30/Nov/2025 04:41:39] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-11-30T04:41:43.237041463Z 127.0.0.1 - - [30/Nov/2025 04:41:43] "POST /api/webhook/telegram HTTP/1.1" 200 -
