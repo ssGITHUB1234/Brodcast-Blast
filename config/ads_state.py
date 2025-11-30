@@ -1,9 +1,13 @@
 """
 Shared ad state between bot and backend
 """
+import time
 
 # Track users who watched ads in current session
 users_watched_ads = {}  # {user_id: True}
+
+# Track when users watched ads (timestamps) - for skipping ad on immediate next interaction
+ad_watched_timestamps = {}  # {user_id: timestamp}
 
 # Track ad statistics
 ad_stats = {
@@ -17,9 +21,17 @@ settings = {
 }
 
 def mark_ad_watched(user_id):
-    """Mark that user watched an ad"""
+    """Mark that user watched an ad with timestamp"""
     users_watched_ads[user_id] = True
+    ad_watched_timestamps[user_id] = time.time()  # Store timestamp
     ad_stats['views_completed'] += 1
+
+def user_watched_ad_recently(user_id, timeout_seconds=60):
+    """Check if user watched ad recently (within timeout)"""
+    if user_id not in ad_watched_timestamps:
+        return False
+    time_since_watch = time.time() - ad_watched_timestamps[user_id]
+    return time_since_watch < timeout_seconds
 
 def mark_ad_started(user_id):
     """Track that user started watching ad"""

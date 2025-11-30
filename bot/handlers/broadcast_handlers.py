@@ -61,8 +61,12 @@ def handle_create_broadcast(bot, message):
         ads_required = ads_state.settings.get('ads_required', True)
         print(f"[CREATE_BROADCAST] Ads required: {ads_required}")
         
-        if ads_required:
-            # Show ad before each broadcast creation
+        # Check if user watched ad recently (within 60 seconds) - skip ad if yes
+        user_watched_recently = ads_state.user_watched_ad_recently(user_id, timeout_seconds=60)
+        print(f"[CREATE_BROADCAST] User {user_id} watched ad recently: {user_watched_recently}")
+        
+        if ads_required and not user_watched_recently:
+            # Show ad before each broadcast creation (unless they just watched)
             print(f"[CREATE_BROADCAST] User {user_id} must watch ad to create broadcast")
             # Generate unique session token for this ad session
             session_token = secrets.token_urlsafe(32)
@@ -89,8 +93,11 @@ def handle_create_broadcast(bot, message):
             print(f"[CREATE_BROADCAST] Ad button sent to user {user_id}")
             return
         else:
-            # Ads disabled - go straight to broadcast creation
-            print(f"[CREATE_BROADCAST] Ads disabled by admin - skipping to broadcast creation")
+            # Go straight to broadcast creation (ads disabled or just watched)
+            if ads_required and user_watched_recently:
+                print(f"[CREATE_BROADCAST] User {user_id} watched ad recently - skipping to broadcast creation")
+            else:
+                print(f"[CREATE_BROADCAST] Ads disabled by admin - skipping to broadcast creation")
             start_broadcast_creation(bot, message, user_id)
     except Exception as e:
         print(f"❌ handle_create_broadcast error for user {user_id}: {e}")
