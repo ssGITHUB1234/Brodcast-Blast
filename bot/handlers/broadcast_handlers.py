@@ -19,16 +19,21 @@ def handle_create_broadcast(bot, message):
     """Start broadcast creation process - show ad if required"""
     from bot.utils.nav_helpers import edit_or_send
     import secrets
+    import traceback
     
     user_id = message.from_user.id
     message_id = getattr(message, 'message_id', None)
     chat_id = message.chat.id
     
+    print(f"[CREATE_BROADCAST] User {user_id} triggered create broadcast (message_id={message_id}, chat_id={chat_id})")
+    
     try:
+        print(f"[CREATE_BROADCAST] Getting user {user_id}...")
         user = user_service.get_user(user_id)
         
         # Auto-register user if they don't exist
         if not user:
+            print(f"[CREATE_BROADCAST] User {user_id} not found, auto-registering...")
             try:
                 user_service.create_user(
                     user_id,
@@ -40,19 +45,24 @@ def handle_create_broadcast(bot, message):
                 return
             except Exception as e:
                 print(f"❌ Auto-register error: {e}")
+                traceback.print_exc()
                 edit_or_send(bot, chat_id, "❌ Registration failed. Please try /start", message_id)
                 return
         
         # Check if user is blocked
         if user.get('blocked'):
+            print(f"[CREATE_BROADCAST] User {user_id} is blocked")
             edit_or_send(bot, chat_id, "⛔ You have been blocked and cannot create broadcasts.", message_id)
             return
         
         # Check if user already watched ad today (database-backed)
+        print(f"[CREATE_BROADCAST] Checking if user {user_id} watched ad...")
         already_watched = user_service.has_watched_ad_today(user_id)
+        print(f"[CREATE_BROADCAST] User {user_id} already_watched={already_watched}")
         
         # Always require ads
         if not already_watched:
+            print(f"[CREATE_BROADCAST] User {user_id} must watch ad first")
             # Generate unique session token for this ad session
             session_token = secrets.token_urlsafe(32)
             
@@ -61,16 +71,20 @@ def handle_create_broadcast(bot, message):
             if webhook_url:
                 # Render deployment
                 base_url = webhook_url.rstrip('/')
+                print(f"[CREATE_BROADCAST] Using Render domain: {base_url}")
             else:
                 # Replit deployment
                 replit_domain = os.environ.get('REPLIT_DOMAIN', '').strip()
                 if replit_domain:
                     base_url = f"https://{replit_domain}"
+                    print(f"[CREATE_BROADCAST] Using Replit domain: {base_url}")
                 else:
                     base_url = "http://localhost:5000"
+                    print(f"[CREATE_BROADCAST] Using localhost domain: {base_url}")
             
             # Create WebApp URL with session token
             ad_viewer_url = f"{base_url}/ad-viewer?user_id={user_id}&token={session_token}"
+            print(f"[CREATE_BROADCAST] Ad viewer URL: {ad_viewer_url}")
             
             # Use WebApp button instead of URL button (more reliable in Telegram)
             markup = types.InlineKeyboardMarkup()
@@ -83,13 +97,23 @@ def handle_create_broadcast(bot, message):
                 "⏳ Takes about 30 seconds\n\n"
                 "Your broadcast will be ready to create immediately after!",
                 message_id, markup)
+            print(f"[CREATE_BROADCAST] Ad button sent to user {user_id}")
             return
         
+        print(f"[CREATE_BROADCAST] User {user_id} already watched ad, starting broadcast creation")
         # User watched ad or system failed - allow broadcast
         start_broadcast_creation(bot, message, user_id)
     except Exception as e:
-        print(f"❌ handle_create_broadcast error: {e}")
-        edit_or_send(bot, chat_id, f"❌ Error: {str(e)[:50]}", message_id)
+        print(f"❌ handle_create_broadcast error for user {user_id}: {e}")
+        traceback.print_exc()
+        try:
+            edit_or_send(bot, chat_id, f"❌ Error in broadcast creation: {str(e)[:80]}", message_id)
+        except Exception as send_error:
+            print(f"❌ Could not send error message: {send_error}")
+            try:
+                bot.send_message(chat_id, f"❌ Broadcast creation failed. Please try again.\n\nError: {str(e)[:50]}")
+            except:
+                pass
 
 def start_broadcast_creation(bot, message, user_id):
     """Start the actual broadcast creation flow"""
