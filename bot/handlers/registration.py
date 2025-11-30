@@ -12,34 +12,43 @@ def handle_start(bot, message):
     
     try:
         user = user_service.get_user(user_id)
-    except:
+    except Exception as e:
+        print(f"❌ Error getting user: {e}")
         user = None
     
-    if user:
+    # If user already registered (has country + categories), show welcome
+    if user and user.get('country') and user.get('categories'):
         if user.get('blocked'):
             bot.reply_to(message, "You have been blocked by an administrator.")
             return
         
-        if user.get('country') and user.get('categories'):
-            cats = user['categories'] if isinstance(user['categories'], list) else [user['categories']]
-            bot.reply_to(message, 
-                f"Welcome back, {message.from_user.first_name}!\n\n"
-                f"Your profile:\n"
-                f"Country: {user['country']}\n"
-                f"Interests: {', '.join(cats)}\n\n"
-                f"Use /menu to see all options.")
-            return
+        cats = user['categories'] if isinstance(user['categories'], list) else [user['categories']]
+        bot.reply_to(message, 
+            f"Welcome back, {message.from_user.first_name}!\n\n"
+            f"Your profile:\n"
+            f"Country: {user['country']}\n"
+            f"Interests: {', '.join(cats)}\n\n"
+            f"Use /menu to see all options.")
+        return
     
-    try:
-        user_service.create_user(
-            user_id,
-            message.from_user.username,
-            message.from_user.first_name,
-            message.from_user.last_name
-        )
-    except Exception as e:
-        print(f"Could not create user in database: {e}")
+    # If user doesn't exist yet, create them
+    if not user:
+        try:
+            user_service.create_user(
+                user_id,
+                message.from_user.username,
+                message.from_user.first_name,
+                message.from_user.last_name
+            )
+            print(f"✅ New user {user_id} created in database")
+        except Exception as e:
+            print(f"❌ Could not create user {user_id}: {e}")
+            # Continue anyway - user might already exist from webhook
+    else:
+        # User exists but not fully registered
+        print(f"✅ User {user_id} already exists, continuing registration")
     
+    # Show registration flow
     bot.reply_to(message,
         f"Welcome to the Broadcast Bot, {message.from_user.first_name}!\n\n"
         "Let's get you registered. First, please select your country:")

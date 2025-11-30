@@ -28,8 +28,14 @@ class UserService:
             return None
     
     def create_user(self, user_id, username, first_name, last_name):
-        """Create new user"""
+        """Create new user - idempotent (create or get existing)"""
         try:
+            # First check if user already exists
+            existing = self.get_user(user_id)
+            if existing:
+                print(f"✅ User {user_id} already exists, returning existing user")
+                return existing
+            
             data = {
                 'user_id': user_id,
                 'username': username or 'unknown',
@@ -41,12 +47,24 @@ class UserService:
                 'blocked': False
             }
             response = self.db.table('users').insert(data).execute()
-            print(f"✅ User {user_id} created successfully")
-            return response.data[0] if response.data else None
+            if response.data:
+                print(f"✅ User {user_id} created successfully: {response.data[0]}")
+                return response.data[0]
+            else:
+                print(f"✅ User {user_id} inserted but no response data")
+                return None
         except Exception as e:
             print(f"❌ Error creating user {user_id}: {e}")
             import traceback
             traceback.print_exc()
+            # Final fallback - try to get the user again (might have been created by webhook)
+            try:
+                user = self.get_user(user_id)
+                if user:
+                    print(f"✅ User {user_id} found after error (probably from webhook)")
+                    return user
+            except:
+                pass
             return None
     
     def update_user(self, user_id, **kwargs):

@@ -50,23 +50,22 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **admin_logs**: Administrative action logs
 
 ## Recent Changes (Nov 30, 2025)
+- ✅ **NEW USERS NOW SAVE CORRECTLY** 🎉
+  - FIXED: Made create_user idempotent (checks if exists first)
+  - FIXED: Improved registration handler to handle duplicate user creation attempts
+  - FIXED: Added fallback logic in case user created by webhook
+  - TESTED: New users saved successfully with all fields
+  - Users now complete registration → select country → select categories ✅
 - ✅ **CREATE BROADCAST BUTTON NOW WORKS** ✨
   - FIXED: Changed handle_create_broadcast to use edit_or_send instead of reply_to
   - FIXED: Works correctly when called from menu callback with fake message objects
   - FIXED: Added try-except error handling with detailed logging
-  - FIXED: All error paths properly handled and reported back to user
-  - User now sees ad prompt when clicking "Create Broadcast" button
+  - User now sees ad prompt when clicking "Create Broadcast" button ✅
 - ✅ **ADS SYSTEM COMPLETE & WORKING** 🎬⏱️✅
   - ✅ Monetag SDK integration with 30-second countdown timer
   - ✅ `/ad-viewer` page with auto-completion button
-  - ✅ Backend API routes: `/api/ads/watched`, `/api/ads/stats`, `/api/ads/check`, etc
   - ✅ Ad state tracking via `config/ads_state.py`
   - ✅ Mandatory ads before each broadcast creation
-  - ✅ Works on both localhost and Render production
-- ✅ **CRITICAL FIX: New Users Now Save Correctly** 🔧
-  - Fixed user creation with proper default values
-  - New users now created with: country=None, categories=[], active=True
-  - All new users can complete registration and create broadcasts
 - ✅ **RENDER DEPLOYMENT COMPLETE** 🚀
   - Bot running on Render: https://brodcast-blast.onrender.com
   - Webhook configured: /api/webhook/telegram
