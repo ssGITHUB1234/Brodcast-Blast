@@ -52,37 +52,22 @@ def handle_create_broadcast(bot, message):
         if not domain or domain == '':
             domain = 'localhost:5000'
         
-        # Show ad button if we have a domain
-        if domain:
-            try:
-                from backend.app import monetag_links
-                if monetag_links and len(monetag_links) > 0:
-                    link = monetag_links[0].get('link', '')
-                    # URL encode to avoid & becoming &amp;
-                    import urllib.parse
-                    ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={urllib.parse.quote(link, safe='')}"
-                    
-                    markup = types.InlineKeyboardMarkup()
-                    markup.add(
-                        types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
-                    )
-                    bot.send_message(message.chat.id,
-                        "🎬 Watch Ad to Unlock Broadcast\n\n"
-                        "Click to watch - timer auto-completes!\n"
-                        "⏱️ 30 seconds total\n\n"
-                        "After watching, return here and click /create again.",
-                        reply_markup=markup)
-                    return
-                else:
-                    print(f"[WARNING] No monetag_links available, skipping ad")
-            except ImportError as e:
-                print(f"[INFO] Backend monetag_links not available: {e}, allowing broadcast")
-            except Exception as e:
-                print(f"[ERROR] Error showing ad button: {e}")
+        # Use default Monetag link
+        default_link = 'https://linkmoneta.g.com/?link=10243712'
+        import urllib.parse
+        ad_viewer_url = f"https://{domain}/ad-viewer?user_id={user_id}&link={urllib.parse.quote(default_link, safe='')}"
         
-        # No valid domain or ad failed - mark as watched and proceed
-        users_ads_watched.add(user_id)
-        print(f"[INFO] Ad skipped for user {user_id}, proceeding with broadcast")
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            types.InlineKeyboardButton("🎬 Watch Ad Now", url=ad_viewer_url)
+        )
+        bot.send_message(message.chat.id,
+            "🎬 Watch Ad to Unlock Broadcast\n\n"
+            "Click to watch - timer auto-completes!\n"
+            "⏱️ 30 seconds total\n\n"
+            "After watching, return here and click /create again.",
+            reply_markup=markup)
+        return
     
     # User watched ad or system failed - allow broadcast
     start_broadcast_creation(bot, message, user_id)

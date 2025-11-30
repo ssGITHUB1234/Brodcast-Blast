@@ -49,24 +49,27 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **payments**: Payment transaction logs
 - **admin_logs**: Administrative action logs
 
-## Recent Changes (Nov 29, 2025)
-- ✅ **ADS SYSTEM COMPLETE & TESTED** 🎬⏱️✅
+## Recent Changes (Nov 30, 2025)
+- ✅ **ADS SYSTEM COMPLETE & WORKING** 🎬⏱️✅
   - ✅ Monetag SDK integration with 30-second countdown timer
   - ✅ `/ad-viewer` page with auto-completion button
   - ✅ Backend API routes: `/api/ads/watched`, `/api/ads/stats`, `/api/ads/check`, etc
   - ✅ Ad state tracking via `config/ads_state.py`
   - ✅ Mandatory ads before each broadcast creation
-  - ✅ User gets "Watch Ad Now" button when using `/create` command
+  - ✅ User gets "Watch Ad Now" button when using `/create` command (always shows now!)
   - ✅ Timer shows countdown (30s → 0s)
   - ✅ Auto-marks user as watched when timer completes
   - ✅ Returns to Telegram to continue broadcast creation
-  - ✅ FIXED: Ads now show with localhost:5000 fallback for dev
-  - ✅ FIXED: Added logging for debugging ad flow
-- ✅ **CRITICAL FIX: Registration Now Saves Correctly** 🔧
-  - Fixed Supabase update query order in user_service.py
-  - Changed: `.update(kwargs).eq('user_id', user_id)` → `.eq('user_id', user_id).update(kwargs)`
-  - Users can now complete registration (country + categories)
-  - Can now create broadcasts after registration ✅
+  - ✅ FIXED: Removed dependency check - ads always show
+  - ✅ FIXED: Works on localhost + Render production
+- ✅ **CRITICAL FIX: New Users Now Save Correctly** 🔧
+  - Fixed user creation with proper default values
+  - New users now created with: country=None, categories=[], active=True
+  - Added detailed error logging for troubleshooting
+  - All new users can now complete registration and create broadcasts
+  - Old users continue to work as before ✅
+- ✅ **Previous: Registration Query Fixed** 🔧
+  - Fixed Supabase update query order: `.eq('user_id', user_id).update(kwargs)`
 - ✅ **RENDER DEPLOYMENT COMPLETE** 🚀
   - Bot running on Render: https://brodcast-blast.onrender.com
   - Webhook configured: /api/webhook/telegram

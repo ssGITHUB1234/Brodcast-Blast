@@ -32,14 +32,21 @@ class UserService:
         try:
             data = {
                 'user_id': user_id,
-                'username': username,
-                'first_name': first_name,
-                'last_name': last_name
+                'username': username or 'unknown',
+                'first_name': first_name or 'User',
+                'last_name': last_name or '',
+                'country': None,
+                'categories': [],
+                'active': True,
+                'blocked': False
             }
             response = self.db.table('users').insert(data).execute()
+            print(f"✅ User {user_id} created successfully")
             return response.data[0] if response.data else None
         except Exception as e:
-            print(f"Error creating user: {e}")
+            print(f"❌ Error creating user {user_id}: {e}")
+            import traceback
+            traceback.print_exc()
             return None
     
     def update_user(self, user_id, **kwargs):
