@@ -73,11 +73,13 @@ class UserService:
     def update_user(self, user_id, **kwargs):
         """Update user details"""
         try:
-            response = self.db.table('users').eq('user_id', user_id).update(kwargs).execute()
+            response = self.db.table('users').update(kwargs).eq('user_id', user_id).execute()
             print(f"✅ Updated user {user_id}: {kwargs}")
             return response.data[0] if response.data else None
         except Exception as e:
             print(f"❌ Error updating user {user_id}: {e}")
+            import traceback
+            traceback.print_exc()
             return None
     
     def is_user_blocked(self, user_id):
