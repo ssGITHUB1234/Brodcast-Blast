@@ -11,6 +11,11 @@ ad_stats = {
     'views_uncompleted': 0
 }
 
+# Admin settings - shared between backend and bot
+settings = {
+    'ads_required': True  # Admin can toggle via dashboard
+}
+
 def mark_ad_watched(user_id):
     """Mark that user watched an ad"""
     users_watched_ads[user_id] = True

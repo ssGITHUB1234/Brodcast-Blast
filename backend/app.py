@@ -38,15 +38,11 @@ pricing_cache = {
     'count_50': 70.0,
 }
 
-# In-memory ad settings
-ad_settings = {
-    'ads_required': True  # Admin can toggle this
-}
-
-# Import shared ads state
+# Import shared ads state (including shared settings)
 from config.ads_state import (
     users_watched_ads as users_ads_watched, ad_stats, mark_ad_watched, mark_ad_started,
-    user_watched_ad as check_user_watched_ad, clear_watched, get_stats as get_ad_stats_data
+    user_watched_ad as check_user_watched_ad, clear_watched, get_stats as get_ad_stats_data,
+    settings as ad_settings  # Use shared settings dict
 )
 
 # Monetag ad links management (direct links)
