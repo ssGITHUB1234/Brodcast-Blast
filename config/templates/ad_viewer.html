@@ -61,7 +61,7 @@
             color: #666;
             margin: 20px 0;
             font-size: 16px;
-            min-height: 50px;
+            min-height: 20px;
         }
         
         .ad-frame {
@@ -83,41 +83,9 @@
             border-radius: 6px;
         }
         
-        .button {
-            padding: 12px 32px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-        }
-        
-        .button-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .button-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .button-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .button-success {
-            background: #4CAF50;
-            color: white;
-        }
-        
-        .button-success:hover {
-            background: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4);
+        .emoji {
+            font-size: 32px;
+            margin-bottom: 10px;
         }
         
         .hidden {
@@ -138,11 +106,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        .emoji {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
     </style>
 </head>
 <body>
@@ -156,7 +119,7 @@
         <div id="ad-state" class="hidden">
             <div class="emoji">🎬</div>
             <h1>Watch Advertisement</h1>
-            <p class="status-text">Watch this quick ad to unlock broadcast creation</p>
+            <p class="status-text">Ad playing - please watch</p>
             
             <div class="timer-circle">
                 <span id="timer">30</span>
@@ -167,19 +130,13 @@
                 <div id="ad-container" style="width: 100%;"></div>
             </div>
             
-            <p class="status-text" id="ad-status">Loading ad... Please wait</p>
-            <button class="button button-primary" id="continue-btn" disabled onclick="completeAd()">
-                ⏳ Waiting for ad... (30s)
-            </button>
+            <p class="status-text" id="ad-status">⏳ Ad is playing...</p>
         </div>
         
         <div id="complete-state" class="hidden">
             <div class="emoji">✅</div>
             <h1>Ad Complete!</h1>
-            <p class="status-text">Thank you for watching! Your broadcast is ready.</p>
-            <button class="button button-success" onclick="returnToTelegram()">
-                ✅ Return to Telegram
-            </button>
+            <p class="status-text">Returning to Telegram...</p>
         </div>
     </div>
     
@@ -190,60 +147,58 @@
         const sessionToken = params.get('token');
         
         let timeRemaining = 30;
-        let adCompleted = false;
         
         // Check if running in Telegram WebApp context
         const isTelegramWebApp = typeof window.Telegram !== 'undefined' && window.Telegram.WebApp;
         
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!userId || !sessionToken) {
-                showError('Invalid session parameters');
-                return;
-            }
-            
+        // Initialize immediately
+        if (!userId || !sessionToken) {
+            showError('Invalid session parameters');
+        } else {
             if (isTelegramWebApp) {
-                // Setup Telegram WebApp
                 window.Telegram.WebApp.ready();
                 window.Telegram.WebApp.expand();
             }
-            
-            // Start timer
-            startTimer();
-            
-            // Load ad
-            loadAd();
-        });
-        
-        function startTimer() {
-            const timerEl = document.getElementById('timer');
-            const continueBtn = document.getElementById('continue-btn');
             
             // Show ad state
             document.getElementById('loading-state').classList.add('hidden');
             document.getElementById('ad-state').classList.remove('hidden');
             
+            // Load ad immediately
+            loadAd();
+            
+            // Start timer immediately
+            startTimer();
+        }
+        
+        function startTimer() {
+            const timerEl = document.getElementById('timer');
+            const statusEl = document.getElementById('ad-status');
+            
             const interval = setInterval(() => {
                 timeRemaining--;
                 timerEl.textContent = timeRemaining;
-                continueBtn.textContent = `⏳ Waiting for ad... (${timeRemaining}s)`;
                 
                 if (timeRemaining <= 0) {
                     clearInterval(interval);
-                    adCompleted = true;
+                    
+                    // Mark ad as watched
                     markAdAsWatched();
                     
-                    // Auto-return to Telegram after 1 second
+                    // Show complete state
+                    document.getElementById('ad-state').classList.add('hidden');
+                    document.getElementById('complete-state').classList.remove('hidden');
+                    
+                    // Return to Telegram after 0.5 seconds
                     setTimeout(() => {
                         returnToTelegram();
-                    }, 1000);
+                    }, 500);
                 }
             }, 1000);
         }
         
         function loadAd() {
             const adContainer = document.getElementById('ad-container');
-            const statusEl = document.getElementById('ad-status');
             
             try {
                 // Load Monetag ad via iframe
@@ -257,26 +212,23 @@
                 adContainer.innerHTML = '';
                 adContainer.appendChild(adFrame);
                 
-                statusEl.textContent = 'Ad is loading... watch it to complete';
-                
                 // Also load Monetag SDK if available
                 if (window.show_10243712) {
                     try {
                         window.show_10243712();
                     } catch (e) {
-                        console.log('Monetag SDK not fully loaded yet');
+                        console.log('Monetag SDK loading...');
                     }
                 }
             } catch (error) {
                 console.error('Error loading ad:', error);
-                statusEl.textContent = 'Ad loading in progress...';
             }
         }
         
         function markAdAsWatched() {
             if (!userId || !sessionToken) return;
             
-            // Call backend to mark as watched with session token
+            // Call backend to mark as watched
             fetch(`/api/ads/watched/${userId}`, {
                 method: 'POST',
                 headers: {
@@ -291,26 +243,9 @@
             }).catch(err => console.error('Error marking ad watched:', err));
         }
         
-        function completeAd() {
-            if (!adCompleted) return;
-            
-            // Show completion screen
-            document.getElementById('ad-state').classList.add('hidden');
-            document.getElementById('complete-state').classList.remove('hidden');
-            
-            // Notify bot via webhook if possible
-            notifyBotCompletion();
-        }
-        
-        function notifyBotCompletion() {
-            // This will be handled by the bot when user returns
-            // The bot will check if ad was watched via API
-        }
-        
         function returnToTelegram() {
             if (isTelegramWebApp) {
-                // Send data back to bot indicating ad is complete
-                // This tells the bot to automatically start broadcast creation
+                // Send completion data back to bot
                 const dataToSend = JSON.stringify({
                     action: 'ad_complete',
                     user_id: userId,
@@ -318,30 +253,21 @@
                 });
                 
                 // Send data and close WebApp
-                // This data will be accessible to the bot when the WebApp closes
                 window.Telegram.WebApp.sendData(dataToSend);
                 
-                // Close WebApp and return to Telegram bot
+                // Close WebApp
                 setTimeout(() => {
                     window.Telegram.WebApp.close();
                 }, 100);
-            } else {
-                // Fallback for non-WebApp context
-                setTimeout(() => {
-                    alert('Ad complete! Returning to Telegram...');
-                    window.location.href = 'tg://resolve?domain=BroadcastBlastBot&appname=create_broadcast';
-                }, 500);
             }
         }
         
         function showError(message) {
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('ad-state').innerHTML = `
+            document.getElementById('loading-state').innerHTML = `
                 <div class="emoji">❌</div>
                 <h1>Error</h1>
                 <p class="status-text">${message}</p>
             `;
-            document.getElementById('ad-state').classList.remove('hidden');
         }
         
         // Load Monetag SDK
