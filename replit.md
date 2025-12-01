@@ -49,13 +49,29 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **payments**: Payment transaction logs
 - **admin_logs**: Administrative action logs
 
-## Recent Changes (Nov 30, 2025) - PRODUCTION READY ✅✅✅
+## Recent Changes (Dec 1, 2025) - PRODUCTION READY ✅✅✅
 
-### LATEST FIX: Ads Every Broadcast (Nov 30, 16:45 UTC) ✅
-- ✅ Removed daily ad check - ads now show **every time** user creates a broadcast
-- ✅ No longer using `has_watched_ad_today()` - always show ad button
-- ✅ User flow: Click /create → Watch ad → Auto-return → Create broadcast → Repeat
-- ✅ File: bot/handlers/broadcast_handlers.py (lines 61-86)
+### FINAL FIX: Zero-Click Ad Completion (Dec 1, 05:45 UTC) ✅✅✅
+**PROBLEM SOLVED:** User had to click /create TWICE - now they click ONCE!
+- ✅ WebApp sends data when ad completes via `window.Telegram.WebApp.sendData()`
+- ✅ Bot catches data with `@bot.message_handler(content_types=['web_app_data'])`
+- ✅ Bot automatically starts broadcast form (no second /create needed!)
+- ✅ Ad recency tracking (60s) - skips repeated ads for rapid creations
+- ✅ Files: bot/main.py (web_app_data handler), config/templates/ad_viewer.html, config/ads_state.py
+
+**COMPLETE USER FLOW:**
+1. Click /create
+2. Click "Watch Ad & Unlock" button
+3. Watch 30-second Monetag ad ⏱️
+4. Timer auto-completes → WebApp closes automatically
+5. **Bot auto-starts broadcast form** (NO SECOND CLICK!) ✅
+6. User creates and sends broadcast
+7. Done!
+
+### Previous Fix: Ads Every Broadcast (Nov 30, 16:45 UTC) ✅
+- ✅ Removed daily ad check - ads show **every broadcast creation**
+- ✅ No longer using `has_watched_ad_today()`
+- ✅ File: bot/handlers/broadcast_handlers.py (lines 61-104)
 
 ### Domain Detection Fix (Nov 30, 16:17 UTC) ✅
 - ✅ Fixed: WebApp URLs must use HTTPS (Telegram requires it)

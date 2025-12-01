@@ -20,6 +20,39 @@ priority_service = PrioritySlotService()
 user_service = UserService()
 monetag_service = MonetgService()
 
+@bot.message_handler(content_types=['web_app_data'])
+def on_web_app_data(message):
+    """Handle data from WebApp - when ad completes"""
+    import json
+    user_id = message.from_user.id
+    chat_id = message.chat.id
+    
+    try:
+        # Parse data sent from ad_viewer WebApp
+        web_app_data = json.loads(message.web_app_data.data)
+        print(f"[WEB_APP_DATA] Received from user {user_id}: {web_app_data}")
+        
+        if web_app_data.get('action') == 'ad_complete':
+            # Ad completed - automatically start broadcast creation
+            print(f"[WEB_APP_DATA] Ad complete for user {user_id} - auto-starting broadcast creation")
+            
+            # Create a message-like object to pass to broadcast handler
+            class WebAppMessage:
+                def __init__(self, user_msg):
+                    self.from_user = user_msg.from_user
+                    self.chat = user_msg.chat
+                    self.message_id = user_msg.message_id
+                    self.text = '/create'
+            
+            # Auto-start broadcast creation (skip ad - it was just watched)
+            broadcast_handlers.start_broadcast_creation(bot, WebAppMessage(message), user_id)
+    except Exception as e:
+        print(f"❌ Web app data error: {e}")
+        try:
+            bot.send_message(chat_id, "Error processing ad completion. Please try /create again.")
+        except:
+            pass
+
 @bot.message_handler(commands=['start'])
 def start_command(message):
     registration.handle_start(bot, message)

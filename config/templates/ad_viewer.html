@@ -309,12 +309,27 @@
         
         function returnToTelegram() {
             if (isTelegramWebApp) {
+                // Send data back to bot indicating ad is complete
+                // This tells the bot to automatically start broadcast creation
+                const dataToSend = JSON.stringify({
+                    action: 'ad_complete',
+                    user_id: userId,
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Send data and close WebApp
+                // This data will be accessible to the bot when the WebApp closes
+                window.Telegram.WebApp.sendData(dataToSend);
+                
                 // Close WebApp and return to Telegram bot
-                window.Telegram.WebApp.close();
+                setTimeout(() => {
+                    window.Telegram.WebApp.close();
+                }, 100);
             } else {
                 // Fallback for non-WebApp context
                 setTimeout(() => {
-                    alert('Ad complete! Please return to Telegram and click /create again to start your broadcast!');
+                    alert('Ad complete! Returning to Telegram...');
+                    window.location.href = 'tg://resolve?domain=BroadcastBlastBot&appname=create_broadcast';
                 }, 500);
             }
         }
