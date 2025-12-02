@@ -420,6 +420,43 @@ def get_ads_stats_endpoint():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/ads/complete/<int:user_id>', methods=['POST'])
+def ad_complete_endpoint(user_id):
+    """Ad completed - send broadcast form message to user"""
+    try:
+        # Mark ad as watched
+        mark_ad_watched(user_id)
+        
+        # Send broadcast form message via bot if available
+        if telegram_bot:
+            try:
+                # Import broadcast handler to set state
+                from bot.handlers.broadcast_handlers import user_broadcast_state
+                
+                # Set user state to broadcast creation mode
+                user_broadcast_state[user_id] = {'step': 'text'}
+                print(f"[AD_COMPLETE] Set broadcast state for user {user_id}")
+                
+                # Send broadcast form message
+                telegram_bot.send_message(
+                    user_id,
+                    "📝 Send your broadcast message.\n\n"
+                    "Text only or with media (image/video/document)."
+                )
+                print(f"[AD_COMPLETE] Sent broadcast form to user {user_id}")
+            except Exception as e:
+                print(f"[AD_COMPLETE] Error: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        return jsonify({
+            'message': 'Ad completed successfully', 
+            'user_id': user_id,
+            'form_sent': bool(telegram_bot)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/ads/check/<int:user_id>', methods=['GET'])
 def check_ad_watched(user_id):
     """Check if user watched ad and can broadcast"""

@@ -173,7 +173,6 @@
         
         function startTimer() {
             const timerEl = document.getElementById('timer');
-            const statusEl = document.getElementById('ad-status');
             
             const interval = setInterval(() => {
                 timeRemaining--;
@@ -182,19 +181,44 @@
                 if (timeRemaining <= 0) {
                     clearInterval(interval);
                     
-                    // Mark ad as watched
-                    markAdAsWatched();
-                    
-                    // Show complete state
-                    document.getElementById('ad-state').classList.add('hidden');
-                    document.getElementById('complete-state').classList.remove('hidden');
-                    
-                    // Return to Telegram after 0.5 seconds
-                    setTimeout(() => {
-                        returnToTelegram();
-                    }, 500);
+                    // Call API to complete ad and send broadcast form
+                    completeAdAndSendForm();
                 }
             }, 1000);
+        }
+        
+        function completeAdAndSendForm() {
+            // Call backend API to mark ad complete and send broadcast form
+            fetch(`/api/ads/complete/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    timestamp: new Date().toISOString()
+                })
+            }).then(resp => resp.json()).then(data => {
+                console.log('[AD_COMPLETE] Response:', data);
+                
+                // Show complete state
+                document.getElementById('ad-state').classList.add('hidden');
+                document.getElementById('complete-state').classList.remove('hidden');
+                
+                // Close WebApp after 1 second
+                setTimeout(() => {
+                    if (isTelegramWebApp) {
+                        window.Telegram.WebApp.close();
+                    }
+                }, 1000);
+            }).catch(err => {
+                console.error('[AD_COMPLETE] Error:', err);
+                // Still close even if API fails
+                setTimeout(() => {
+                    if (isTelegramWebApp) {
+                        window.Telegram.WebApp.close();
+                    }
+                }, 1000);
+            });
         }
         
         function loadAd() {
