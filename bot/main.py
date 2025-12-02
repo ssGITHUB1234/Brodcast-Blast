@@ -542,6 +542,13 @@ def main():
         # Don't start polling, let Flask handle updates via webhook
         return
     else:
+        # Delete any existing webhook before polling (for local dev)
+        try:
+            bot.delete_webhook()
+            print("✓ Webhook deleted (switched to polling mode)")
+        except Exception as e:
+            print(f"Note: Could not delete webhook: {e}")
+        
         print("✓ Bot is running... Press Ctrl+C to stop")
         bot.infinity_polling()
 
