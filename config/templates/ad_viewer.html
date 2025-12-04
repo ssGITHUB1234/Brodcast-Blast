@@ -145,13 +145,15 @@
             statusEl.textContent = '✅ Ad complete! Returning...';
             
             if (USER_ID) {
-                fetch(`/api/ads/watched/${USER_ID}`, {
+                // Call the complete endpoint which sends broadcast form to user
+                fetch(`/api/ads/complete/${USER_ID}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
-                }).then(r => r.json()).then(() => {
+                }).then(r => r.json()).then((data) => {
+                    console.log('Ad complete response:', data);
                     returnToTelegram();
                 }).catch(e => {
-                    console.error('Error notifying backend:', e);
+                    console.error('Error completing ad:', e);
                     returnToTelegram();
                 });
             } else {
