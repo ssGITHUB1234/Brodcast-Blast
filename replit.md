@@ -51,6 +51,34 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 
 ## Recent Changes (Dec 4, 2025) - PRODUCTION READY ✅✅✅
 
+### POINTS-BASED BROADCAST SYSTEM (Dec 4, 09:45 UTC) ✅✅✅
+**NEW FEATURE:** Users now earn and spend points to create broadcasts!
+
+**How It Works:**
+- Watch ads to earn points (default: 10 points per ad)
+- Spend points to create broadcasts (default: 30 points required)
+- Admins can broadcast without needing points
+- All settings configurable in admin dashboard
+
+**Implementation:**
+- ✅ Points tracking in user service: get_points(), add_points(), deduct_points()
+- ✅ Points awarded when ad completes via `/api/ads/complete/{user_id}` 
+- ✅ Points deducted only after successful broadcast creation (in finalize_broadcast)
+- ✅ Admin bypass: users in ADMIN_USER_IDS skip points check
+- ✅ Dashboard settings: points_per_ad and points_required in "Ad Settings" tab
+- ✅ /points command: shows balance, status, and watch ad button
+- ✅ Main menu: shows points balance (e.g., "50/30 - Ready to broadcast!")
+- ✅ Success message: shows points deducted and new balance
+
+**Files Updated:**
+- bot/services/user_service.py (points methods)
+- bot/handlers/broadcast_handlers.py (check + deduct logic)
+- bot/handlers/menu_handler.py (handle_points, menu display)
+- bot/main.py (/points command)
+- backend/app.py (/api/ads/complete endpoint awards points)
+- backend/templates/dashboard.html (settings UI)
+- config/ads_state.py (settings storage)
+
 ### STREAMLINED AD FLOW (Dec 4, 06:40 UTC) ✅✅✅
 **SIMPLIFIED:** Removed the extra "Start Watching" button step - ads now auto-play immediately!
 - ✅ Ad auto-starts when WebApp opens (no "Start Watching" button to click)
