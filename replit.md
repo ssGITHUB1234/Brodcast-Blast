@@ -49,24 +49,30 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **payments**: Payment transaction logs
 - **admin_logs**: Administrative action logs
 
-## Recent Changes (Dec 1, 2025) - PRODUCTION READY ✅✅✅
+## Recent Changes (Dec 4, 2025) - PRODUCTION READY ✅✅✅
 
-### FINAL FIX: Zero-Click Ad Completion (Dec 1, 05:45 UTC) ✅✅✅
-**PROBLEM SOLVED:** User had to click /create TWICE - now they click ONCE!
+### STREAMLINED AD FLOW (Dec 4, 06:40 UTC) ✅✅✅
+**SIMPLIFIED:** Removed the extra "Start Watching" button step - ads now auto-play immediately!
+- ✅ Ad auto-starts when WebApp opens (no "Start Watching" button to click)
+- ✅ Auto-return to Telegram when ad timer completes (no "Continue" button to click)
+- ✅ Fixed double-click issue - broadcast creation now triggers correctly
+- ✅ State synced properly between WebApp and bot
+- ✅ Files: backend/templates/ad_viewer.html, config/templates/ad_viewer.html, bot/main.py, bot/handlers/broadcast_handlers.py
+
+**COMPLETE USER FLOW (SIMPLIFIED!):**
+1. Click /create
+2. Click "Watch Ad & Unlock" button
+3. Ad plays automatically (30-second timer)
+4. Timer completes → Auto-returns to Telegram
+5. **Bot immediately shows broadcast form** (ONE CLICK ONLY!) ✅
+6. User creates and sends broadcast
+7. Done!
+
+### Previous: Zero-Click Ad Completion (Dec 1) ✅
 - ✅ WebApp sends data when ad completes via `window.Telegram.WebApp.sendData()`
 - ✅ Bot catches data with `@bot.message_handler(content_types=['web_app_data'])`
 - ✅ Bot automatically starts broadcast form (no second /create needed!)
 - ✅ Ad recency tracking (60s) - skips repeated ads for rapid creations
-- ✅ Files: bot/main.py (web_app_data handler), config/templates/ad_viewer.html, config/ads_state.py
-
-**COMPLETE USER FLOW:**
-1. Click /create
-2. Click "Watch Ad & Unlock" button
-3. Watch 30-second Monetag ad ⏱️
-4. Timer auto-completes → WebApp closes automatically
-5. **Bot auto-starts broadcast form** (NO SECOND CLICK!) ✅
-6. User creates and sends broadcast
-7. Done!
 
 ### Previous Fix: Ads Every Broadcast (Nov 30, 16:45 UTC) ✅
 - ✅ Removed daily ad check - ads show **every broadcast creation**
