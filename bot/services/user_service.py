@@ -131,3 +131,47 @@ class UserService:
         if watched:
             print(f"✅ User {user_id} watched ad in this session")
         return watched
+    
+    def get_user_points(self, user_id):
+        """Get user's current points balance"""
+        try:
+            user = self.get_user(user_id)
+            if user:
+                return user.get('points', 0) or 0
+            return 0
+        except Exception as e:
+            print(f"❌ Error getting points for user {user_id}: {e}")
+            return 0
+    
+    def add_points(self, user_id, points_to_add):
+        """Add points to user's balance"""
+        try:
+            current_points = self.get_user_points(user_id)
+            new_points = current_points + points_to_add
+            response = self.db.table('users').update({'points': new_points}).eq('user_id', user_id).execute()
+            print(f"✅ Added {points_to_add} points to user {user_id}. New balance: {new_points}")
+            return new_points
+        except Exception as e:
+            print(f"❌ Error adding points to user {user_id}: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+    
+    def deduct_points(self, user_id, points_to_deduct):
+        """Deduct points from user's balance"""
+        try:
+            current_points = self.get_user_points(user_id)
+            new_points = max(0, current_points - points_to_deduct)
+            response = self.db.table('users').update({'points': new_points}).eq('user_id', user_id).execute()
+            print(f"✅ Deducted {points_to_deduct} points from user {user_id}. New balance: {new_points}")
+            return new_points
+        except Exception as e:
+            print(f"❌ Error deducting points from user {user_id}: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+    
+    def has_enough_points(self, user_id, required_points):
+        """Check if user has enough points"""
+        current_points = self.get_user_points(user_id)
+        return current_points >= required_points

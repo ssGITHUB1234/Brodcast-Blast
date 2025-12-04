@@ -3,7 +3,7 @@ from bot.services.broadcast_service import BroadcastService
 from bot.services.user_service import UserService
 from bot.services.priority_service import PrioritySlotService
 from bot.services.monetag_service import MonetgService
-from config.settings import COUNTRIES, CATEGORIES, APP_DOMAIN
+from config.settings import COUNTRIES, CATEGORIES, APP_DOMAIN, ADMIN_USER_IDS
 from config import ads_state
 import os
 import secrets
@@ -17,8 +17,12 @@ monetag_service = MonetgService()
 user_broadcast_state = {}
 users_ads_watched = set()
 
+def is_admin(user_id):
+    """Check if user is admin"""
+    return user_id in ADMIN_USER_IDS
+
 def handle_create_broadcast(bot, message):
-    """Start broadcast creation process - show ad if required"""
+    """Start broadcast creation process - check points or show ad"""
     from bot.utils.nav_helpers import edit_or_send
     import secrets
     import traceback
@@ -57,17 +61,31 @@ def handle_create_broadcast(bot, message):
             edit_or_send(bot, chat_id, "⛔ You have been blocked and cannot create broadcasts.", message_id)
             return
         
-        # Check if ads are required (admin can toggle via dashboard)
-        ads_required = ads_state.settings.get('ads_required', True)
-        print(f"[CREATE_BROADCAST] Ads required: {ads_required}")
+        # Admin bypass - admins don't need points
+        if is_admin(user_id):
+            print(f"[CREATE_BROADCAST] User {user_id} is ADMIN - bypassing points check")
+            start_broadcast_creation(bot, message, user_id)
+            return
         
-        # Check if user watched ad recently (within 60 seconds) - skip ad if yes
-        user_watched_recently = ads_state.user_watched_ad_recently(user_id, timeout_seconds=60)
-        print(f"[CREATE_BROADCAST] User {user_id} watched ad recently: {user_watched_recently}")
+        # Get points settings
+        points_required = ads_state.settings.get('points_required', 30)
+        points_per_ad = ads_state.settings.get('points_per_ad', 10)
+        current_points = user_service.get_user_points(user_id)
         
-        if ads_required and not user_watched_recently:
-            # Show ad before each broadcast creation (unless they just watched)
-            print(f"[CREATE_BROADCAST] User {user_id} must watch ad to create broadcast")
+        print(f"[CREATE_BROADCAST] User {user_id} points: {current_points}/{points_required}")
+        
+        # Check if user has enough points
+        if current_points >= points_required:
+            # User has enough points - start broadcast creation
+            print(f"[CREATE_BROADCAST] User {user_id} has enough points - starting broadcast creation")
+            start_broadcast_creation(bot, message, user_id)
+        else:
+            # Not enough points - show ad button
+            points_needed = points_required - current_points
+            ads_needed = -(-points_needed // points_per_ad)  # Ceiling division
+            
+            print(f"[CREATE_BROADCAST] User {user_id} needs {points_needed} more points ({ads_needed} ads)")
+            
             # Generate unique session token for this ad session
             session_token = secrets.token_urlsafe(32)
             
@@ -82,23 +100,18 @@ def handle_create_broadcast(bot, message):
             # Use WebApp button instead of URL button (more reliable in Telegram)
             markup = types.InlineKeyboardMarkup()
             markup.add(
-                types.InlineKeyboardButton("▶️ Watch Ad & Unlock", web_app=types.WebAppInfo(url=ad_viewer_url))
+                types.InlineKeyboardButton("▶️ Watch Ad (+10 points)", web_app=types.WebAppInfo(url=ad_viewer_url))
             )
             edit_or_send(bot, chat_id,
-                "🎬 Watch Ad to Create Broadcast\n\n"
-                "Click the button below to watch a quick ad.\n"
-                "⏳ Takes about 30 seconds\n\n"
-                "Your broadcast will be ready to create immediately after!",
+                f"📊 Points Required to Broadcast\n\n"
+                f"💰 Your balance: {current_points} points\n"
+                f"📋 Required: {points_required} points\n"
+                f"❌ Needed: {points_needed} more points\n\n"
+                f"🎬 Watch {ads_needed} ad(s) to earn enough points!\n"
+                f"Each ad = +{points_per_ad} points",
                 message_id, markup)
             print(f"[CREATE_BROADCAST] Ad button sent to user {user_id}")
             return
-        else:
-            # Go straight to broadcast creation (ads disabled or just watched)
-            if ads_required and user_watched_recently:
-                print(f"[CREATE_BROADCAST] User {user_id} watched ad recently - skipping to broadcast creation")
-            else:
-                print(f"[CREATE_BROADCAST] Ads disabled by admin - skipping to broadcast creation")
-            start_broadcast_creation(bot, message, user_id)
     except Exception as e:
         print(f"❌ handle_create_broadcast error for user {user_id}: {e}")
         traceback.print_exc()
@@ -264,6 +277,15 @@ def finalize_broadcast(bot, chat_id, user_id, message_id=None):
     )
     
     if broadcast:
+        # Deduct points for non-admin users
+        points_info = ""
+        if not is_admin(user_id):
+            points_required = ads_state.settings.get('points_required', 30)
+            new_balance = user_service.deduct_points(user_id, points_required)
+            if new_balance is not None:
+                points_info = f"\n💰 Points deducted: -{points_required}\n💳 New balance: {new_balance} points"
+                print(f"[BROADCAST] Deducted {points_required} points from user {user_id}. New balance: {new_balance}")
+        
         target_desc = "All Users"
         if state.get('target_country'):
             target_desc = f"Country: {state['target_country']}"
@@ -278,7 +300,7 @@ def finalize_broadcast(bot, chat_id, user_id, message_id=None):
         text = f"✅ Broadcast created successfully!\n\n" \
                f"📝 ID: #{broadcast['broadcast_id']}\n" \
                f"🎯 Target: {target_desc}\n" \
-               f"📊 Status: {broadcast['status']}{queue_status}\n\n" \
+               f"📊 Status: {broadcast['status']}{points_info}{queue_status}\n\n" \
                f"Your broadcast will be sent to users based on the queue."
         
         markup = types.InlineKeyboardMarkup()

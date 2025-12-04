@@ -17,7 +17,9 @@ ad_stats = {
 
 # Admin settings - shared between backend and bot
 settings = {
-    'ads_required': True  # Admin can toggle via dashboard
+    'ads_required': True,  # Admin can toggle via dashboard
+    'points_per_ad': 10,   # Points awarded per ad watched
+    'points_required': 30  # Points required to send a broadcast
 }
 
 def mark_ad_watched(user_id):

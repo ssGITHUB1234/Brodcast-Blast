@@ -4,6 +4,7 @@ from bot.services.broadcast_service import BroadcastService
 from bot.services.priority_service import PrioritySlotService
 from bot.utils.state_manager import set_user_state, get_user_message_id
 from bot.utils.nav_helpers import add_navigation_buttons, edit_or_send
+from config import ads_state
 
 user_service = UserService()
 broadcast_service = BroadcastService()
@@ -51,10 +52,12 @@ def handle_menu(bot, message):
     first_name = message.from_user.first_name
     country = "Not set"
     categories = "Not set"
+    points = 0
     
     if user:
         first_name = user.get('first_name', first_name)
         country = user.get('country') or 'Not set'
+        points = user.get('points', 0) or 0
         # Handle both 'categories' (array) and 'category' (old format)
         cats = user.get('categories') or user.get('category')
         if isinstance(cats, list):
@@ -64,10 +67,15 @@ def handle_menu(bot, message):
         else:
             categories = 'Not set'
     
+    # Get points required for broadcast
+    points_required = ads_state.settings.get('points_required', 30)
+    points_status = "✅ Can broadcast!" if points >= points_required else f"❌ Need {points_required - points} more"
+    
     text = f"Main Menu{slot_msg}\n\n" \
            f"Welcome, {first_name}!\n" \
-           f"Country: {country}\n" \
-           f"Interests: {categories}\n\n" \
+           f"💰 Points: {points}/{points_required} ({points_status})\n" \
+           f"📍 Country: {country}\n" \
+           f"📂 Interests: {categories}\n\n" \
            f"Select an option:"
     
     result = edit_or_send(bot, message.chat.id, text, message_id, markup)
@@ -222,6 +230,11 @@ This is a broadcast bot that allows you to send messages to targeted audiences.
 • Target by country, category, or all users
 • Broadcasts are queued and sent automatically
 
+💰 Points System:
+• Watch ads to earn points
+• Use points to create broadcasts
+• Check /points for your balance
+
 🌟 Priority Slots:
 Want your broadcasts sent immediately?
 • Purchase a priority slot
@@ -233,6 +246,7 @@ Want your broadcasts sent immediately?
 /start - Register or restart
 /menu - Main menu
 /create - Create a broadcast
+/points - Check your points balance
 /priority - View priority slot options
 /mystats - View detailed broadcast analytics
 /settings - Change your settings
@@ -248,3 +262,73 @@ Contact our admin team for support!"""
         set_user_state(user_id, result.message_id, 'help')
     else:
         set_user_state(user_id, message_id, 'help')
+
+def handle_points(bot, message):
+    """Show user's points balance and earn options"""
+    from config.settings import APP_DOMAIN, ADMIN_USER_IDS
+    import secrets
+    
+    user_id = message.from_user.id
+    message_id = getattr(message, 'message_id', None)
+    
+    try:
+        user = user_service.get_user(user_id)
+    except:
+        user = None
+    
+    current_points = user.get('points', 0) or 0 if user else 0
+    points_per_ad = ads_state.settings.get('points_per_ad', 10)
+    points_required = ads_state.settings.get('points_required', 30)
+    
+    # Check if admin
+    is_admin = user_id in ADMIN_USER_IDS
+    
+    if is_admin:
+        text = f"💰 Points Balance\n\n" \
+               f"🔒 You are an ADMIN\n" \
+               f"✅ You can broadcast without points!\n\n" \
+               f"📊 Current balance: {current_points} points\n" \
+               f"(For reference only - admins bypass points check)"
+        
+        markup = types.InlineKeyboardMarkup()
+        add_navigation_buttons(markup, go_back=False, go_menu=True)
+    else:
+        points_needed = max(0, points_required - current_points)
+        ads_needed = -(-points_needed // points_per_ad) if points_needed > 0 else 0
+        
+        can_broadcast = current_points >= points_required
+        status = "✅ Ready to broadcast!" if can_broadcast else f"❌ Need {points_needed} more points"
+        
+        text = f"💰 Points Balance\n\n" \
+               f"📊 Your balance: {current_points} points\n" \
+               f"📋 Required to broadcast: {points_required} points\n" \
+               f"📌 Status: {status}\n\n"
+        
+        if can_broadcast:
+            text += f"🎉 You have enough points!\n" \
+                    f"Use /create to send a broadcast."
+        else:
+            text += f"🎬 Watch {ads_needed} ad(s) to earn enough points!\n" \
+                    f"Each ad = +{points_per_ad} points"
+        
+        markup = types.InlineKeyboardMarkup()
+        
+        if not can_broadcast:
+            # Add watch ad button
+            session_token = secrets.token_urlsafe(32)
+            ad_viewer_url = f"{APP_DOMAIN}/ad-viewer?user_id={user_id}&token={session_token}"
+            markup.add(
+                types.InlineKeyboardButton(f"▶️ Watch Ad (+{points_per_ad} points)", web_app=types.WebAppInfo(url=ad_viewer_url))
+            )
+        else:
+            markup.add(
+                types.InlineKeyboardButton("📢 Create Broadcast", callback_data="menu_create")
+            )
+        
+        add_navigation_buttons(markup, go_back=False, go_menu=True)
+    
+    result = edit_or_send(bot, message.chat.id, text, message_id, markup)
+    if result:
+        set_user_state(user_id, result.message_id, 'points')
+    else:
+        set_user_state(user_id, message_id, 'points')

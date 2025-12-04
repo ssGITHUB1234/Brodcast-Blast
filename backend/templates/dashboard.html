@@ -537,22 +537,44 @@
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                     <div style="margin-bottom: 20px;">
                         <h3 style="margin-bottom: 15px;">Require Ads Before Broadcasting</h3>
-                        <p style="color: #666; margin-bottom: 15px;">Toggle whether users must watch an ad before sending each broadcast.</p>
+                        <p style="color: #666; margin-bottom: 15px;">Toggle whether users must watch ads to earn points for broadcasting.</p>
                         
                         <div style="display: flex; gap: 10px; align-items: center;">
                             <input type="checkbox" id="ads-required-toggle" style="width: 20px; height: 20px; cursor: pointer;">
                             <label for="ads-required-toggle" style="cursor: pointer; font-weight: 600;">
-                                Users must watch ads before broadcasting
+                                Users must earn points via ads before broadcasting
                             </label>
                         </div>
                     </div>
                     
-                    <button class="btn btn-primary" onclick="saveAdSettings()" style="margin-top: 20px;">Save Settings</button>
+                    <h3 style="margin-bottom: 15px; margin-top: 30px;">📊 Points System Settings</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Configure how many points users earn per ad and how many they need to broadcast.</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 500px;">
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Points Per Ad</label>
+                            <input type="number" id="points-per-ad" min="1" max="100" value="10" 
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;">
+                            <small style="color: #666; display: block; margin-top: 5px;">Points awarded for watching 1 ad</small>
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px;">Points Required to Broadcast</label>
+                            <input type="number" id="points-required" min="0" max="1000" value="30" 
+                                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;">
+                            <small style="color: #666; display: block; margin-top: 5px;">Points needed to send a broadcast</small>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveAdSettings()" style="margin-top: 25px;">Save Settings</button>
                 </div>
                 
                 <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 30px;">
                     <p style="color: #155724; margin: 0;">
-                        💡 <strong>Tip:</strong> When enabled, users see an ad before creating each broadcast and must watch it to continue. After watching, they can create their broadcast normally.
+                        💡 <strong>How it works:</strong><br>
+                        • Users watch ads to earn points (default: 10 points per ad)<br>
+                        • When they have enough points (default: 30), they can create a broadcast<br>
+                        • Creating a broadcast deducts the required points<br>
+                        • Admins can broadcast without needing points
                     </p>
                 </div>
             </div>
@@ -1087,6 +1109,8 @@
                 const response = await fetch(`${API_BASE}/ads/settings`);
                 const settings = await response.json();
                 document.getElementById('ads-required-toggle').checked = settings.ads_required;
+                document.getElementById('points-per-ad').value = settings.points_per_ad || 10;
+                document.getElementById('points-required').value = settings.points_required || 30;
             } catch (error) {
                 console.error('Error loading ad settings:', error);
                 showError('Failed to load ad settings');
@@ -1096,13 +1120,21 @@
         async function saveAdSettings() {
             try {
                 const adsRequired = document.getElementById('ads-required-toggle').checked;
+                const pointsPerAd = parseInt(document.getElementById('points-per-ad').value) || 10;
+                const pointsRequired = parseInt(document.getElementById('points-required').value) || 30;
+                
                 const response = await fetch(`${API_BASE}/ads/settings`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ads_required: adsRequired})
+                    body: JSON.stringify({
+                        ads_required: adsRequired,
+                        points_per_ad: pointsPerAd,
+                        points_required: pointsRequired
+                    })
                 });
                 if (response.ok) {
-                    showSuccess(`✅ Ad settings updated - Ads ${adsRequired ? 'REQUIRED' : 'OPTIONAL'}`);
+                    const data = await response.json();
+                    showSuccess(`✅ Settings saved! Points per ad: ${pointsPerAd}, Required: ${pointsRequired}`);
                 } else {
                     showError('Failed to save settings');
                 }

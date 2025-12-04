@@ -353,21 +353,50 @@ def get_top_broadcasting_users():
 
 @app.route('/api/ads/settings', methods=['GET'])
 def get_ads_settings():
-    """Get ad system settings"""
-    return jsonify(ad_settings)
+    """Get ad system settings including points"""
+    from config import ads_state
+    return jsonify({
+        'ads_required': ads_state.settings.get('ads_required', True),
+        'points_per_ad': ads_state.settings.get('points_per_ad', 10),
+        'points_required': ads_state.settings.get('points_required', 30)
+    })
 
 @app.route('/api/ads/settings', methods=['POST'])
 def update_ads_settings():
     """Update ad system settings (admin only)"""
     try:
+        from config import ads_state
         data = request.json
-        ads_required = data.get('ads_required')
+        updated = False
         
-        if ads_required is not None:
-            ad_settings['ads_required'] = bool(ads_required)
-            return jsonify({'message': 'Ad settings updated', 'settings': ad_settings})
+        if 'ads_required' in data:
+            ads_state.settings['ads_required'] = bool(data['ads_required'])
+            ad_settings['ads_required'] = bool(data['ads_required'])
+            updated = True
         
-        return jsonify({'error': 'Invalid request'}), 400
+        if 'points_per_ad' in data:
+            points_per_ad = int(data['points_per_ad'])
+            if points_per_ad > 0:
+                ads_state.settings['points_per_ad'] = points_per_ad
+                updated = True
+        
+        if 'points_required' in data:
+            points_required = int(data['points_required'])
+            if points_required >= 0:
+                ads_state.settings['points_required'] = points_required
+                updated = True
+        
+        if updated:
+            return jsonify({
+                'message': 'Settings updated',
+                'settings': {
+                    'ads_required': ads_state.settings.get('ads_required', True),
+                    'points_per_ad': ads_state.settings.get('points_per_ad', 10),
+                    'points_required': ads_state.settings.get('points_required', 30)
+                }
+            })
+        
+        return jsonify({'error': 'No valid settings provided'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -422,37 +451,56 @@ def get_ads_stats_endpoint():
 
 @app.route('/api/ads/complete/<int:user_id>', methods=['POST'])
 def ad_complete_endpoint(user_id):
-    """Ad completed - send broadcast form message to user"""
+    """Ad completed - award points and notify user"""
     try:
+        from config import ads_state
+        
         # Mark ad as watched
         mark_ad_watched(user_id)
         
-        # Send broadcast form message via bot if available
+        # Award points for watching ad
+        points_per_ad = ads_state.settings.get('points_per_ad', 10)
+        points_required = ads_state.settings.get('points_required', 30)
+        new_balance = user_service.add_points(user_id, points_per_ad)
+        
+        print(f"[AD_COMPLETE] Awarded {points_per_ad} points to user {user_id}. New balance: {new_balance}")
+        
+        # Send points notification to user
         if telegram_bot:
             try:
-                # Import broadcast handler to set state
-                from bot.handlers.broadcast_handlers import user_broadcast_state
-                
-                # Set user state to broadcast creation mode
-                user_broadcast_state[user_id] = {'step': 'text'}
-                print(f"[AD_COMPLETE] Set broadcast state for user {user_id}")
-                
-                # Send broadcast form message
-                telegram_bot.send_message(
-                    user_id,
-                    "📝 Send your broadcast message.\n\n"
-                    "Text only or with media (image/video/document)."
-                )
-                print(f"[AD_COMPLETE] Sent broadcast form to user {user_id}")
+                if new_balance >= points_required:
+                    # User has enough points now
+                    telegram_bot.send_message(
+                        user_id,
+                        f"🎉 +{points_per_ad} points earned!\n\n"
+                        f"💰 Your balance: {new_balance} points\n\n"
+                        f"✅ You have enough points to send a broadcast!\n"
+                        f"Use /create to send your broadcast now."
+                    )
+                else:
+                    # User needs more points
+                    points_needed = points_required - new_balance
+                    ads_needed = -(-points_needed // points_per_ad)  # Ceiling division
+                    telegram_bot.send_message(
+                        user_id,
+                        f"🎉 +{points_per_ad} points earned!\n\n"
+                        f"💰 Your balance: {new_balance} points\n"
+                        f"📊 Required for broadcast: {points_required} points\n\n"
+                        f"⏳ Watch {ads_needed} more ad(s) to unlock broadcasting!"
+                    )
+                print(f"[AD_COMPLETE] Sent points notification to user {user_id}")
             except Exception as e:
-                print(f"[AD_COMPLETE] Error: {e}")
+                print(f"[AD_COMPLETE] Error sending message: {e}")
                 import traceback
                 traceback.print_exc()
         
         return jsonify({
             'message': 'Ad completed successfully', 
             'user_id': user_id,
-            'form_sent': bool(telegram_bot)
+            'points_awarded': points_per_ad,
+            'new_balance': new_balance,
+            'points_required': points_required,
+            'can_broadcast': new_balance >= points_required
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500

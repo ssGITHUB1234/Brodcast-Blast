@@ -124,6 +124,16 @@ def help_command(message):
             self.message_id = None
     menu_handler.handle_help(bot, CommandMessage(message))
 
+@bot.message_handler(commands=['points'])
+def points_command(message):
+    """Check points balance"""
+    class CommandMessage:
+        def __init__(self, msg):
+            self.from_user = msg.from_user
+            self.chat = msg.chat
+            self.message_id = None
+    menu_handler.handle_points(bot, CommandMessage(message))
+
 @bot.message_handler(commands=['ads'])
 def ads_command(message):
     """Watch ads to earn rewards"""
