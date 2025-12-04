@@ -114,7 +114,8 @@ def handle_create_broadcast(bot, message):
 def start_broadcast_creation(bot, message, user_id):
     """Start the actual broadcast creation flow"""
     user_broadcast_state[user_id] = {'step': 'text'}
-    bot.reply_to(message, 
+    chat_id = message.chat.id
+    bot.send_message(chat_id,
         "📝 Send your broadcast message.\n\n"
         "Text only or with media (image/video/document).")
 

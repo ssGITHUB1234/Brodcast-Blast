@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch Ad - Broadcast Bot</title>
+    <title>Watch Ad</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,294 +13,182 @@
         }
         
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
             display: flex;
-            align-items: center;
             justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
         }
         
         .container {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             text-align: center;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 50px 40px;
+            border-radius: 15px;
+            max-width: 450px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
         }
         
-        .timer-circle {
-            width: 120px;
-            height: 120px;
-            margin: 20px auto;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 48px;
-            font-weight: bold;
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .timer-text {
-            font-size: 14px;
-            color: #666;
-            margin-top: 10px;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
+        h2 {
+            margin-bottom: 30px;
             font-size: 24px;
         }
         
-        .status-text {
-            color: #666;
-            margin: 20px 0;
+        .timer {
+            font-size: 64px;
+            font-weight: bold;
+            margin: 30px 0;
+            color: #4CAF50;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 5px;
+        }
+        
+        .status {
             font-size: 16px;
-            min-height: 20px;
-        }
-        
-        .ad-frame {
+            color: #ccc;
             margin: 20px 0;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            background: #f9f9f9;
-            min-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .ad-frame iframe {
-            width: 100%;
-            height: 300px;
-            border: none;
-            border-radius: 6px;
-        }
-        
-        .emoji {
-            font-size: 32px;
-            margin-bottom: 10px;
+            min-height: 50px;
+            line-height: 1.5;
         }
         
         .hidden {
-            display: none;
+            display: none !important;
         }
         
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .error {
+            color: #ff6b6b;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 5px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="loading-state">
-            <div class="emoji">⏳</div>
-            <h1>Loading Ad...</h1>
-            <div class="loader"></div>
-        </div>
+        <h2>🎬 Watching Advertisement</h2>
+        <div class="timer" id="timer">00:30</div>
+        <div class="status" id="status">⏳ Ad playing... please wait...</div>
         
-        <div id="ad-state" class="hidden">
-            <div class="emoji">🎬</div>
-            <h1>Watch Advertisement</h1>
-            <p class="status-text">Ad playing - please watch</p>
-            
-            <div class="timer-circle">
-                <span id="timer">30</span>
-            </div>
-            <div class="timer-text">Seconds remaining</div>
-            
-            <div class="ad-frame">
-                <div id="ad-container" style="width: 100%;"></div>
-            </div>
-            
-            <p class="status-text" id="ad-status">⏳ Ad is playing...</p>
-        </div>
-        
-        <div id="complete-state" class="hidden">
-            <div class="emoji">✅</div>
-            <h1>Ad Complete!</h1>
-            <p class="status-text">Returning to Telegram...</p>
-        </div>
+        <div id="error"></div>
     </div>
-    
+
+    <!-- Monetag SDK - Zone 10243712 -->
+    <script src='//libtl.com/sdk.js' data-zone='10243712' data-sdk='show_10243712'></script>
+
     <script>
-        // Get parameters from URL
-        const params = new URLSearchParams(window.location.search);
-        const userId = params.get('user_id');
-        const sessionToken = params.get('token');
+        const USER_ID = new URLSearchParams(window.location.search).get('user_id');
+        const timerEl = document.getElementById('timer');
+        const statusEl = document.getElementById('status');
+        const errorEl = document.getElementById('error');
         
+        let timerInterval = null;
         let timeRemaining = 30;
-        
-        // Check if running in Telegram WebApp context
-        const isTelegramWebApp = typeof window.Telegram !== 'undefined' && window.Telegram.WebApp;
-        
-        // Initialize immediately
-        if (!userId || !sessionToken) {
-            showError('Invalid session parameters');
-        } else {
-            if (isTelegramWebApp) {
-                window.Telegram.WebApp.ready();
-                window.Telegram.WebApp.expand();
-            }
-            
-            // Show ad state
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('ad-state').classList.remove('hidden');
-            
-            // Load ad immediately
-            loadAd();
-            
-            // Start timer immediately
-            startTimer();
-        }
+        let adCompleted = false;
         
         function startTimer() {
-            const timerEl = document.getElementById('timer');
+            timeRemaining = 30;
+            updateTimerDisplay();
             
-            const interval = setInterval(() => {
+            timerInterval = setInterval(() => {
                 timeRemaining--;
-                timerEl.textContent = timeRemaining;
+                updateTimerDisplay();
                 
                 if (timeRemaining <= 0) {
-                    clearInterval(interval);
-                    
-                    // Call API to complete ad and send broadcast form
-                    completeAdAndSendForm();
+                    clearInterval(timerInterval);
+                    completeAdWatch();
                 }
             }, 1000);
         }
         
-        function completeAdAndSendForm() {
-            // Call backend API to mark ad complete and send broadcast form
-            fetch(`/api/ads/complete/${userId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    timestamp: new Date().toISOString()
-                })
-            }).then(resp => resp.json()).then(data => {
-                console.log('[AD_COMPLETE] Response:', data);
-                
-                // Show complete state
-                document.getElementById('ad-state').classList.add('hidden');
-                document.getElementById('complete-state').classList.remove('hidden');
-                
-                // Close WebApp after 1 second
-                setTimeout(() => {
-                    if (isTelegramWebApp) {
-                        window.Telegram.WebApp.close();
-                    }
-                }, 1000);
-            }).catch(err => {
-                console.error('[AD_COMPLETE] Error:', err);
-                // Still close even if API fails
-                setTimeout(() => {
-                    if (isTelegramWebApp) {
-                        window.Telegram.WebApp.close();
-                    }
-                }, 1000);
-            });
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeRemaining / 60);
+            const secs = timeRemaining % 60;
+            timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
         }
         
-        function loadAd() {
-            const adContainer = document.getElementById('ad-container');
-            
-            try {
-                // Load Monetag ad via iframe
-                const adFrame = document.createElement('iframe');
-                adFrame.src = adLink;
-                adFrame.style.width = '100%';
-                adFrame.style.height = '300px';
-                adFrame.style.border = 'none';
-                adFrame.style.borderRadius = '6px';
-                
-                adContainer.innerHTML = '';
-                adContainer.appendChild(adFrame);
-                
-                // Also load Monetag SDK if available
-                if (window.show_10243712) {
-                    try {
-                        window.show_10243712();
-                    } catch (e) {
-                        console.log('Monetag SDK loading...');
-                    }
+        function showMonetgAd() {
+            setTimeout(() => {
+                if (typeof show_10243712 === 'function') {
+                    console.log('Monetag SDK loaded, showing Rewarded Interstitial...');
+                    
+                    show_10243712({
+                        ymid: USER_ID
+                    }).then(() => {
+                        console.log('Monetag ad completed');
+                        if (timeRemaining > 0) {
+                            timeRemaining = 0;
+                            completeAdWatch();
+                        }
+                    }).catch((error) => {
+                        console.log('Monetag ad error or unavailable:', error);
+                    });
+                } else {
+                    console.log('Monetag SDK not available, using timer only');
+                    statusEl.textContent = '⏳ Watching advertisement...';
                 }
-            } catch (error) {
-                console.error('Error loading ad:', error);
-            }
+            }, 300);
         }
         
-        function markAdAsWatched() {
-            if (!userId || !sessionToken) return;
+        function completeAdWatch() {
+            if (adCompleted) return;
+            adCompleted = true;
             
-            // Call backend to mark as watched
-            fetch(`/api/ads/watched/${userId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    token: sessionToken,
-                    timestamp: new Date().toISOString()
-                })
-            }).then(resp => {
-                console.log('Ad marked as watched:', resp.status);
-            }).catch(err => console.error('Error marking ad watched:', err));
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            timerEl.textContent = '✅';
+            statusEl.textContent = '✅ Ad complete! Returning...';
+            
+            if (USER_ID) {
+                fetch(`/api/ads/watched/${USER_ID}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(r => r.json()).then(() => {
+                    returnToTelegram();
+                }).catch(e => {
+                    console.error('Error notifying backend:', e);
+                    returnToTelegram();
+                });
+            } else {
+                returnToTelegram();
+            }
         }
         
         function returnToTelegram() {
-            if (isTelegramWebApp) {
-                // Send completion data back to bot
-                const dataToSend = JSON.stringify({
-                    action: 'ad_complete',
-                    user_id: userId,
-                    timestamp: new Date().toISOString()
-                });
-                
-                // Send data and close WebApp
-                window.Telegram.WebApp.sendData(dataToSend);
-                
-                // Close WebApp
-                setTimeout(() => {
+            setTimeout(() => {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.sendData(JSON.stringify({
+                        action: 'ad_complete',
+                        user_id: USER_ID
+                    }));
                     window.Telegram.WebApp.close();
-                }, 100);
+                } else {
+                    window.history.back();
+                }
+            }, 500);
+        }
+        
+        window.addEventListener('load', () => {
+            console.log('Ad viewer loaded - auto-starting ad');
+            
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
             }
-        }
-        
-        function showError(message) {
-            document.getElementById('loading-state').innerHTML = `
-                <div class="emoji">❌</div>
-                <h1>Error</h1>
-                <p class="status-text">${message}</p>
-            `;
-        }
-        
-        // Load Monetag SDK
-        const script = document.createElement('script');
-        script.src = '//libtl.com/sdk.js';
-        script.setAttribute('data-zone', '10243712');
-        script.setAttribute('data-sdk', 'show_10243712');
-        document.head.appendChild(script);
+            
+            if (USER_ID) {
+                fetch(`/api/ads/started/${USER_ID}`, { method: 'POST' })
+                    .catch(e => console.error('Error tracking ad start:', e));
+            }
+            
+            startTimer();
+            showMonetgAd();
+        });
     </script>
 </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Watch Ad</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -52,37 +53,6 @@
             line-height: 1.5;
         }
         
-        .button-group {
-            display: flex;
-            gap: 10px;
-            flex-direction: column;
-            margin-top: 30px;
-        }
-        
-        button {
-            padding: 14px 32px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        button:hover:not(:disabled) {
-            background: #45a049;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
-        }
-        
-        button:disabled {
-            background: #888;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
         .hidden {
             display: none !important;
         }
@@ -99,14 +69,9 @@
 </head>
 <body>
     <div class="container">
-        <h2>🎬 Watch Advertisement</h2>
+        <h2>🎬 Watching Advertisement</h2>
         <div class="timer" id="timer">00:30</div>
-        <div class="status" id="status">Ready to watch ad</div>
-        
-        <div class="button-group">
-            <button id="startBtn" onclick="startAdWatching()">▶️ Start Watching</button>
-            <button id="completeBtn" class="hidden" onclick="completeAd()">✅ Ad Watched - Continue</button>
-        </div>
+        <div class="status" id="status">⏳ Ad playing... please wait...</div>
         
         <div id="error"></div>
     </div>
@@ -118,34 +83,11 @@
         const USER_ID = new URLSearchParams(window.location.search).get('user_id');
         const timerEl = document.getElementById('timer');
         const statusEl = document.getElementById('status');
-        const startBtn = document.getElementById('startBtn');
-        const completeBtn = document.getElementById('completeBtn');
         const errorEl = document.getElementById('error');
         
         let timerInterval = null;
         let timeRemaining = 30;
-        let adStarted = false;
         let adCompleted = false;
-        
-        function startAdWatching() {
-            if (adStarted) return;
-            adStarted = true;
-            startBtn.disabled = true;
-            
-            statusEl.textContent = '⏳ Ad playing... watching time...';
-            
-            // Track that user started watching ad
-            if (USER_ID) {
-                fetch(`/api/ads/started/${USER_ID}`, { method: 'POST' })
-                    .catch(e => console.error('Error tracking ad start:', e));
-            }
-            
-            // Start 30-second timer
-            startTimer();
-            
-            // Try to show Monetag Rewarded Interstitial
-            showMonetgAd();
-        }
         
         function startTimer() {
             timeRemaining = 30;
@@ -169,29 +111,26 @@
         }
         
         function showMonetgAd() {
-            // Wait for SDK to load
             setTimeout(() => {
                 if (typeof show_10243712 === 'function') {
                     console.log('Monetag SDK loaded, showing Rewarded Interstitial...');
                     
-                    // Call Rewarded Interstitial - SDK returns Promise
                     show_10243712({
-                        ymid: USER_ID  // Pass user ID for tracking
+                        ymid: USER_ID
                     }).then(() => {
                         console.log('Monetag ad completed');
                         if (timeRemaining > 0) {
-                            timeRemaining = 0;  // Force timer to complete
+                            timeRemaining = 0;
                             completeAdWatch();
                         }
                     }).catch((error) => {
                         console.log('Monetag ad error or unavailable:', error);
-                        // Continue with timer - user still watching
                     });
                 } else {
                     console.log('Monetag SDK not available, using timer only');
-                    statusEl.textContent = '⏳ Watching advertisement... (timer-based)';
+                    statusEl.textContent = '⏳ Watching advertisement...';
                 }
-            }, 500);
+            }, 300);
         }
         
         function completeAdWatch() {
@@ -202,40 +141,53 @@
                 clearInterval(timerInterval);
             }
             
-            // Update UI
-            timerEl.textContent = '✅ Complete!';
-            statusEl.textContent = '✅ Ad watched successfully!';
-            startBtn.classList.add('hidden');
-            completeBtn.classList.remove('hidden');
+            timerEl.textContent = '✅';
+            statusEl.textContent = '✅ Ad complete! Returning...';
             
-            // Notify backend that user watched ad
             if (USER_ID) {
                 fetch(`/api/ads/watched/${USER_ID}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
-                }).then(r => r.json()).catch(e => {
+                }).then(r => r.json()).then(() => {
+                    returnToTelegram();
+                }).catch(e => {
                     console.error('Error notifying backend:', e);
+                    returnToTelegram();
                 });
-            }
-        }
-        
-        function completeAd() {
-            // Return to Telegram or close window
-            if (window.tg && window.tg.close) {
-                // Telegram Mini App context
-                window.tg.close();
-            } else if (window.opener) {
-                // Opened as popup
-                window.close();
             } else {
-                // Fallback - go back
-                window.history.back();
+                returnToTelegram();
             }
         }
         
-        // Initialize on load
+        function returnToTelegram() {
+            setTimeout(() => {
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.sendData(JSON.stringify({
+                        action: 'ad_complete',
+                        user_id: USER_ID
+                    }));
+                    window.Telegram.WebApp.close();
+                } else {
+                    window.history.back();
+                }
+            }, 500);
+        }
+        
         window.addEventListener('load', () => {
-            console.log('Ad viewer loaded, waiting for user to start');
+            console.log('Ad viewer loaded - auto-starting ad');
+            
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+            }
+            
+            if (USER_ID) {
+                fetch(`/api/ads/started/${USER_ID}`, { method: 'POST' })
+                    .catch(e => console.error('Error tracking ad start:', e));
+            }
+            
+            startTimer();
+            showMonetgAd();
         });
     </script>
 </body>
