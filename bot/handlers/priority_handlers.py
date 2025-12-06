@@ -4,6 +4,7 @@ from bot.services.user_service import UserService
 from bot.services.payment_service import PaymentService
 from bot.services.stars_payment import StarsPaymentService
 from bot.services.cryptopay import CryptoPayService
+from bot.services.slot_type_service import SlotTypeService
 from bot.utils.helpers import format_price, get_slot_description
 from bot.utils.state_manager import set_user_state, get_user_message_id
 from bot.utils.nav_helpers import add_navigation_buttons, edit_or_send
@@ -13,6 +14,7 @@ user_service = UserService()
 payment_service = PaymentService()
 stars_service = StarsPaymentService()
 cryptopay_service = CryptoPayService()
+slot_type_service = SlotTypeService()
 
 # Get dynamic pricing from backend
 def get_priority_slot_prices():
@@ -59,55 +61,52 @@ def handle_priority_slots(bot, message):
         show_priority_slot_packages(bot, message.chat.id, user_id, active_slot, message.message_id)
 
 def show_priority_slot_packages(bot, chat_id, user_id, active_slot=None, message_id=None):
-    """Show available priority slot packages"""
+    """Show available priority slot packages - only shows active/enabled slots"""
     markup = types.InlineKeyboardMarkup(row_width=1)
-    PRICES = get_priority_slot_prices()
     
     active_msg = ""
     if active_slot:
         active_msg = "\n⚠️ Note: Another user currently has an active priority slot.\n\n"
     
-    markup.add(
-        types.InlineKeyboardButton(
-            f"⏱️ 1 Hour - {format_price(PRICES['time_1h'])}",
-            callback_data="priority_time_1h"
-        ),
-        types.InlineKeyboardButton(
-            f"⏱️ 6 Hours - {format_price(PRICES['time_6h'])}",
-            callback_data="priority_time_6h"
-        ),
-        types.InlineKeyboardButton(
-            f"⏱️ 12 Hours - {format_price(PRICES['time_12h'])}",
-            callback_data="priority_time_12h"
-        ),
-        types.InlineKeyboardButton(
-            f"⏱️ 24 Hours - {format_price(PRICES['time_24h'])}",
-            callback_data="priority_time_24h"
-        ),
-        types.InlineKeyboardButton(
-            f"📊 5 Broadcasts - {format_price(PRICES['count_5'])}",
-            callback_data="priority_count_5"
-        ),
-        types.InlineKeyboardButton(
-            f"📊 10 Broadcasts - {format_price(PRICES['count_10'])}",
-            callback_data="priority_count_10"
-        ),
-        types.InlineKeyboardButton(
-            f"📊 25 Broadcasts - {format_price(PRICES['count_25'])}",
-            callback_data="priority_count_25"
-        ),
-        types.InlineKeyboardButton(
-            f"📊 50 Broadcasts - {format_price(PRICES['count_50'])}",
-            callback_data="priority_count_50"
+    # Get active time slots from database
+    time_slots = slot_type_service.get_time_slots(active_only=True)
+    for slot in time_slots:
+        hours = slot.get('duration_hours', 0)
+        price = float(slot.get('price', 0))
+        display_name = slot.get('display_name', f"{hours} Hour{'s' if hours > 1 else ''}")
+        markup.add(
+            types.InlineKeyboardButton(
+                f"⏱️ {display_name} - {format_price(price)}",
+                callback_data=f"priority_time_{hours}h"
+            )
         )
-    )
+    
+    # Get active count slots from database
+    count_slots = slot_type_service.get_count_slots(active_only=True)
+    for slot in count_slots:
+        count = slot.get('message_count', 0)
+        price = float(slot.get('price', 0))
+        display_name = slot.get('display_name', f"{count} Broadcasts")
+        markup.add(
+            types.InlineKeyboardButton(
+                f"📊 {display_name} - {format_price(price)}",
+                callback_data=f"priority_count_{count}"
+            )
+        )
+    
     add_navigation_buttons(markup, go_back=False, go_menu=True)
     
-    text = f"🌟 Priority Broadcast Slots\n\n" \
-           f"{active_msg}" \
-           f"Get exclusive broadcast rights!\n" \
-           f"When you have an active priority slot, all other broadcasts are paused and only your messages are sent.\n\n" \
-           f"Choose your package:"
+    # Check if there are any active slots
+    if not time_slots and not count_slots:
+        text = f"🌟 Priority Broadcast Slots\n\n" \
+               f"No priority slots are currently available.\n" \
+               f"Please check back later."
+    else:
+        text = f"🌟 Priority Broadcast Slots\n\n" \
+               f"{active_msg}" \
+               f"Get exclusive broadcast rights!\n" \
+               f"When you have an active priority slot, all other broadcasts are paused and only your messages are sent.\n\n" \
+               f"Choose your package:"
     
     result = edit_or_send(bot, chat_id, text, message_id, markup)
     if result:  # New message was sent
