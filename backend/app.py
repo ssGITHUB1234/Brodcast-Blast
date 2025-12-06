@@ -673,17 +673,16 @@ def add_force_join_channel():
         if not channel_input:
             return jsonify({'error': 'Channel ID or username is required'}), 400
         
-        if not channel_name:
-            channel_info = force_join_service.get_channel_info(channel_input)
-            if channel_info:
+        # Always try to fetch channel info from Telegram to get the correct ID and username
+        channel_info = force_join_service.get_channel_info(channel_input)
+        if channel_info:
+            # Use provided name or fallback to Telegram's title
+            if not channel_name:
                 channel_name = channel_info.get('title', channel_input)
-                channel_username = channel_info.get('username')
-                channel_id = str(channel_info.get('id'))
-            else:
-                return jsonify({'error': 'Could not fetch channel info. Make sure the bot is admin in the channel.'}), 400
+            channel_username = channel_info.get('username')
+            channel_id = str(channel_info.get('id'))
         else:
-            channel_id = channel_input
-            channel_username = data.get('channel_username')
+            return jsonify({'error': 'Could not fetch channel info. Make sure the bot is admin in the channel.'}), 400
         
         result = force_join_service.add_channel(channel_id, channel_name, channel_username)
         if result:

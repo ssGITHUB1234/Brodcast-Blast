@@ -55,12 +55,12 @@ def check_force_join(user_id, chat_id, skip_for_start=False):
             
             bot.send_message(
                 chat_id,
-                f"🔒 **Join Required Channels**\n\n"
+                f"🔒 <b>Join Required Channels</b>\n\n"
                 f"To use this bot, you must first join these channels:\n\n"
                 f"{channels_text}\n\n"
                 f"After joining, click the button below to continue.",
                 reply_markup=markup,
-                parse_mode='Markdown'
+                parse_mode='HTML'
             )
             return False
     except Exception as e:
