@@ -355,6 +355,7 @@
             <button class="tab-btn" onclick="switchTab('analytics')">📊 Analytics</button>
             <button class="tab-btn" onclick="switchTab('chat-analysis')">💬 Chat Analysis</button>
             <button class="tab-btn" onclick="switchTab('ads')">🎬 Ad Settings</button>
+            <button class="tab-btn" onclick="switchTab('force-join')">🔗 Force Join</button>
         </div>
         
         <!-- OVERVIEW TAB -->
@@ -611,6 +612,54 @@
             </div>
         </div>
         
+        <!-- FORCE JOIN TAB -->
+        <div id="force-join" class="tab-content">
+            <div class="section">
+                <h2>🔗 Force Join Channels</h2>
+                <p style="color: #666; margin-bottom: 20px;">Users must join these channels before they can use the bot. Add your Telegram channels below.</p>
+                <div id="force-join-message"></div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px;">Add New Channel</h3>
+                    <p style="color: #666; margin-bottom: 15px;">Enter the channel ID (e.g., -1001234567890) or username (e.g., @mychannel). The bot must be an admin in the channel.</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; max-width: 800px;">
+                        <input type="text" id="new-channel-id" placeholder="Channel ID or @username" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <input type="text" id="new-channel-name" placeholder="Channel Name (optional)" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        <button class="btn btn-primary" onclick="addForceJoinChannel()">Add Channel</button>
+                    </div>
+                </div>
+                
+                <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 30px;">
+                    <p style="color: #155724; margin: 0;">
+                        💡 <strong>How it works:</strong><br>
+                        • Add channels that users must join to use the bot<br>
+                        • The bot checks membership when users try to use commands<br>
+                        • Users who haven't joined are shown a list of channels to join<br>
+                        • Toggle channels active/inactive without deleting them
+                    </p>
+                </div>
+                
+                <h3 style="margin-bottom: 15px;">Configured Channels</h3>
+                <div id="force-join-channels" style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Channel Name</th>
+                                <th>Channel ID</th>
+                                <th>Username</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="force-join-tbody">
+                            <tr><td colspan="6" style="text-align: center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
         <div class="footer">
             <p>🤖 Telegram Broadcast Bot Admin Dashboard</p>
             <p style="font-size: 12px; margin-top: 10px;">Last updated: <span id="last-updated">-</span></p>
@@ -650,6 +699,8 @@
             } else if (tabName === 'ads') {
                 loadAdSettings();
                 loadAdLinks();
+            } else if (tabName === 'force-join') {
+                loadForceJoinChannels();
             } else if (tabName === 'overview') {
                 loadDashboard();
             }
@@ -1246,6 +1297,137 @@
             } catch (error) {
                 showError('Error deleting link');
             }
+        }
+        
+        // Force Join Channel Functions
+        async function loadForceJoinChannels() {
+            try {
+                const response = await fetch(`${API_BASE}/force-join/channels`);
+                const channels = await response.json();
+                renderForceJoinChannels(channels);
+            } catch (error) {
+                console.error('Error loading force join channels:', error);
+                document.getElementById('force-join-tbody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">Error loading channels</td></tr>';
+            }
+        }
+        
+        function renderForceJoinChannels(channels) {
+            const tbody = document.getElementById('force-join-tbody');
+            if (!Array.isArray(channels) || channels.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No channels configured yet</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            channels.forEach(channel => {
+                const statusBadge = channel.active ? 'badge-active' : 'badge-blocked';
+                const statusText = channel.active ? 'ACTIVE' : 'INACTIVE';
+                const username = channel.channel_username ? '@' + channel.channel_username : '-';
+                html += `<tr>
+                    <td>#${channel.id}</td>
+                    <td>${channel.channel_name}</td>
+                    <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px; font-size: 11px;">${channel.channel_id}</code></td>
+                    <td>${username}</td>
+                    <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                    <td>
+                        <button class="btn btn-${channel.active ? 'danger' : 'success'} btn-small" onclick="toggleForceJoinChannel(${channel.id}, ${!channel.active})">${channel.active ? 'Disable' : 'Enable'}</button>
+                        <button class="btn btn-primary btn-small" onclick="editForceJoinChannel(${channel.id}, '${channel.channel_name.replace(/'/g, "\\'")}')">Edit</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteForceJoinChannel(${channel.id})">Delete</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+        
+        async function addForceJoinChannel() {
+            const channelId = document.getElementById('new-channel-id').value.trim();
+            const channelName = document.getElementById('new-channel-name').value.trim();
+            
+            if (!channelId) {
+                showForceJoinMessage('Channel ID or username is required', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/force-join/channels`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({channel_id: channelId, channel_name: channelName})
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showForceJoinMessage('Channel added successfully!', 'success');
+                    document.getElementById('new-channel-id').value = '';
+                    document.getElementById('new-channel-name').value = '';
+                    loadForceJoinChannels();
+                } else {
+                    showForceJoinMessage(data.error || 'Failed to add channel', 'error');
+                }
+            } catch (error) {
+                showForceJoinMessage('Error adding channel', 'error');
+            }
+        }
+        
+        async function toggleForceJoinChannel(id, active) {
+            try {
+                const response = await fetch(`${API_BASE}/force-join/channels/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({active: active})
+                });
+                
+                if (response.ok) {
+                    showForceJoinMessage(`Channel ${active ? 'enabled' : 'disabled'}!`, 'success');
+                    loadForceJoinChannels();
+                } else {
+                    showForceJoinMessage('Failed to update channel', 'error');
+                }
+            } catch (error) {
+                showForceJoinMessage('Error updating channel', 'error');
+            }
+        }
+        
+        function editForceJoinChannel(id, currentName) {
+            const newName = prompt('Edit channel name:', currentName);
+            if (newName === null || newName.trim() === '') return;
+            
+            fetch(`${API_BASE}/force-join/channels/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({channel_name: newName.trim()})
+            }).then(response => {
+                if (response.ok) {
+                    showForceJoinMessage('Channel updated!', 'success');
+                    loadForceJoinChannels();
+                } else {
+                    showForceJoinMessage('Failed to update channel', 'error');
+                }
+            }).catch(error => showForceJoinMessage('Error updating channel', 'error'));
+        }
+        
+        async function deleteForceJoinChannel(id) {
+            if (!confirm('Delete this channel? Users will no longer need to join it.')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/force-join/channels/${id}`, {method: 'DELETE'});
+                if (response.ok) {
+                    showForceJoinMessage('Channel deleted!', 'success');
+                    loadForceJoinChannels();
+                } else {
+                    showForceJoinMessage('Failed to delete channel', 'error');
+                }
+            } catch (error) {
+                showForceJoinMessage('Error deleting channel', 'error');
+            }
+        }
+        
+        function showForceJoinMessage(message, type) {
+            const msgDiv = document.getElementById('force-join-message');
+            msgDiv.className = type === 'error' ? 'error' : 'success';
+            msgDiv.textContent = message;
+            msgDiv.style.display = 'block';
+            setTimeout(() => { msgDiv.style.display = 'none'; }, 5000);
         }
         
         function showError(message) {

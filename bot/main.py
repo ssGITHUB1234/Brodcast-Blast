@@ -4,7 +4,7 @@ import time
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
 
-from config.settings import TELEGRAM_BOT_TOKEN
+from config.settings import TELEGRAM_BOT_TOKEN, ADMIN_USER_IDS
 from config.database import initialize_database, get_supabase_client
 from bot.handlers import registration, broadcast_handlers, priority_handlers, menu_handler, analytics_handlers
 from bot.services.broadcast_service import BroadcastService
@@ -12,13 +12,79 @@ from bot.services.priority_service import PrioritySlotService
 from bot.services.user_service import UserService
 from bot.services.ai_service import generate_broadcast_template
 from bot.services.monetag_service import MonetgService
+from bot.services.force_join_service import ForceJoinService
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN) if TELEGRAM_BOT_TOKEN else None
+force_join_service = ForceJoinService()
 
 broadcast_service = BroadcastService()
 priority_service = PrioritySlotService()
 user_service = UserService()
 monetag_service = MonetgService()
+
+def check_force_join(user_id, chat_id, skip_for_start=False):
+    """Check if user has joined all required channels. Returns True if user can proceed."""
+    if user_id in ADMIN_USER_IDS:
+        return True
+    
+    try:
+        joined_all, not_joined = force_join_service.check_all_channels(user_id)
+        if joined_all:
+            return True
+        
+        if not_joined:
+            channels_text = "\n".join([
+                f"• {ch['channel_name']} - {'@' + ch['channel_username'] if ch.get('channel_username') else 'Join via link'}"
+                for ch in not_joined
+            ])
+            
+            markup = types.InlineKeyboardMarkup()
+            for ch in not_joined:
+                if ch.get('channel_username'):
+                    markup.add(types.InlineKeyboardButton(
+                        f"Join {ch['channel_name']}", 
+                        url=f"https://t.me/{ch['channel_username']}"
+                    ))
+                else:
+                    markup.add(types.InlineKeyboardButton(
+                        f"Join {ch['channel_name']}", 
+                        url=f"https://t.me/c/{str(ch['channel_id']).replace('-100', '')}"
+                    ))
+            markup.add(types.InlineKeyboardButton("✅ I've Joined", callback_data="check_force_join"))
+            
+            bot.send_message(
+                chat_id,
+                f"🔒 **Join Required Channels**\n\n"
+                f"To use this bot, you must first join these channels:\n\n"
+                f"{channels_text}\n\n"
+                f"After joining, click the button below to continue.",
+                reply_markup=markup,
+                parse_mode='Markdown'
+            )
+            return False
+    except Exception as e:
+        print(f"Error checking force join: {e}")
+        return True
+    
+    return True
+
+@bot.callback_query_handler(func=lambda call: call.data == 'check_force_join')
+def recheck_force_join(call):
+    """Recheck if user has joined all channels"""
+    user_id = call.from_user.id
+    chat_id = call.message.chat.id
+    
+    joined_all, not_joined = force_join_service.check_all_channels(user_id)
+    
+    if joined_all:
+        bot.answer_callback_query(call.id, "✅ Verified! You can now use the bot.", show_alert=True)
+        try:
+            bot.delete_message(chat_id, call.message.message_id)
+        except:
+            pass
+        menu_handler.handle_menu(bot, call.message)
+    else:
+        bot.answer_callback_query(call.id, "❌ Please join all channels first!", show_alert=True)
 
 @bot.message_handler(content_types=['web_app_data'])
 def on_web_app_data(message):
@@ -78,19 +144,24 @@ def on_web_app_data(message):
 @bot.message_handler(commands=['start'])
 def start_command(message):
     registration.handle_start(bot, message)
+    if not check_force_join(message.from_user.id, message.chat.id):
+        return
 
 @bot.message_handler(commands=['menu'])
 def menu_command(message):
-    # Create wrapper to force new message (don't try to edit command messages)
+    if not check_force_join(message.from_user.id, message.chat.id):
+        return
     class CommandMessage:
         def __init__(self, msg):
             self.from_user = msg.from_user
             self.chat = msg.chat
-            self.message_id = None  # Force new message, don't edit
+            self.message_id = None
     menu_handler.handle_menu(bot, CommandMessage(message))
 
 @bot.message_handler(commands=['create'])
 def create_broadcast_command(message):
+    if not check_force_join(message.from_user.id, message.chat.id):
+        return
     broadcast_handlers.handle_create_broadcast(bot, message)
 
 @bot.message_handler(commands=['priority'])

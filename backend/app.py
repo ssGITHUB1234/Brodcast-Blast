@@ -648,6 +648,94 @@ def xrocket_webhook():
         print(f"xRocket webhook error: {e}")
         return jsonify({'error': str(e)}), 500
 
+from bot.services.force_join_service import ForceJoinService
+force_join_service = ForceJoinService()
+
+@app.route('/api/force-join/channels', methods=['GET'])
+def get_force_join_channels():
+    """Get all force join channels"""
+    try:
+        channels = force_join_service.get_all_channels()
+        return jsonify(channels)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/force-join/channels', methods=['POST'])
+def add_force_join_channel():
+    """Add a new force join channel"""
+    try:
+        data = request.json or {}
+        channel_input = data.get('channel_id', '').strip()
+        channel_name = data.get('channel_name', '').strip()
+        
+        if not channel_input:
+            return jsonify({'error': 'Channel ID or username is required'}), 400
+        
+        if not channel_name:
+            channel_info = force_join_service.get_channel_info(channel_input)
+            if channel_info:
+                channel_name = channel_info.get('title', channel_input)
+                channel_username = channel_info.get('username')
+                channel_id = str(channel_info.get('id'))
+            else:
+                return jsonify({'error': 'Could not fetch channel info. Make sure the bot is admin in the channel.'}), 400
+        else:
+            channel_id = channel_input
+            channel_username = data.get('channel_username')
+        
+        result = force_join_service.add_channel(channel_id, channel_name, channel_username)
+        if result:
+            return jsonify({'message': 'Channel added successfully', 'channel': result})
+        return jsonify({'error': 'Failed to add channel'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/force-join/channels/<int:id>', methods=['PUT'])
+def update_force_join_channel(id):
+    """Update a force join channel"""
+    try:
+        data = request.json or {}
+        updates = {}
+        
+        if 'channel_name' in data:
+            updates['channel_name'] = data['channel_name']
+        if 'active' in data:
+            updates['active'] = data['active']
+        if 'channel_username' in data:
+            updates['channel_username'] = data['channel_username']
+        
+        if not updates:
+            return jsonify({'error': 'No updates provided'}), 400
+        
+        result = force_join_service.update_channel(id, **updates)
+        if result:
+            return jsonify({'message': 'Channel updated', 'channel': result})
+        return jsonify({'error': 'Channel not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/force-join/channels/<int:id>', methods=['DELETE'])
+def delete_force_join_channel(id):
+    """Delete a force join channel"""
+    try:
+        if force_join_service.delete_channel(id):
+            return jsonify({'message': 'Channel deleted'})
+        return jsonify({'error': 'Failed to delete channel'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/force-join/check/<int:user_id>', methods=['GET'])
+def check_force_join(user_id):
+    """Check if user has joined all required channels"""
+    try:
+        joined_all, not_joined = force_join_service.check_all_channels(user_id)
+        return jsonify({
+            'joined_all': joined_all,
+            'not_joined': not_joined
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/webhook/telegram', methods=['POST'])
 def telegram_webhook():
     """Handle Telegram bot webhook updates (webhook mode for production)"""

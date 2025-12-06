@@ -98,12 +98,23 @@ CREATE TABLE IF NOT EXISTS admin_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Force Join Channels Table
+CREATE TABLE IF NOT EXISTS force_join_channels (
+    id SERIAL PRIMARY KEY,
+    channel_id TEXT NOT NULL UNIQUE,
+    channel_name TEXT NOT NULL,
+    channel_username TEXT,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_broadcasts_status ON broadcasts(status);
 CREATE INDEX IF NOT EXISTS idx_broadcasts_user ON broadcasts(user_id);
 CREATE INDEX IF NOT EXISTS idx_priority_slots_active ON priority_slots(active);
 CREATE INDEX IF NOT EXISTS idx_analytics_broadcast ON analytics(broadcast_id);
 CREATE INDEX IF NOT EXISTS idx_users_active ON users(active);
+CREATE INDEX IF NOT EXISTS idx_force_join_active ON force_join_channels(active);
 """
 
 def initialize_database():
