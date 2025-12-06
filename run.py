@@ -26,25 +26,29 @@ if __name__ == '__main__':
     
     telegram_token = os.getenv('TELEGRAM_BOT_TOKEN', '')
     supabase_url = os.getenv('SUPABASE_URL', '')
+    supabase_key = os.getenv('SUPABASE_KEY', '')
     is_production = bool(os.getenv('RENDER', False))
     
-    if not telegram_token or not supabase_url:
-        print("❌ CONFIGURATION ERROR")
+    dashboard_only_mode = False
+    
+    if not telegram_token or not supabase_url or not supabase_key:
+        print("⚠️ DASHBOARD-ONLY MODE")
         print()
-        print("Required environment variables are missing!")
+        print("Some environment variables are missing.")
+        print("Starting dashboard without bot functionality.")
         print()
-        print("Please set the following:")
-        print("  - TELEGRAM_BOT_TOKEN: Get from @BotFather on Telegram")
-        print("  - SUPABASE_URL: Your Supabase project URL")
-        print("  - SUPABASE_KEY: Your Supabase anon key")
+        print("Missing:")
+        if not telegram_token:
+            print("  - TELEGRAM_BOT_TOKEN")
+        if not supabase_url:
+            print("  - SUPABASE_URL")
+        if not supabase_key:
+            print("  - SUPABASE_KEY")
         print()
-        print("Optional (but recommended):")
-        print("  - OPENAI_API_KEY: For AI-powered features")
-        print("  - ADMIN_USER_ID: Your Telegram user ID for admin access")
+        print("The dashboard will start, but bot features won't work.")
+        print("Set these in the Secrets tab to enable full functionality.")
         print()
-        print("Copy .env.example to .env and fill in your values.")
-        print()
-        sys.exit(1)
+        dashboard_only_mode = True
     
     print("✓ Configuration loaded")
     print(f"✓ Environment: {'PRODUCTION (Render)' if is_production else 'LOCAL DEV'}")
@@ -67,9 +71,11 @@ if __name__ == '__main__':
     
     # Only start bot thread on local dev (polling mode) if not explicitly disabled
     # On Render (webhook mode), Flask webhook handler receives updates
-    if not is_production and not skip_bot_polling:
+    if not dashboard_only_mode and not is_production and not skip_bot_polling:
         bot_thread = threading.Thread(target=run_bot, daemon=False)
         bot_thread.start()
+    elif dashboard_only_mode:
+        print("   ⚠️ Bot not started (dashboard-only mode)")
     
     # Run Flask as main app
     from backend.app import app
