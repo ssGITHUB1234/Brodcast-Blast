@@ -150,6 +150,8 @@ def start_command(message):
 
 @bot.message_handler(commands=['menu'])
 def menu_command(message):
+    if not check_force_join(message.from_user.id, message.chat.id):
+        return
     class CommandMessage:
         def __init__(self, msg):
             self.from_user = msg.from_user
@@ -159,6 +161,8 @@ def menu_command(message):
 
 @bot.message_handler(commands=['create'])
 def create_broadcast_command(message):
+    if not check_force_join(message.from_user.id, message.chat.id):
+        return
     broadcast_handlers.handle_create_broadcast(bot, message)
 
 @bot.message_handler(commands=['priority'])
