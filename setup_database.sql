@@ -135,3 +135,72 @@ CREATE INDEX IF NOT EXISTS idx_priority_slot_types_category ON priority_slot_typ
 CREATE INDEX IF NOT EXISTS idx_priority_slot_types_active ON priority_slot_types(active);
 CREATE INDEX IF NOT EXISTS idx_analytics_broadcast ON analytics(broadcast_id);
 CREATE INDEX IF NOT EXISTS idx_users_active ON users(active);
+
+-- =====================================================
+-- RPC Functions for Priority Slot Types Management
+-- These bypass Supabase schema cache issues
+-- =====================================================
+
+-- Get all slot types
+CREATE OR REPLACE FUNCTION get_all_slot_types(p_active_only BOOLEAN DEFAULT FALSE)
+RETURNS SETOF priority_slot_types AS $$
+BEGIN
+    IF p_active_only THEN
+        RETURN QUERY SELECT * FROM priority_slot_types WHERE active = TRUE ORDER BY slot_category, price;
+    ELSE
+        RETURN QUERY SELECT * FROM priority_slot_types ORDER BY slot_category, price;
+    END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Create a new slot type
+CREATE OR REPLACE FUNCTION create_slot_type(
+    p_slot_key TEXT,
+    p_slot_category TEXT,
+    p_display_name TEXT,
+    p_price NUMERIC,
+    p_description TEXT DEFAULT NULL,
+    p_duration_hours INT DEFAULT NULL,
+    p_message_count INT DEFAULT NULL
+)
+RETURNS priority_slot_types AS $$
+DECLARE
+    new_slot priority_slot_types;
+BEGIN
+    INSERT INTO priority_slot_types (slot_key, slot_category, display_name, description, duration_hours, message_count, price, active)
+    VALUES (p_slot_key, p_slot_category, p_display_name, p_description, p_duration_hours, p_message_count, p_price, TRUE)
+    RETURNING * INTO new_slot;
+    RETURN new_slot;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Update a slot type
+CREATE OR REPLACE FUNCTION update_slot_type(
+    p_id INT,
+    p_price NUMERIC DEFAULT NULL,
+    p_active BOOLEAN DEFAULT NULL,
+    p_display_name TEXT DEFAULT NULL
+)
+RETURNS priority_slot_types AS $$
+DECLARE
+    updated_slot priority_slot_types;
+BEGIN
+    UPDATE priority_slot_types
+    SET 
+        price = COALESCE(p_price, price),
+        active = COALESCE(p_active, active),
+        display_name = COALESCE(p_display_name, display_name)
+    WHERE id = p_id
+    RETURNING * INTO updated_slot;
+    RETURN updated_slot;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Delete a slot type
+CREATE OR REPLACE FUNCTION delete_slot_type(p_id INT)
+RETURNS BOOLEAN AS $$
+BEGIN
+    DELETE FROM priority_slot_types WHERE id = p_id;
+    RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
