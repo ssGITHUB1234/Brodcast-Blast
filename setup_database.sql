@@ -48,6 +48,33 @@ CREATE TABLE IF NOT EXISTS priority_slots (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Priority Slot Types Table (for admin management)
+CREATE TABLE IF NOT EXISTS priority_slot_types (
+    id SERIAL PRIMARY KEY,
+    slot_key TEXT NOT NULL UNIQUE,
+    slot_category TEXT NOT NULL CHECK (slot_category IN ('time', 'count')),
+    display_name TEXT NOT NULL,
+    description TEXT,
+    duration_hours INT,
+    message_count INT,
+    price NUMERIC(10, 2) NOT NULL DEFAULT 0,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Insert default slot types
+INSERT INTO priority_slot_types (slot_key, slot_category, display_name, description, duration_hours, message_count, price, active)
+VALUES 
+    ('time_1h', 'time', '1 Hour Priority', 'Your broadcast stays at top for 1 hour', 1, NULL, 5.00, true),
+    ('time_6h', 'time', '6 Hours Priority', 'Your broadcast stays at top for 6 hours', 6, NULL, 25.00, true),
+    ('time_12h', 'time', '12 Hours Priority', 'Your broadcast stays at top for 12 hours', 12, NULL, 45.00, true),
+    ('time_24h', 'time', '24 Hours Priority', 'Your broadcast stays at top for 24 hours', 24, NULL, 80.00, true),
+    ('count_5', 'count', '5 Broadcasts', 'Next 5 broadcasts will be priority', NULL, 5, 10.00, true),
+    ('count_10', 'count', '10 Broadcasts', 'Next 10 broadcasts will be priority', NULL, 10, 18.00, true),
+    ('count_25', 'count', '25 Broadcasts', 'Next 25 broadcasts will be priority', NULL, 25, 40.00, true),
+    ('count_50', 'count', '50 Broadcasts', 'Next 50 broadcasts will be priority', NULL, 50, 70.00, true)
+ON CONFLICT (slot_key) DO NOTHING;
+
 -- Analytics Table
 CREATE TABLE IF NOT EXISTS analytics (
     id SERIAL PRIMARY KEY,
@@ -86,6 +113,7 @@ CREATE TABLE IF NOT EXISTS admin_logs (
 ALTER TABLE users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE broadcasts DISABLE ROW LEVEL SECURITY;
 ALTER TABLE priority_slots DISABLE ROW LEVEL SECURITY;
+ALTER TABLE priority_slot_types DISABLE ROW LEVEL SECURITY;
 ALTER TABLE analytics DISABLE ROW LEVEL SECURITY;
 ALTER TABLE payments DISABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_logs DISABLE ROW LEVEL SECURITY;
@@ -94,6 +122,7 @@ ALTER TABLE admin_logs DISABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Enable all access" ON users;
 DROP POLICY IF EXISTS "Enable all access" ON broadcasts;
 DROP POLICY IF EXISTS "Enable all access" ON priority_slots;
+DROP POLICY IF EXISTS "Enable all access" ON priority_slot_types;
 DROP POLICY IF EXISTS "Enable all access" ON analytics;
 DROP POLICY IF EXISTS "Enable all access" ON payments;
 DROP POLICY IF EXISTS "Enable all access" ON admin_logs;
@@ -102,5 +131,7 @@ DROP POLICY IF EXISTS "Enable all access" ON admin_logs;
 CREATE INDEX IF NOT EXISTS idx_broadcasts_status ON broadcasts(status);
 CREATE INDEX IF NOT EXISTS idx_broadcasts_user ON broadcasts(user_id);
 CREATE INDEX IF NOT EXISTS idx_priority_slots_active ON priority_slots(active);
+CREATE INDEX IF NOT EXISTS idx_priority_slot_types_category ON priority_slot_types(slot_category);
+CREATE INDEX IF NOT EXISTS idx_priority_slot_types_active ON priority_slot_types(active);
 CREATE INDEX IF NOT EXISTS idx_analytics_broadcast ON analytics(broadcast_id);
 CREATE INDEX IF NOT EXISTS idx_users_active ON users(active);

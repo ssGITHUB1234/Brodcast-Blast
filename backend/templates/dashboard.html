@@ -741,48 +741,223 @@
             }
         }
         
+        let slotTypesCache = [];
+        
         async function loadPricing() {
             try {
-                const response = await fetch(`${API_BASE}/pricing`);
-                const prices = await response.json();
-                
-                document.getElementById('price_time_1h').value = prices.time_1h || 5.0;
-                document.getElementById('price_time_6h').value = prices.time_6h || 25.0;
-                document.getElementById('price_time_12h').value = prices.time_12h || 45.0;
-                document.getElementById('price_time_24h').value = prices.time_24h || 80.0;
-                document.getElementById('price_count_5').value = prices.count_5 || 10.0;
-                document.getElementById('price_count_10').value = prices.count_10 || 18.0;
-                document.getElementById('price_count_25').value = prices.count_25 || 40.0;
-                document.getElementById('price_count_50').value = prices.count_50 || 70.0;
+                const response = await fetch(`${API_BASE}/slot-types`);
+                slotTypesCache = await response.json();
+                renderSlotTypeTables(slotTypesCache);
             } catch (error) {
-                console.error('Error loading pricing:', error);
-                showError('Failed to load pricing');
+                console.error('Error loading slot types:', error);
+                showPricingError('Failed to load slot types');
             }
         }
         
-        async function updatePrice(key, inputId) {
+        function renderSlotTypeTables(slotTypes) {
+            const timeSlots = slotTypes.filter(s => s.slot_category === 'time');
+            const countSlots = slotTypes.filter(s => s.slot_category === 'count');
+            
+            // Render time-based slots table
+            let timeHtml = '<table><thead><tr><th>ID</th><th>Key</th><th>Name</th><th>Duration</th><th>Price ($)</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+            if (timeSlots.length > 0) {
+                timeSlots.forEach(slot => {
+                    const statusBadge = slot.active ? 'badge-active' : 'badge-blocked';
+                    const statusText = slot.active ? 'ACTIVE' : 'INACTIVE';
+                    timeHtml += `<tr>
+                        <td>#${slot.id}</td>
+                        <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px;">${slot.slot_key}</code></td>
+                        <td>${slot.display_name}</td>
+                        <td>${slot.duration_hours} hours</td>
+                        <td>
+                            <input type="number" id="price-${slot.id}" value="${slot.price}" step="0.01" min="0" style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                        </td>
+                        <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-primary btn-small" onclick="updateSlotType(${slot.id})">Save</button>
+                            <button class="btn btn-${slot.active ? 'danger' : 'success'} btn-small" onclick="toggleSlotStatus(${slot.id}, ${!slot.active})">${slot.active ? 'Disable' : 'Enable'}</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteSlotType(${slot.id})">Delete</button>
+                        </td>
+                    </tr>`;
+                });
+            } else {
+                timeHtml += '<tr><td colspan="7" style="text-align: center; color: #999;">No time-based slots configured</td></tr>';
+            }
+            timeHtml += '</tbody></table>';
+            document.getElementById('time-slots-table').innerHTML = timeHtml;
+            
+            // Render count-based slots table
+            let countHtml = '<table><thead><tr><th>ID</th><th>Key</th><th>Name</th><th>Messages</th><th>Price ($)</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+            if (countSlots.length > 0) {
+                countSlots.forEach(slot => {
+                    const statusBadge = slot.active ? 'badge-active' : 'badge-blocked';
+                    const statusText = slot.active ? 'ACTIVE' : 'INACTIVE';
+                    countHtml += `<tr>
+                        <td>#${slot.id}</td>
+                        <td><code style="background: #f0f0f0; padding: 3px 8px; border-radius: 3px;">${slot.slot_key}</code></td>
+                        <td>${slot.display_name}</td>
+                        <td>${slot.message_count} broadcasts</td>
+                        <td>
+                            <input type="number" id="price-${slot.id}" value="${slot.price}" step="0.01" min="0" style="width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">
+                        </td>
+                        <td><span class="badge ${statusBadge}">${statusText}</span></td>
+                        <td>
+                            <button class="btn btn-primary btn-small" onclick="updateSlotType(${slot.id})">Save</button>
+                            <button class="btn btn-${slot.active ? 'danger' : 'success'} btn-small" onclick="toggleSlotStatus(${slot.id}, ${!slot.active})">${slot.active ? 'Disable' : 'Enable'}</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteSlotType(${slot.id})">Delete</button>
+                        </td>
+                    </tr>`;
+                });
+            } else {
+                countHtml += '<tr><td colspan="7" style="text-align: center; color: #999;">No count-based slots configured</td></tr>';
+            }
+            countHtml += '</tbody></table>';
+            document.getElementById('count-slots-table').innerHTML = countHtml;
+        }
+        
+        function toggleSlotValueFields() {
+            const category = document.getElementById('new-slot-category').value;
+            document.getElementById('duration-field').style.display = category === 'time' ? 'block' : 'none';
+            document.getElementById('count-field').style.display = category === 'count' ? 'block' : 'none';
+        }
+        
+        async function addSlotType() {
+            const category = document.getElementById('new-slot-category').value;
+            const slotKey = document.getElementById('new-slot-key').value.trim();
+            const displayName = document.getElementById('new-slot-name').value.trim();
+            const price = parseFloat(document.getElementById('new-slot-price').value) || 0;
+            const durationHours = parseInt(document.getElementById('new-slot-duration').value) || null;
+            const messageCount = parseInt(document.getElementById('new-slot-count').value) || null;
+            
+            if (!slotKey || !displayName) {
+                showPricingError('Please fill in Slot Key and Display Name');
+                return;
+            }
+            
+            if (category === 'time' && !durationHours) {
+                showPricingError('Please enter duration in hours');
+                return;
+            }
+            
+            if (category === 'count' && !messageCount) {
+                showPricingError('Please enter message count');
+                return;
+            }
+            
             try {
-                const value = parseFloat(document.getElementById(inputId).value);
-                if (isNaN(value) || value < 0) {
-                    showError('Please enter a valid price');
-                    return;
-                }
-                
-                const response = await fetch(`${API_BASE}/pricing/${key}`, {
+                const response = await fetch(`${API_BASE}/slot-types`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({price: value})
+                    body: JSON.stringify({
+                        slot_key: slotKey,
+                        slot_category: category,
+                        display_name: displayName,
+                        price: price,
+                        duration_hours: durationHours,
+                        message_count: messageCount
+                    })
                 });
                 
                 if (response.ok) {
-                    showSuccess(`✅ ${key} updated to $${value.toFixed(2)}`);
+                    showPricingSuccess('Slot type added successfully!');
+                    document.getElementById('new-slot-key').value = '';
+                    document.getElementById('new-slot-name').value = '';
+                    document.getElementById('new-slot-price').value = '';
+                    document.getElementById('new-slot-duration').value = '';
+                    document.getElementById('new-slot-count').value = '';
+                    loadPricing();
                 } else {
-                    showError('Failed to update price');
+                    const error = await response.json();
+                    showPricingError(error.error || 'Failed to add slot type');
                 }
             } catch (error) {
-                console.error('Error updating price:', error);
-                showError('Error updating price');
+                console.error('Error adding slot type:', error);
+                showPricingError('Error adding slot type');
             }
+        }
+        
+        async function updateSlotType(slotId) {
+            const priceInput = document.getElementById(`price-${slotId}`);
+            const price = parseFloat(priceInput.value);
+            
+            if (isNaN(price) || price < 0) {
+                showPricingError('Please enter a valid price');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/slot-types/${slotId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({price: price})
+                });
+                
+                if (response.ok) {
+                    showPricingSuccess(`Price updated to $${price.toFixed(2)}`);
+                    loadPricing();
+                } else {
+                    showPricingError('Failed to update price');
+                }
+            } catch (error) {
+                console.error('Error updating slot type:', error);
+                showPricingError('Error updating slot type');
+            }
+        }
+        
+        async function toggleSlotStatus(slotId, active) {
+            try {
+                const response = await fetch(`${API_BASE}/slot-types/${slotId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({active: active})
+                });
+                
+                if (response.ok) {
+                    showPricingSuccess(`Slot ${active ? 'enabled' : 'disabled'}`);
+                    loadPricing();
+                } else {
+                    showPricingError('Failed to update slot status');
+                }
+            } catch (error) {
+                console.error('Error updating slot status:', error);
+                showPricingError('Error updating slot status');
+            }
+        }
+        
+        async function deleteSlotType(slotId) {
+            if (!confirm('Are you sure you want to permanently delete this slot type?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/slot-types/${slotId}?hard=true`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showPricingSuccess('Slot type deleted');
+                    loadPricing();
+                } else {
+                    showPricingError('Failed to delete slot type');
+                }
+            } catch (error) {
+                console.error('Error deleting slot type:', error);
+                showPricingError('Error deleting slot type');
+            }
+        }
+        
+        function showPricingError(message) {
+            const msgDiv = document.getElementById('pricing-message');
+            msgDiv.className = 'error';
+            msgDiv.textContent = message;
+            msgDiv.style.display = 'block';
+            setTimeout(() => { msgDiv.style.display = 'none'; }, 5000);
+        }
+        
+        function showPricingSuccess(message) {
+            const msgDiv = document.getElementById('pricing-message');
+            msgDiv.className = 'success';
+            msgDiv.textContent = message;
+            msgDiv.style.display = 'block';
+            setTimeout(() => { msgDiv.style.display = 'none'; }, 5000);
         }
         
         async function loadPayments() {
