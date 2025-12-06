@@ -35,7 +35,6 @@ def handle_menu(bot, message):
         types.InlineKeyboardButton("Priority Slots", callback_data="menu_priority"),
         types.InlineKeyboardButton("My Broadcasts", callback_data="menu_mybroadcasts"),
         types.InlineKeyboardButton("My Stats", callback_data="menu_stats"),
-        types.InlineKeyboardButton("💰 Earn Rewards", callback_data="menu_ads"),
         types.InlineKeyboardButton("Settings", callback_data="menu_settings"),
         types.InlineKeyboardButton("Help", callback_data="menu_help")
     )

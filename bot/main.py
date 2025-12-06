@@ -404,19 +404,6 @@ def menu_callback(call):
             menu_handler.handle_settings(bot, msg)
         elif menu_action == 'help':
             menu_handler.handle_help(bot, msg)
-        elif menu_action == 'ads':
-            if monetag_service.is_enabled:
-                markup = types.InlineKeyboardMarkup()
-                markup.add(
-                    types.InlineKeyboardButton("🎬 Watch Rewarded Ad", callback_data="ad_rewarded"),
-                    types.InlineKeyboardButton("🎁 Popup Reward", callback_data="ad_popup")
-                )
-                text = "💰 Earn Rewards!\n\nWatch ads to earn bonus credits:\n🎬 Rewarded Interstitial\n🎁 Rewarded Popup"
-                from bot.utils.nav_helpers import edit_or_send
-                edit_or_send(bot, msg.chat.id, text, msg.message_id, markup)
-            else:
-                bot.answer_callback_query(call.id, "Ad system not available")
-                return
         
         bot.answer_callback_query(call.id)
     except Exception as e:
