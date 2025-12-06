@@ -46,26 +46,26 @@ def on_web_app_data(message):
             
             print(f"[WEB_APP_DATA] Awarded {points_per_ad} points to user {user_id}. New balance: {new_balance}")
             
-            # Send points update message
+            # Update existing message with points info (edit in-place)
             if new_balance is not None:
                 if new_balance >= points_required:
-                    bot.send_message(
-                        chat_id,
-                        f"🎉 +{points_per_ad} points earned!\n\n"
-                        f"💰 Your balance: {new_balance} points\n\n"
-                        f"✅ You have enough points to send a broadcast!\n"
-                        f"Use /create to send your broadcast now."
-                    )
+                    text = (f"🎉 +{points_per_ad} points earned!\n\n"
+                            f"💰 Your balance: {new_balance} points\n\n"
+                            f"✅ You have enough points to send a broadcast!\n"
+                            f"Use /create to send your broadcast now.")
                 else:
                     points_needed = points_required - new_balance
                     ads_needed = -(-points_needed // points_per_ad)
-                    bot.send_message(
-                        chat_id,
-                        f"🎉 +{points_per_ad} points earned!\n\n"
-                        f"💰 Your balance: {new_balance} points\n"
-                        f"📊 Required for broadcast: {points_required} points\n\n"
-                        f"⏳ Watch {ads_needed} more ad(s) to unlock broadcasting!"
-                    )
+                    text = (f"🎉 +{points_per_ad} points earned!\n\n"
+                            f"💰 Your balance: {new_balance} points\n"
+                            f"📊 Required for broadcast: {points_required} points\n\n"
+                            f"⏳ Watch {ads_needed} more ad(s) to unlock broadcasting!")
+                
+                # Try to edit the message, fall back to send if edit fails
+                try:
+                    bot.edit_message_text(text, chat_id, message.message_id)
+                except:
+                    bot.send_message(chat_id, text)
     except Exception as e:
         print(f"❌ Web app data error: {e}")
         import traceback

@@ -85,12 +85,13 @@ def handle_menu(bot, message):
         set_user_state(user_id, message_id, 'menu')
 
 def handle_my_broadcasts(bot, message, page=0):
-    """Show user's broadcasts with pagination (1 per page)"""
+    """Show user's broadcasts with pagination (1 per page, max 3 broadcasts)"""
     user_id = message.from_user.id
     message_id = getattr(message, 'message_id', None)
     
     try:
-        broadcasts = broadcast_service.get_user_broadcasts(user_id, limit=100)
+        # Limit to last 3 broadcasts to save storage
+        broadcasts = broadcast_service.get_user_broadcasts(user_id, limit=3)
     except:
         broadcasts = []
     
