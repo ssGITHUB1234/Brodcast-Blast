@@ -13,6 +13,7 @@ from bot.services.user_service import UserService
 from bot.services.ai_service import generate_broadcast_template
 from bot.services.monetag_service import MonetgService
 from bot.services.force_join_service import ForceJoinService
+from bot.services.payment_service import PaymentService
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN) if TELEGRAM_BOT_TOKEN else None
 force_join_service = ForceJoinService()
@@ -615,6 +616,14 @@ def send_broadcast(broadcast):
     except Exception as e:
         print(f"Broadcast sending error: {e}")
 
+def cleanup_expired_invoices():
+    """Background job to cleanup expired pending invoices after 5 minutes"""
+    try:
+        payment_service = PaymentService()
+        payment_service.cleanup_expired_invoices()
+    except Exception as e:
+        print(f"Invoice cleanup error: {e}")
+
 def main():
     """Main bot function"""
     if not bot:
@@ -634,8 +643,10 @@ def main():
     
     scheduler = BackgroundScheduler()
     scheduler.add_job(process_broadcast_queue, 'interval', seconds=30)
+    scheduler.add_job(cleanup_expired_invoices, 'interval', seconds=60)
     scheduler.start()
     print("✓ Broadcast queue processor started")
+    print("✓ Invoice expiry cleanup started (5 min expiry)")
     
     # Check if using webhooks (production) or polling (dev)
     import os
