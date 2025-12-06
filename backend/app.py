@@ -6,6 +6,7 @@ from bot.services.user_service import UserService
 from bot.services.broadcast_service import BroadcastService
 from bot.services.priority_service import PrioritySlotService
 from bot.services.payment_service import PaymentService
+from bot.services.slot_type_service import SlotTypeService
 import hmac
 import hashlib
 import json
@@ -25,6 +26,7 @@ user_service = UserService()
 broadcast_service = BroadcastService()
 priority_service = PrioritySlotService()
 payment_service = PaymentService()
+slot_type_service = SlotTypeService()
 
 # In-memory pricing cache
 pricing_cache = {
@@ -733,6 +735,110 @@ def check_force_join(user_id):
             'joined_all': joined_all,
             'not_joined': not_joined
         })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/slot-types', methods=['GET'])
+def get_slot_types():
+    """Get all slot types"""
+    try:
+        active_only = request.args.get('active_only', 'false').lower() == 'true'
+        slot_types = slot_type_service.get_all_slot_types(active_only=active_only)
+        return jsonify(slot_types)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/slot-types', methods=['POST'])
+def create_slot_type():
+    """Create a new slot type"""
+    try:
+        data = request.json or {}
+        
+        slot_key = data.get('slot_key')
+        slot_category = data.get('slot_category')
+        display_name = data.get('display_name')
+        price = data.get('price', 0)
+        
+        if not slot_key or not slot_category or not display_name:
+            return jsonify({'error': 'slot_key, slot_category, and display_name are required'}), 400
+        
+        if slot_category not in ('time', 'count'):
+            return jsonify({'error': 'slot_category must be "time" or "count"'}), 400
+        
+        duration_hours = data.get('duration_hours')
+        message_count = data.get('message_count')
+        description = data.get('description')
+        
+        if slot_category == 'time' and not duration_hours:
+            return jsonify({'error': 'duration_hours is required for time-based slots'}), 400
+        
+        if slot_category == 'count' and not message_count:
+            return jsonify({'error': 'message_count is required for count-based slots'}), 400
+        
+        result = slot_type_service.create_slot_type(
+            slot_key=slot_key,
+            slot_category=slot_category,
+            display_name=display_name,
+            price=price,
+            description=description,
+            duration_hours=duration_hours,
+            message_count=message_count
+        )
+        
+        if result:
+            return jsonify({'message': 'Slot type created', 'slot_type': result})
+        return jsonify({'error': 'Failed to create slot type'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/slot-types/<int:id>', methods=['GET'])
+def get_slot_type(id):
+    """Get a single slot type"""
+    try:
+        slot_type = slot_type_service.get_slot_type(id)
+        if slot_type:
+            return jsonify(slot_type)
+        return jsonify({'error': 'Slot type not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/slot-types/<int:id>', methods=['PUT'])
+def update_slot_type(id):
+    """Update a slot type"""
+    try:
+        data = request.json or {}
+        
+        result = slot_type_service.update_slot_type(id, **data)
+        if result:
+            return jsonify({'message': 'Slot type updated', 'slot_type': result})
+        return jsonify({'error': 'Slot type not found or no updates provided'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/slot-types/<int:id>', methods=['DELETE'])
+def delete_slot_type(id):
+    """Delete (deactivate) a slot type"""
+    try:
+        hard_delete = request.args.get('hard', 'false').lower() == 'true'
+        
+        if hard_delete:
+            if slot_type_service.hard_delete_slot_type(id):
+                return jsonify({'message': 'Slot type permanently deleted'})
+        else:
+            result = slot_type_service.delete_slot_type(id)
+            if result:
+                return jsonify({'message': 'Slot type deactivated', 'slot_type': result})
+        
+        return jsonify({'error': 'Failed to delete slot type'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/slot-types/pricing', methods=['GET'])
+def get_slot_types_pricing():
+    """Get pricing dict for backward compatibility"""
+    try:
+        pricing = slot_type_service.get_pricing_dict()
+        return jsonify(pricing)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
