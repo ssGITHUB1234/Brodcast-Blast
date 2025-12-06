@@ -335,6 +335,124 @@
             border-radius: 5px;
             font-size: 14px;
         }
+        
+        /* Table wrapper for mobile scroll */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media screen and (max-width: 768px) {
+            
+            .table-wrapper {
+                margin: 0 -15px;
+                padding: 0 15px;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            body {
+                padding: 10px;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+                padding: 10px;
+                gap: 8px;
+            }
+            
+            .tab-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+                flex: 1 1 auto;
+                min-width: calc(33% - 8px);
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+            
+            .stat-value {
+                font-size: 26px;
+            }
+            
+            .section {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .section h2 {
+                font-size: 18px;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 15px;
+            }
+            
+            input[type="text"],
+            input[type="number"],
+            select {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            .tab-btn {
+                min-width: calc(50% - 8px);
+                font-size: 11px;
+                padding: 8px 8px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .stat-value {
+                font-size: 22px;
+            }
+            
+            .stat-label {
+                font-size: 11px;
+            }
+            
+            th, td {
+                padding: 6px 4px;
+                font-size: 11px;
+            }
+        }
     </style>
 </head>
 <body>
