@@ -149,14 +149,26 @@ def handle_priority_slot_selection(bot, call):
             "⚠️ Another user has an active slot. You can still purchase for later use.",
             show_alert=True)
     
-    PRICES = get_priority_slot_prices()
+    # Get price from database using slot_type_service
     if slot_data.startswith('time_'):
         hours = int(slot_data.split('_')[1].replace('h', ''))
-        price = PRICES[slot_data]
+        slot_key = f"time_{hours}h"
+        slot_type_data = slot_type_service.get_slot_type_by_key(slot_key)
+        if slot_type_data:
+            price = float(slot_type_data.get('price', 0))
+        else:
+            bot.answer_callback_query(call.id, "❌ This slot is no longer available", show_alert=True)
+            return
         show_payment_options(bot, call.message.chat.id, user_id, 'time', price, duration_hours=hours, message_id=call.message.message_id)
     elif slot_data.startswith('count_'):
         count = int(slot_data.split('_')[1])
-        price = PRICES[f'count_{count}']
+        slot_key = f"count_{count}"
+        slot_type_data = slot_type_service.get_slot_type_by_key(slot_key)
+        if slot_type_data:
+            price = float(slot_type_data.get('price', 0))
+        else:
+            bot.answer_callback_query(call.id, "❌ This slot is no longer available", show_alert=True)
+            return
         show_payment_options(bot, call.message.chat.id, user_id, 'count', price, message_count=count, message_id=call.message.message_id)
     
     bot.answer_callback_query(call.id)
@@ -189,21 +201,33 @@ def handle_payment_gateway_selection(bot, call):
     """Handle payment gateway selection"""
     user_id = call.from_user.id
     payment_data = call.data.replace('pay_', '')
-    PRICES = get_priority_slot_prices()
     
     gateway, slot_info = payment_data.split('_', 1)
     slot_parts = slot_info.split('_')
     slot_type = slot_parts[0]
     value = int(slot_parts[1])
     
+    # Get price from database using slot_type_service
     if slot_type == 'time':
         duration_hours = value
         message_count = None
-        price = PRICES[f'time_{value}h']
+        slot_key = f'time_{value}h'
+        slot_type_data = slot_type_service.get_slot_type_by_key(slot_key)
+        if slot_type_data:
+            price = float(slot_type_data.get('price', 0))
+        else:
+            bot.answer_callback_query(call.id, "❌ This slot is no longer available", show_alert=True)
+            return
     else:
         duration_hours = None
         message_count = value
-        price = PRICES[f'count_{value}']
+        slot_key = f'count_{value}'
+        slot_type_data = slot_type_service.get_slot_type_by_key(slot_key)
+        if slot_type_data:
+            price = float(slot_type_data.get('price', 0))
+        else:
+            bot.answer_callback_query(call.id, "❌ This slot is no longer available", show_alert=True)
+            return
     
     slot = priority_service.create_priority_slot(
         user_id=user_id,
