@@ -407,55 +407,51 @@
         <!-- PRICING TAB -->
         <div id="pricing" class="tab-content">
             <div class="section">
-                <h2>💰 Manage Priority Slot Pricing</h2>
+                <h2>💰 Manage Priority Slot Types</h2>
                 <div id="pricing-message"></div>
                 
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px;">Add New Slot Type</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Category</label>
+                            <select id="new-slot-category" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" onchange="toggleSlotValueFields()">
+                                <option value="time">Time-Based</option>
+                                <option value="count">Broadcast Count</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Slot Key</label>
+                            <input type="text" id="new-slot-key" placeholder="e.g., time_2h" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Display Name</label>
+                            <input type="text" id="new-slot-name" placeholder="e.g., 2 Hours Priority" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div id="duration-field">
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Duration (hours)</label>
+                            <input type="number" id="new-slot-duration" placeholder="e.g., 2" min="1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div id="count-field" style="display: none;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Message Count</label>
+                            <input type="number" id="new-slot-count" placeholder="e.g., 15" min="1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                        <div>
+                            <label style="display: block; font-weight: 600; margin-bottom: 5px;">Price ($)</label>
+                            <input type="number" id="new-slot-price" placeholder="e.g., 15.00" step="0.01" min="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addSlotType()">Add Slot Type</button>
+                </div>
+                
                 <h3 style="margin-top: 20px; margin-bottom: 15px; color: #333;">⏱️ Time-Based Slots</h3>
-                <div class="price-grid">
-                    <div class="price-card">
-                        <div class="price-label">1 Hour Priority</div>
-                        <input type="number" class="price-input" id="price_time_1h" step="0.01" min="0">
-                        <button class="btn btn-primary btn-small" onclick="updatePrice('time_1h', 'price_time_1h')">Update</button>
-                    </div>
-                    <div class="price-card">
-                        <div class="price-label">6 Hours Priority</div>
-                        <input type="number" class="price-input" id="price_time_6h" step="0.01" min="0">
-                        <button class="btn btn-primary btn-small" onclick="updatePrice('time_6h', 'price_time_6h')">Update</button>
-                    </div>
-                    <div class="price-card">
-                        <div class="price-label">12 Hours Priority</div>
-                        <input type="number" class="price-input" id="price_time_12h" step="0.01" min="0">
-                        <button class="btn btn-primary btn-small" onclick="updatePrice('time_12h', 'price_time_12h')">Update</button>
-                    </div>
-                    <div class="price-card">
-                        <div class="price-label">24 Hours Priority</div>
-                        <input type="number" class="price-input" id="price_time_24h" step="0.01" min="0">
-                        <button class="btn btn-primary btn-small" onclick="updatePrice('time_24h', 'price_time_24h')">Update</button>
-                    </div>
+                <div id="time-slots-table" style="overflow-x: auto; margin-bottom: 30px;">
+                    <div class="loading"><div class="spinner"></div>Loading...</div>
                 </div>
                 
                 <h3 style="margin-top: 20px; margin-bottom: 15px; color: #333;">📊 Broadcast-Count Slots</h3>
-                <div class="price-grid">
-                    <div class="price-card">
-                        <div class="price-label">5 Broadcasts Priority</div>
-                        <input type="number" class="price-input" id="price_count_5" step="0.01" min="0">
-                        <button class="btn btn-primary btn-small" onclick="updatePrice('count_5', 'price_count_5')">Update</button>
-                    </div>
-                    <div class="price-card">
-                        <div class="price-label">10 Broadcasts Priority</div>
-                        <input type="number" class="price-input" id="price_count_10" step="0.01" min="0">
-                        <button class="btn btn-primary btn-small" onclick="updatePrice('count_10', 'price_count_10')">Update</button>
-                    </div>
-                    <div class="price-card">
-                        <div class="price-label">25 Broadcasts Priority</div>
-                        <input type="number" class="price-input" id="price_count_25" step="0.01" min="0">
-                        <button class="btn btn-primary btn-small" onclick="updatePrice('count_25', 'price_count_25')">Update</button>
-                    </div>
-                    <div class="price-card">
-                        <div class="price-label">50 Broadcasts Priority</div>
-                        <input type="number" class="price-input" id="price_count_50" step="0.01" min="0">
-                        <button class="btn btn-primary btn-small" onclick="updatePrice('count_50', 'price_count_50')">Update</button>
-                    </div>
+                <div id="count-slots-table" style="overflow-x: auto;">
+                    <div class="loading"><div class="spinner"></div>Loading...</div>
                 </div>
             </div>
         </div>
