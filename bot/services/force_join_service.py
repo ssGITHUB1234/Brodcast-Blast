@@ -72,8 +72,20 @@ class ForceJoinService:
         """Check if user is a member of a channel"""
         try:
             url = f"{self.api_url}/getChatMember"
+            
+            # Ensure channel_id has proper format for channels (should start with -100)
+            chat_id = channel_id
+            if isinstance(channel_id, str):
+                # If it's a username, use as-is
+                if not channel_id.startswith('@') and not channel_id.startswith('-'):
+                    # Try as username first
+                    chat_id = f"@{channel_id}"
+                elif channel_id.lstrip('-').isdigit():
+                    # It's a numeric ID - ensure it's properly formatted
+                    chat_id = channel_id
+            
             data = {
-                'chat_id': channel_id,
+                'chat_id': chat_id,
                 'user_id': user_id
             }
             response = requests.post(url, json=data)
@@ -81,7 +93,12 @@ class ForceJoinService:
             
             if result.get('ok'):
                 status = result.get('result', {}).get('status')
-                return status in ['member', 'administrator', 'creator']
+                # Include 'restricted' status - restricted users are still channel members
+                return status in ['member', 'administrator', 'creator', 'restricted']
+            else:
+                # Log the error for debugging
+                error_desc = result.get('description', 'Unknown error')
+                print(f"Telegram API error checking membership: {error_desc} (channel: {chat_id}, user: {user_id})")
             return False
         except Exception as e:
             print(f"Error checking membership for user {user_id} in channel {channel_id}: {e}")
@@ -101,11 +118,19 @@ class ForceJoinService:
         
         return len(not_joined) == 0, not_joined
     
-    def get_channel_info(self, channel_id):
+    def get_channel_info(self, channel_input):
         """Get channel info from Telegram"""
         try:
             url = f"{self.api_url}/getChat"
-            data = {'chat_id': channel_id}
+            
+            # Handle different input formats
+            chat_id = channel_input.strip()
+            if not chat_id.startswith('@') and not chat_id.startswith('-'):
+                # If it's just a username without @, add it
+                if not chat_id.lstrip('-').isdigit():
+                    chat_id = f"@{chat_id}"
+            
+            data = {'chat_id': chat_id}
             response = requests.post(url, json=data)
             result = response.json()
             
@@ -117,6 +142,9 @@ class ForceJoinService:
                     'username': chat.get('username'),
                     'type': chat.get('type')
                 }
+            else:
+                error_desc = result.get('description', 'Unknown error')
+                print(f"Failed to get channel info for {chat_id}: {error_desc}")
             return None
         except Exception as e:
             print(f"Error getting channel info: {e}")
