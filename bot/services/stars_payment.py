@@ -3,8 +3,9 @@ import requests
 from config.settings import TELEGRAM_BOT_TOKEN
 from config.database import get_supabase_client
 
-# Telegram Stars exchange rate: approximately 100 XTR = $1 USD
-STARS_PER_USD = 100
+# Telegram Stars exchange rate: 100 XTR = $1.30 USD
+# So 1 USD = 100/1.30 ≈ 76.92 stars
+STARS_PER_USD = 77  # 100 stars / $1.30
 
 class StarsPaymentService:
     """Handle Telegram Stars payments via bot API"""
