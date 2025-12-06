@@ -34,19 +34,38 @@ def on_web_app_data(message):
         print(f"[WEB_APP_DATA] Received from user {user_id}: {web_app_data}")
         
         if web_app_data.get('action') == 'ad_complete':
-            print(f"[WEB_APP_DATA] Ad complete for user {user_id} - auto-starting broadcast creation")
+            print(f"[WEB_APP_DATA] Ad complete for user {user_id} - awarding points")
             
             ads_state.mark_ad_watched(user_id)
             print(f"[WEB_APP_DATA] Marked ad watched for user {user_id}")
             
-            class WebAppMessage:
-                def __init__(self, user_msg):
-                    self.from_user = user_msg.from_user
-                    self.chat = user_msg.chat
-                    self.message_id = user_msg.message_id
-                    self.text = '/create'
+            # Award points for watching ad
+            points_per_ad = ads_state.settings.get('points_per_ad', 10)
+            points_required = ads_state.settings.get('points_required', 30)
+            new_balance = user_service.add_points(user_id, points_per_ad)
             
-            broadcast_handlers.start_broadcast_creation(bot, WebAppMessage(message), user_id)
+            print(f"[WEB_APP_DATA] Awarded {points_per_ad} points to user {user_id}. New balance: {new_balance}")
+            
+            # Send points update message
+            if new_balance is not None:
+                if new_balance >= points_required:
+                    bot.send_message(
+                        chat_id,
+                        f"🎉 +{points_per_ad} points earned!\n\n"
+                        f"💰 Your balance: {new_balance} points\n\n"
+                        f"✅ You have enough points to send a broadcast!\n"
+                        f"Use /create to send your broadcast now."
+                    )
+                else:
+                    points_needed = points_required - new_balance
+                    ads_needed = -(-points_needed // points_per_ad)
+                    bot.send_message(
+                        chat_id,
+                        f"🎉 +{points_per_ad} points earned!\n\n"
+                        f"💰 Your balance: {new_balance} points\n"
+                        f"📊 Required for broadcast: {points_required} points\n\n"
+                        f"⏳ Watch {ads_needed} more ad(s) to unlock broadcasting!"
+                    )
     except Exception as e:
         print(f"❌ Web app data error: {e}")
         import traceback
