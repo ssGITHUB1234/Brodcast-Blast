@@ -611,6 +611,13 @@ def cleanup_expired_invoices():
     except Exception as e:
         print(f"Invoice cleanup error: {e}")
 
+def cleanup_expired_broadcasts():
+    """Background job to delete non-priority broadcasts older than 1 hour"""
+    try:
+        deleted = broadcast_service.delete_expired_broadcasts(hours=1)
+    except Exception as e:
+        print(f"Broadcast cleanup error: {e}")
+
 def main():
     """Main bot function"""
     if not bot:
@@ -631,9 +638,11 @@ def main():
     scheduler = BackgroundScheduler()
     scheduler.add_job(process_broadcast_queue, 'interval', seconds=30)
     scheduler.add_job(cleanup_expired_invoices, 'interval', seconds=60)
+    scheduler.add_job(cleanup_expired_broadcasts, 'interval', minutes=5)
     scheduler.start()
     print("✓ Broadcast queue processor started")
     print("✓ Invoice expiry cleanup started (5 min expiry)")
+    print("✓ Broadcast expiry cleanup started (1 hour, non-priority only)")
     
     # Check if using webhooks (production) or polling (dev)
     import os

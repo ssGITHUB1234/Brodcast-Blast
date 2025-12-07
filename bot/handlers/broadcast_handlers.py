@@ -277,6 +277,7 @@ def finalize_broadcast(bot, chat_id, user_id, message_id=None):
     )
     
     if broadcast:
+        broadcast_service.enforce_user_broadcast_limit(user_id)
         # Deduct points for non-admin users
         points_info = ""
         if not is_admin(user_id):
