@@ -49,6 +49,25 @@ A comprehensive Telegram broadcast bot that allows users to send broadcasts to t
 - **payments**: Payment transaction logs
 - **admin_logs**: Administrative action logs
 
+## Recent Changes (Dec 7, 2025)
+
+### Country & Interest Charts in Chat Analysis (Dec 7) ✅
+**NEW:** Added user distribution charts to the Chat Analysis tab in admin dashboard.
+
+**Features:**
+- 🌍 **Users by Country (Pie Chart)** - Shows user distribution across countries with percentages
+- 🎯 **Users by Interest (Bar Chart)** - Shows user distribution by interest categories
+
+**New API Endpoints:**
+- `GET /api/analytics/user-countries` - Returns country distribution data
+- `GET /api/analytics/user-interests` - Returns interest/category distribution data
+
+**Files Updated:**
+- backend/app.py (new API endpoints)
+- backend/templates/dashboard.html (chart sections + JS rendering functions)
+
+---
+
 ## Recent Changes (Dec 4, 2025) - PRODUCTION READY ✅✅✅
 
 ### POINTS-BASED BROADCAST SYSTEM (Dec 4, 09:45 UTC) ✅✅✅

@@ -736,6 +736,22 @@
         <!-- CHAT ANALYSIS TAB -->
         <div id="chat-analysis" class="tab-content">
             <div class="section">
+                <h2>🌍 Users by Country (Pie Chart)</h2>
+                <div class="chart-container" style="position: relative; height: 400px; margin-bottom: 30px;">
+                    <canvas id="countryChart"></canvas>
+                </div>
+                <div class="table-wrapper" id="country-table"></div>
+            </div>
+            
+            <div class="section">
+                <h2>🎯 Users by Interest (Bar Chart)</h2>
+                <div class="chart-container" style="position: relative; height: 400px; margin-bottom: 30px;">
+                    <canvas id="interestChart"></canvas>
+                </div>
+                <div class="table-wrapper" id="interest-table"></div>
+            </div>
+            
+            <div class="section">
                 <h2>💰 Top Paying Users (Bar Chart)</h2>
                 <div class="chart-container" style="position: relative; height: 400px; margin-bottom: 30px;">
                     <canvas id="payingChart"></canvas>
@@ -1409,6 +1425,16 @@
         
         async function loadChatAnalysis() {
             try {
+                // Load country distribution
+                const countryRes = await fetch(`${API_BASE}/analytics/user-countries`);
+                const countryData = await countryRes.json();
+                renderCountryChart(countryData);
+                
+                // Load interest distribution
+                const interestRes = await fetch(`${API_BASE}/analytics/user-interests`);
+                const interestData = await interestRes.json();
+                renderInterestChart(interestData);
+                
                 // Load top paying users
                 const payingRes = await fetch(`${API_BASE}/analytics/top-paying?limit=10`);
                 const payingUsers = await payingRes.json();
@@ -1420,12 +1446,111 @@
                 renderTopBroadcasting(broadcastUsers);
             } catch (error) {
                 console.error('Error loading chat analysis:', error);
-                document.getElementById('chat-analysis-section').innerHTML = '<div class="error">Error loading data</div>';
             }
         }
         
         let payingChart = null;
         let broadcastingChart = null;
+        let countryChart = null;
+        let interestChart = null;
+        
+        function renderCountryChart(data) {
+            if (!Array.isArray(data) || data.length === 0) {
+                document.getElementById('country-table').innerHTML = '<div style="text-align: center; color: #999;">No country data</div>';
+                return;
+            }
+            
+            const labels = data.map(d => d.country);
+            const counts = data.map(d => d.count);
+            const bgColors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384',
+                '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#3B82F6'
+            ];
+            
+            if (countryChart) countryChart.destroy();
+            
+            const ctx = document.getElementById('countryChart').getContext('2d');
+            countryChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Users',
+                        data: counts,
+                        backgroundColor: bgColors.slice(0, data.length),
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {position: 'right'}
+                    }
+                }
+            });
+            
+            let html = '<table><thead><tr><th>Country</th><th>Users</th><th>Percentage</th></tr></thead><tbody>';
+            const total = counts.reduce((a, b) => a + b, 0);
+            data.forEach(d => {
+                const pct = total > 0 ? ((d.count / total) * 100).toFixed(1) : '0';
+                html += `<tr><td>${d.country}</td><td>${d.count}</td><td>${pct}%</td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('country-table').innerHTML = html;
+        }
+        
+        function renderInterestChart(data) {
+            if (!Array.isArray(data) || data.length === 0) {
+                document.getElementById('interest-table').innerHTML = '<div style="text-align: center; color: #999;">No interest data</div>';
+                return;
+            }
+            
+            const labels = data.map(d => d.interest);
+            const counts = data.map(d => d.count);
+            const bgColors = [
+                '#667eea', '#764ba2', '#36A2EB', '#4BC0C0', '#9966FF',
+                '#FF9F40', '#FF6384', '#FFCE56', '#10B981', '#F59E0B'
+            ];
+            
+            if (interestChart) interestChart.destroy();
+            
+            const ctx = document.getElementById('interestChart').getContext('2d');
+            interestChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Users',
+                        data: counts,
+                        backgroundColor: bgColors.slice(0, data.length),
+                        borderColor: '#667eea',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {display: false}
+                    },
+                    scales: {
+                        y: {beginAtZero: true}
+                    }
+                }
+            });
+            
+            let html = '<table><thead><tr><th>Interest Category</th><th>Users</th><th>Percentage</th></tr></thead><tbody>';
+            const total = counts.reduce((a, b) => a + b, 0);
+            data.forEach(d => {
+                const pct = total > 0 ? ((d.count / total) * 100).toFixed(1) : '0';
+                html += `<tr><td>${d.interest}</td><td>${d.count}</td><td>${pct}%</td></tr>`;
+            });
+            html += '</tbody></table>';
+            document.getElementById('interest-table').innerHTML = html;
+        }
         
         function renderTopPaying(users) {
             if (!Array.isArray(users) || users.length === 0) {

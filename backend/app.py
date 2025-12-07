@@ -353,6 +353,57 @@ def get_top_broadcasting_users():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/analytics/user-countries', methods=['GET'])
+def get_user_countries():
+    """Get user distribution by country"""
+    try:
+        db = get_supabase_client()
+        users = db.table('users').select('country').execute()
+        
+        country_counts = {}
+        if users.data:
+            for user in users.data:
+                country = user.get('country') or 'Unknown'
+                if country not in country_counts:
+                    country_counts[country] = 0
+                country_counts[country] += 1
+        
+        sorted_countries = sorted(country_counts.items(), key=lambda x: x[1], reverse=True)
+        
+        result = [{'country': country, 'count': count} for country, count in sorted_countries]
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analytics/user-interests', methods=['GET'])
+def get_user_interests():
+    """Get user distribution by interest categories"""
+    try:
+        db = get_supabase_client()
+        users = db.table('users').select('categories').execute()
+        
+        interest_counts = {}
+        if users.data:
+            for user in users.data:
+                categories = user.get('categories') or []
+                if isinstance(categories, list):
+                    for category in categories:
+                        if category:
+                            if category not in interest_counts:
+                                interest_counts[category] = 0
+                            interest_counts[category] += 1
+                elif isinstance(categories, str) and categories:
+                    if categories not in interest_counts:
+                        interest_counts[categories] = 0
+                    interest_counts[categories] += 1
+        
+        sorted_interests = sorted(interest_counts.items(), key=lambda x: x[1], reverse=True)
+        
+        result = [{'interest': interest, 'count': count} for interest, count in sorted_interests]
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/ads/settings', methods=['GET'])
 def get_ads_settings():
     """Get ad system settings including points"""
