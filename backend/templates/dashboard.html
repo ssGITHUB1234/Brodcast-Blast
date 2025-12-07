@@ -453,6 +453,101 @@
                 font-size: 11px;
             }
         }
+        
+        /* Enhanced Mobile Responsive Styles */
+        @media screen and (max-width: 768px) {
+            /* Add New Link form - stack vertically */
+            .add-link-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+            
+            /* Add New Channel form - stack vertically */
+            .add-channel-grid {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+            
+            /* Pricing form grid */
+            .add-slot-grid {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* Points system settings */
+            .points-grid {
+                grid-template-columns: 1fr !important;
+                max-width: 100% !important;
+            }
+            
+            /* Charts - make them taller on mobile */
+            .chart-container {
+                height: 300px !important;
+                min-height: 300px !important;
+            }
+            
+            /* Table horizontal scroll indicator */
+            .table-wrapper::after {
+                content: '← Scroll →';
+                display: block;
+                text-align: center;
+                color: #999;
+                font-size: 11px;
+                padding: 5px 0;
+            }
+            
+            /* Info boxes */
+            .info-box {
+                padding: 12px !important;
+                font-size: 13px !important;
+            }
+            
+            .info-box br {
+                display: block;
+                margin-bottom: 5px;
+            }
+            
+            /* Buttons in tables */
+            .btn-small {
+                padding: 4px 8px !important;
+                font-size: 10px !important;
+                display: inline-block;
+                margin: 2px;
+            }
+            
+            /* Code blocks in tables */
+            code {
+                font-size: 10px !important;
+                word-break: break-all;
+            }
+        }
+        
+        @media screen and (max-width: 480px) {
+            /* Even smaller screens */
+            .section {
+                padding: 10px !important;
+            }
+            
+            .section h2 {
+                font-size: 16px !important;
+            }
+            
+            .section h3 {
+                font-size: 14px !important;
+            }
+            
+            /* Stack buttons in action columns */
+            td .btn-small {
+                display: block;
+                width: 100%;
+                margin-bottom: 4px;
+            }
+            
+            /* Chart containers smaller */
+            .chart-container {
+                height: 250px !important;
+                min-height: 250px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -515,9 +610,11 @@
             
             <div class="section">
                 <h2>💳 Recent Payments</h2>
-                <div id="payments-section" class="loading">
-                    <div class="spinner"></div>
-                    Loading payments...
+                <div class="table-wrapper">
+                    <div id="payments-section" class="loading">
+                        <div class="spinner"></div>
+                        Loading payments...
+                    </div>
                 </div>
             </div>
         </div>
@@ -530,7 +627,7 @@
                 
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                     <h3 style="margin-bottom: 15px;">Add New Slot Type</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <div class="add-slot-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px;">
                         <div>
                             <label style="display: block; font-weight: 600; margin-bottom: 5px;">Category</label>
                             <select id="new-slot-category" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;" onchange="toggleSlotValueFields()">
@@ -563,13 +660,17 @@
                 </div>
                 
                 <h3 style="margin-top: 20px; margin-bottom: 15px; color: #333;">⏱️ Time-Based Slots</h3>
-                <div id="time-slots-table" style="overflow-x: auto; margin-bottom: 30px;">
-                    <div class="loading"><div class="spinner"></div>Loading...</div>
+                <div class="table-wrapper">
+                    <div id="time-slots-table">
+                        <div class="loading"><div class="spinner"></div>Loading...</div>
+                    </div>
                 </div>
                 
-                <h3 style="margin-top: 20px; margin-bottom: 15px; color: #333;">📊 Broadcast-Count Slots</h3>
-                <div id="count-slots-table" style="overflow-x: auto;">
-                    <div class="loading"><div class="spinner"></div>Loading...</div>
+                <h3 style="margin-top: 20px; margin-bottom: 15px; color: #333; margin-top: 30px;">📊 Broadcast-Count Slots</h3>
+                <div class="table-wrapper">
+                    <div id="count-slots-table">
+                        <div class="loading"><div class="spinner"></div>Loading...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -584,9 +685,11 @@
                     <input type="text" id="user-search" placeholder="Search by User ID" onkeyup="filterUsers()">
                 </div>
                 
-                <div id="users-section" class="loading">
-                    <div class="spinner"></div>
-                    Loading users...
+                <div class="table-wrapper">
+                    <div id="users-section" class="loading">
+                        <div class="spinner"></div>
+                        Loading users...
+                    </div>
                 </div>
             </div>
         </div>
@@ -595,9 +698,11 @@
         <div id="broadcasts" class="tab-content">
             <div class="section">
                 <h2>📢 All Broadcasts</h2>
-                <div id="broadcasts-section" class="loading">
-                    <div class="spinner"></div>
-                    Loading broadcasts...
+                <div class="table-wrapper">
+                    <div id="broadcasts-section" class="loading">
+                        <div class="spinner"></div>
+                        Loading broadcasts...
+                    </div>
                 </div>
             </div>
         </div>
@@ -606,9 +711,11 @@
         <div id="analytics" class="tab-content">
             <div class="section">
                 <h2>⭐ Priority Slots</h2>
-                <div id="slots-section" class="loading">
-                    <div class="spinner"></div>
-                    Loading slots...
+                <div class="table-wrapper">
+                    <div id="slots-section" class="loading">
+                        <div class="spinner"></div>
+                        Loading slots...
+                    </div>
                 </div>
             </div>
             
@@ -617,9 +724,11 @@
                 <div class="search-box">
                     <input type="text" id="analytics-search" placeholder="Search by User ID" onkeyup="filterUserAnalytics()">
                 </div>
-                <div id="user-analytics-section" class="loading">
-                    <div class="spinner"></div>
-                    Loading user analytics...
+                <div class="table-wrapper">
+                    <div id="user-analytics-section" class="loading">
+                        <div class="spinner"></div>
+                        Loading user analytics...
+                    </div>
                 </div>
             </div>
         </div>
@@ -628,18 +737,18 @@
         <div id="chat-analysis" class="tab-content">
             <div class="section">
                 <h2>💰 Top Paying Users (Bar Chart)</h2>
-                <div style="position: relative; height: 400px; margin-bottom: 30px;">
+                <div class="chart-container" style="position: relative; height: 400px; margin-bottom: 30px;">
                     <canvas id="payingChart"></canvas>
                 </div>
-                <div id="top-paying-table"></div>
+                <div class="table-wrapper" id="top-paying-table"></div>
             </div>
             
             <div class="section">
                 <h2>📢 Top Broadcasting Users (Pie Chart)</h2>
-                <div style="position: relative; height: 400px; margin-bottom: 30px;">
+                <div class="chart-container" style="position: relative; height: 400px; margin-bottom: 30px;">
                     <canvas id="broadcastingChart"></canvas>
                 </div>
-                <div id="top-broadcasting-table"></div>
+                <div class="table-wrapper" id="top-broadcasting-table"></div>
             </div>
         </div>
         
@@ -665,7 +774,7 @@
                     <h3 style="margin-bottom: 15px; margin-top: 30px;">📊 Points System Settings</h3>
                     <p style="color: #666; margin-bottom: 15px;">Configure how many points users earn per ad and how many they need to broadcast.</p>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 500px;">
+                    <div class="points-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 500px;">
                         <div>
                             <label style="display: block; font-weight: 600; margin-bottom: 8px;">Points Per Ad</label>
                             <input type="number" id="points-per-ad" min="1" max="100" value="10" 
@@ -700,14 +809,14 @@
                 
                 <div style="margin-bottom: 20px;">
                     <h3 style="margin-bottom: 15px;">Add New Link</h3>
-                    <div style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 15px;">
+                    <div class="add-link-grid" style="display: grid; grid-template-columns: 2fr 1fr auto; gap: 10px; margin-bottom: 15px;">
                         <input type="text" id="new-link-url" placeholder="Paste Monetag link here" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         <input type="text" id="new-link-name" placeholder="Link Name (optional)" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         <button class="btn btn-primary" onclick="addAdLink()" style="padding: 10px 20px;">Add Link</button>
                     </div>
                 </div>
                 
-                <div id="ad-links-list" style="overflow-x: auto;">
+                <div class="table-wrapper" id="ad-links-list">
                     <table>
                         <thead>
                             <tr>
@@ -736,7 +845,7 @@
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
                     <h3 style="margin-bottom: 15px;">Add New Channel</h3>
                     <p style="color: #666; margin-bottom: 15px;">Enter the channel ID (e.g., -1001234567890) or username (e.g., @mychannel). The bot must be an admin in the channel.</p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; max-width: 800px;">
+                    <div class="add-channel-grid" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; max-width: 800px;">
                         <input type="text" id="new-channel-id" placeholder="Channel ID or @username" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         <input type="text" id="new-channel-name" placeholder="Channel Name (optional)" style="padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
                         <button class="btn btn-primary" onclick="addForceJoinChannel()">Add Channel</button>
@@ -754,7 +863,7 @@
                 </div>
                 
                 <h3 style="margin-bottom: 15px;">Configured Channels</h3>
-                <div id="force-join-channels" style="overflow-x: auto;">
+                <div class="table-wrapper" id="force-join-channels">
                     <table>
                         <thead>
                             <tr>
@@ -1739,7 +1848,22 @@
         
         // Load dashboard on page load
         loadDashboard();
-        setInterval(loadDashboard, 30000);
+        
+        // Main dashboard refresh every 15 seconds
+        setInterval(loadDashboard, 15000);
+        
+        // More frequent stats-only refresh (every 5 seconds) for real-time feel
+        setInterval(async function() {
+            try {
+                // Only refresh stats if on overview tab
+                const overviewTab = document.getElementById('overview');
+                if (overviewTab && overviewTab.classList.contains('active')) {
+                    await loadStats();
+                }
+            } catch (e) {
+                console.log('Stats refresh error:', e);
+            }
+        }, 5000);
     </script>
 </body>
 </html>
