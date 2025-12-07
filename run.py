@@ -77,6 +77,40 @@ if __name__ == '__main__':
     elif dashboard_only_mode:
         print("   ⚠️ Bot not started (dashboard-only mode)")
     
+    # Register Telegram webhook for production (Render)
+    if is_production and not dashboard_only_mode:
+        try:
+            import telebot
+            bot = telebot.TeleBot(telegram_token)
+            
+            # Get Render external URL (automatically provided by Render)
+            render_url = os.getenv('RENDER_EXTERNAL_URL', '')
+            webhook_url_env = os.getenv('WEBHOOK_URL', '')
+            
+            # Use WEBHOOK_URL if set, otherwise construct from RENDER_EXTERNAL_URL
+            if webhook_url_env:
+                webhook_url = webhook_url_env.rstrip('/') + '/api/webhook/telegram'
+            elif render_url:
+                webhook_url = render_url.rstrip('/') + '/api/webhook/telegram'
+            else:
+                print("   ⚠️ No RENDER_EXTERNAL_URL or WEBHOOK_URL found - webhook not set")
+                webhook_url = None
+            
+            if webhook_url:
+                # Delete any existing webhook first
+                bot.delete_webhook()
+                # Set the new webhook
+                result = bot.set_webhook(
+                    url=webhook_url,
+                    allowed_updates=["message", "callback_query"]
+                )
+                if result:
+                    print(f"   ✓ Webhook registered: {webhook_url}")
+                else:
+                    print(f"   ⚠️ Failed to register webhook: {webhook_url}")
+        except Exception as e:
+            print(f"   ⚠️ Webhook registration error: {e}")
+    
     # Run Flask as main app
     from backend.app import app
     from config.settings import FLASK_HOST, FLASK_PORT
