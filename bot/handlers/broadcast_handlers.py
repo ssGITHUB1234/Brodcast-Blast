@@ -178,19 +178,39 @@ def handle_broadcast_media_input(bot, message):
         user_broadcast_state[user_id]['media_type'] = media_type
         user_broadcast_state[user_id]['step'] = 'targeting'
         
-        show_targeting_options(bot, message.chat.id)
+        show_targeting_options(bot, message.chat.id, user_id=user_id)
 
-def show_targeting_options(bot, chat_id, message_id=None):
-    """Show targeting options"""
+def show_targeting_options(bot, chat_id, message_id=None, user_id=None):
+    """Show targeting options - All Users only available for priority broadcasts"""
     from bot.utils.nav_helpers import edit_or_send
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(
-        types.InlineKeyboardButton("🌍 All Users", callback_data="target_all"),
-        types.InlineKeyboardButton("📍 By Country", callback_data="target_country"),
-        types.InlineKeyboardButton("📂 By Category", callback_data="target_category")
-    )
+    from config.settings import ADMIN_USER_IDS
     
-    text = "Step 3: Select your target audience:"
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    
+    # Check if user has active priority slot or is admin
+    has_priority = False
+    if user_id:
+        active_slot = priority_service.get_active_priority_slot()
+        if active_slot and active_slot.get('user_id') == user_id:
+            has_priority = True
+        if user_id in ADMIN_USER_IDS:
+            has_priority = True
+    
+    # Only show "All Users" for priority broadcasts or admins
+    if has_priority:
+        markup.add(
+            types.InlineKeyboardButton("🌍 All Users", callback_data="target_all"),
+            types.InlineKeyboardButton("📍 By Country", callback_data="target_country"),
+            types.InlineKeyboardButton("📂 By Category", callback_data="target_category")
+        )
+        text = "Step 3: Select your target audience:"
+    else:
+        markup.add(
+            types.InlineKeyboardButton("📍 By Country", callback_data="target_country"),
+            types.InlineKeyboardButton("📂 By Category", callback_data="target_category")
+        )
+        text = "Step 3: Select your target audience:\n\n💡 Tip: Purchase a priority slot to broadcast to all users!"
+    
     edit_or_send(bot, chat_id, text, message_id, markup)
 
 def handle_broadcast_skip_media(bot, call):
@@ -203,7 +223,7 @@ def handle_broadcast_skip_media(bot, call):
         user_broadcast_state[user_id]['step'] = 'targeting'
         
         bot.answer_callback_query(call.id, "Media skipped")
-        show_targeting_options(bot, call.message.chat.id, call.message.message_id)
+        show_targeting_options(bot, call.message.chat.id, call.message.message_id, user_id=user_id)
 
 def handle_target_selection(bot, call):
     """Handle target audience selection"""
