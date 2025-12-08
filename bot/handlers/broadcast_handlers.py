@@ -67,6 +67,13 @@ def handle_create_broadcast(bot, message):
             start_broadcast_creation(bot, message, user_id)
             return
         
+        # Check if ads/points are required (admin setting)
+        ads_required = ads_state.settings.get('ads_required', True)
+        if not ads_required:
+            print(f"[CREATE_BROADCAST] Ads not required (admin setting) - allowing broadcast for user {user_id}")
+            start_broadcast_creation(bot, message, user_id)
+            return
+        
         # Get points settings
         points_required = ads_state.settings.get('points_required', 30)
         points_per_ad = ads_state.settings.get('points_per_ad', 10)
