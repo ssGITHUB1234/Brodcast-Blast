@@ -552,31 +552,50 @@ def process_broadcast_queue():
         active_slot = priority_service.get_active_priority_slot()
         
         if active_slot:
+            print(f"[BROADCAST] Active priority slot found for user {active_slot['user_id']}")
             user_broadcasts = broadcast_service.get_queued_broadcasts()
             priority_user_broadcasts = [b for b in user_broadcasts if b['user_id'] == active_slot['user_id']]
             
-            for broadcast in priority_user_broadcasts[:1]:
-                send_broadcast(broadcast)
-                
-                if active_slot['slot_type'] == 'count':
-                    priority_service.increment_slot_message_count(active_slot['slot_id'])
-                    priority_service.check_and_expire_slots()
+            if priority_user_broadcasts:
+                print(f"[BROADCAST] Processing {len(priority_user_broadcasts)} priority broadcasts")
+                for broadcast in priority_user_broadcasts[:1]:
+                    send_broadcast(broadcast)
+                    
+                    if active_slot['slot_type'] == 'count':
+                        priority_service.increment_slot_message_count(active_slot['slot_id'])
+                        priority_service.check_and_expire_slots()
+            else:
+                print(f"[BROADCAST] No queued broadcasts for priority user {active_slot['user_id']}")
         else:
             queued_broadcasts = broadcast_service.get_queued_broadcasts()
             if queued_broadcasts:
+                print(f"[BROADCAST] Processing queued broadcast #{queued_broadcasts[0].get('broadcast_id')}")
                 send_broadcast(queued_broadcasts[0])
+            else:
+                print("[BROADCAST] No broadcasts in queue")
     
     except Exception as e:
         print(f"Queue processing error: {e}")
+        import traceback
+        traceback.print_exc()
 
 def send_broadcast(broadcast):
     """Send a broadcast to targeted users"""
     try:
+        print(f"[BROADCAST] Sending broadcast #{broadcast.get('broadcast_id')} - target: country={broadcast.get('target_country')}, category={broadcast.get('target_category')}")
+        
         target_users = user_service.get_all_users(
             active_only=True,
             target_country=broadcast.get('target_country'),
             target_category=broadcast.get('target_category')
         )
+        
+        print(f"[BROADCAST] Found {len(target_users)} target users")
+        
+        if not target_users:
+            print(f"[BROADCAST] No users to send to - marking as sent")
+            broadcast_service.update_broadcast_status(broadcast['broadcast_id'], 'sent')
+            return
         
         sent_count = 0
         for user in target_users:
@@ -593,15 +612,17 @@ def send_broadcast(broadcast):
                 
                 sent_count += 1
             except Exception as e:
-                print(f"Error sending to user {user['user_id']}: {e}")
+                print(f"[BROADCAST] Error sending to user {user['user_id']}: {e}")
         
         broadcast_service.update_broadcast_status(broadcast['broadcast_id'], 'sent')
         broadcast_service.increment_broadcast_stats(broadcast['broadcast_id'], sent_count=sent_count, views=sent_count)
         
-        print(f"✓ Broadcast #{broadcast['broadcast_id']} sent to {sent_count} users")
+        print(f"✓ Broadcast #{broadcast['broadcast_id']} sent to {sent_count}/{len(target_users)} users")
     
     except Exception as e:
-        print(f"Broadcast sending error: {e}")
+        print(f"[BROADCAST] Sending error: {e}")
+        import traceback
+        traceback.print_exc()
 
 def cleanup_expired_invoices():
     """Background job to cleanup expired pending invoices after 5 minutes"""

@@ -77,7 +77,7 @@ if __name__ == '__main__':
     elif dashboard_only_mode:
         print("   ⚠️ Bot not started (dashboard-only mode)")
     
-    # Register Telegram webhook for production (Render)
+    # Register Telegram webhook and start scheduler for production (Render)
     if is_production and not dashboard_only_mode:
         try:
             import telebot
@@ -110,6 +110,23 @@ if __name__ == '__main__':
                     print(f"   ⚠️ Failed to register webhook: {webhook_url}")
         except Exception as e:
             print(f"   ⚠️ Webhook registration error: {e}")
+        
+        # Start the background scheduler for broadcast processing on Render
+        try:
+            from apscheduler.schedulers.background import BackgroundScheduler
+            from bot.main import process_broadcast_queue, cleanup_expired_invoices, cleanup_expired_broadcasts
+            
+            scheduler = BackgroundScheduler()
+            scheduler.add_job(process_broadcast_queue, 'interval', seconds=30)
+            scheduler.add_job(cleanup_expired_invoices, 'interval', seconds=60)
+            scheduler.add_job(cleanup_expired_broadcasts, 'interval', minutes=5)
+            scheduler.start()
+            print("   ✓ Broadcast queue processor started")
+            print("   ✓ Background scheduler running")
+        except Exception as e:
+            print(f"   ⚠️ Scheduler error: {e}")
+            import traceback
+            traceback.print_exc()
     
     # Run Flask as main app
     from backend.app import app
