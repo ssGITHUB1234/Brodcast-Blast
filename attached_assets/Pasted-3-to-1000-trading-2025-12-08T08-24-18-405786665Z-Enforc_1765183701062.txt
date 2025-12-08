@@ -1,0 +1,103 @@
+3$ to 1000$ trading.:
+2025-12-08T08:24:18.405786665Z ✓ Enforced limit for user 8362902341: deleted 1 old broadcasts
+2025-12-08T08:24:18.405789555Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405792085Z ✅ Deducted 30 points from user 8362902341. New balance: 0
+2025-12-08T08:24:18.405794525Z [BROADCAST] Deducted 30 points from user 8362902341. New balance: 0
+2025-12-08T08:24:18.405796845Z 
+2025-12-08T08:24:18.405799325Z [WEBHOOK] Received update 162629205
+2025-12-08T08:24:18.405801915Z [WEBHOOK] telegram_bot initialized: True
+2025-12-08T08:24:18.405804525Z [WEBHOOK] Callback query from user 8362902341: data=nav_menu
+2025-12-08T08:24:18.405810275Z [WEBHOOK] Converting JSON to Update object...
+2025-12-08T08:24:18.405812985Z [WEBHOOK] Update object created, processing...
+2025-12-08T08:24:18.405815335Z ✓ [WEBHOOK] Processed update 162629205 successfully
+2025-12-08T08:24:18.405817965Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405826425Z ✅ User 8362902341 retrieved: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405828916Z 
+2025-12-08T08:24:18.405831336Z [WEBHOOK] Received update 162629206
+2025-12-08T08:24:18.405833666Z [WEBHOOK] telegram_bot initialized: True
+2025-12-08T08:24:18.405836506Z [WEBHOOK] Callback query from user 8362902341: data=menu_create
+2025-12-08T08:24:18.405839276Z [WEBHOOK] Converting JSON to Update object...
+2025-12-08T08:24:18.405841746Z [WEBHOOK] Update object created, processing...
+2025-12-08T08:24:18.405844166Z ✓ [WEBHOOK] Processed update 162629206 successfully
+2025-12-08T08:24:18.405846576Z [CREATE_BROADCAST] User 8362902341 triggered create broadcast (message_id=980, chat_id=8362902341)
+2025-12-08T08:24:18.405849186Z [CREATE_BROADCAST] Getting user 8362902341...
+2025-12-08T08:24:18.405851866Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405854496Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405857026Z [CREATE_BROADCAST] User 8362902341 points: 0/30
+2025-12-08T08:24:18.405859766Z [CREATE_BROADCAST] User 8362902341 needs 30 more points (3 ads)
+2025-12-08T08:24:18.405862356Z [CREATE_BROADCAST] Using domain: https://brodcast-blast.onrender.com
+2025-12-08T08:24:18.405865676Z [CREATE_BROADCAST] Ad viewer URL: https://brodcast-blast.onrender.com/ad-viewer?user_id=8362902341&token=VCn1tQhoVMt3rGCWjdi0vZsmMM4oNJBjjS1kbTW0HJ0
+2025-12-08T08:24:18.405868326Z [CREATE_BROADCAST] Ad button sent to user 8362902341
+2025-12-08T08:24:18.405870636Z 
+2025-12-08T08:24:18.405872917Z [WEBHOOK] Received update 162629207
+2025-12-08T08:24:18.405875197Z [WEBHOOK] telegram_bot initialized: True
+2025-12-08T08:24:18.405877506Z [WEBHOOK] Message update from user 8362902341
+2025-12-08T08:24:18.405880187Z [WEBHOOK] Converting JSON to Update object...
+2025-12-08T08:24:18.405882587Z [WEBHOOK] Update object created, processing...
+2025-12-08T08:24:18.405885047Z ✓ [WEBHOOK] Processed update 162629207 successfully
+2025-12-08T08:24:18.405887537Z [CREATE_BROADCAST] User 8362902341 triggered create broadcast (message_id=981, chat_id=8362902341)
+2025-12-08T08:24:18.405890247Z [CREATE_BROADCAST] Getting user 8362902341...
+2025-12-08T08:24:18.405892717Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405895307Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405897797Z [CREATE_BROADCAST] User 8362902341 points: 0/30
+2025-12-08T08:24:18.405900257Z [CREATE_BROADCAST] User 8362902341 needs 30 more points (3 ads)
+2025-12-08T08:24:18.405902797Z [CREATE_BROADCAST] Using domain: https://brodcast-blast.onrender.com
+2025-12-08T08:24:18.405905147Z [CREATE_BROADCAST] Ad viewer URL: https://brodcast-blast.onrender.com/ad-viewer?user_id=8362902341&token=YqaRZ9f2a22ZerIam00eN2Ipf_beM2LWJETSDHrWZYE
+
+2025-12-08T08:24:18.405908137Z Message operation error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message can't be edited
+2025-12-08T08:24:18.405910437Z [CREATE_BROADCAST] Ad button sent to user 8362902341
+2025-12-08T08:24:18.405912587Z 
+2025-12-08T08:24:18.405915117Z [WEBHOOK] Received update 162629208
+2025-12-08T08:24:18.405917797Z [WEBHOOK] telegram_bot initialized: True
+2025-12-08T08:24:18.405920487Z [WEBHOOK] Message update from user 8362902341
+2025-12-08T08:24:18.405923207Z [WEBHOOK] Converting JSON to Update object...
+2025-12-08T08:24:18.405925938Z [WEBHOOK] Update object created, processing...
+2025-12-08T08:24:18.405928718Z ✓ [WEBHOOK] Processed update 162629208 successfully
+2025-12-08T08:24:18.405940548Z [CREATE_BROADCAST] User 8362902341 triggered create broadcast (message_id=982, chat_id=8362902341)
+2025-12-08T08:24:18.405943298Z [CREATE_BROADCAST] Getting user 8362902341...
+2025-12-08T08:24:18.405945928Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405948968Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.405951678Z [CREATE_BROADCAST] User 8362902341 points: 0/30
+2025-12-08T08:24:18.405954288Z [CREATE_BROADCAST] User 8362902341 needs 30 more points (3 ads)
+2025-12-08T08:24:18.40603532Z [CREATE_BROADCAST] Using domain: https://brodcast-blast.onrender.com
+2025-12-08T08:24:18.40603858Z [CREATE_BROADCAST] Ad viewer URL: https://brodcast-blast.onrender.com/ad-viewer?user_id=8362902341&token=fPgmJm350TiVK78GNYNzFETgx0IIGvo-bVMYmH3Bvcs
+2025-12-08T08:24:18.40604137Z Message operation error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message can't be edited
+2025-12-08T08:24:18.40604385Z [CREATE_BROADCAST] Ad button sent to user 8362902341
+2025-12-08T08:24:18.40604619Z 
+2025-12-08T08:24:18.40604865Z [WEBHOOK] Received update 162629209
+2025-12-08T08:24:18.40605135Z [WEBHOOK] telegram_bot initialized: True
+2025-12-08T08:24:18.40605366Z [WEBHOOK] Message update from user 8362902341
+2025-12-08T08:24:18.406056Z [WEBHOOK] Converting JSON to Update object...
+2025-12-08T08:24:18.40605868Z [WEBHOOK] Update object created, processing...
+2025-12-08T08:24:18.406061021Z ✓ [WEBHOOK] Processed update 162629209 successfully
+2025-12-08T08:24:18.406063641Z ✅ Retrieved user 8362902341: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.406066181Z ✅ User 8362902341 retrieved: country=Singapore, categories=['Automotive']
+2025-12-08T08:24:18.40606841Z 
+2025-12-08T08:24:18.406071191Z [WEBHOOK] Received update 162629210
+2025-12-08T08:24:18.406073701Z [WEBHOOK] telegram_bot initialized: True
+2025-12-08T08:24:18.406076381Z [WEBHOOK] Callback query from user 8362902341: data=menu_create
+2025-12-08T08:24:18.406078831Z [WEBHOOK] Converting JSON to Update object...
+2025-12-08T08:24:18.406089391Z [WEBHOOK] Update object created, processing...
+2025-12-08T08:24:18.406092121Z ✓ [WEBHOOK] Processed update 162629210 successfully
+2025-12-08T08:24:19.014980633Z 127.0.0.1 - - [08/Dec/2025 08:24:19] "GET /api/stats HTTP/1.1" 200 -
+2025-12-08T08:24:19.532376241Z 127.0.0.1 - - [08/Dec/2025 08:24:19] "GET /api/ads/stats HTTP/1.1" 200 -
+2025-12-08T08:24:35.594417229Z 127.0.0.1 - - [08/Dec/2025 08:24:35] "GET /api/payments HTTP/1.1" 200 -
+2025-12-08T08:24:37.033652819Z 127.0.0.1 - - [08/Dec/2025 08:24:37] "GET /api/stats HTTP/1.1" 200 -
+2025-12-08T08:24:37.449880411Z 127.0.0.1 - - [08/Dec/2025 08:24:37] "GET /api/ads/stats HTTP/1.1" 200 -
+2025-12-08T08:24:51.587052042Z 127.0.0.1 - - [08/Dec/2025 08:24:51] "GET /api/payments HTTP/1.1" 200 -
+2025-12-08T08:24:52.926011395Z 127.0.0.1 - - [08/Dec/2025 08:24:52] "GET /api/stats HTTP/1.1" 200 -
+2025-12-08T08:24:53.344080256Z 127.0.0.1 - - [08/Dec/2025 08:24:53] "GET /api/ads/stats HTTP/1.1" 200 -
+
+2025-12-08T08:25:04.566469319Z 127.0.0.1 - - [08/Dec/2025 08:25:04] "GET /api/payments HTTP/1.1" 200 -
+2025-12-08T08:25:05.880370543Z 127.0.0.1 - - [08/Dec/2025 08:25:05] "GET /api/stats HTTP/1.1" 200 -
+2025-12-08T08:25:06.277818189Z 127.0.0.1 - - [08/Dec/2025 08:25:06] "GET /api/ads/stats HTTP/1.1" 200 -
+2025-12-08T08:26:13.650652124Z 127.0.0.1 - - [08/Dec/2025 08:26:13] "GET /api/payments HTTP/1.1" 200 -
+2025-12-08T08:26:15.430869189Z 127.0.0.1 - - [08/Dec/2025 08:26:15] "GET /api/stats HTTP/1.1" 200 -
+2025-12-08T08:26:15.782690571Z 127.0.0.1 - - [08/Dec/2025 08:26:15] "GET /api/ads/stats HTTP/1.1" 200 -
+2025-12-08T08:27:15.169154433Z 127.0.0.1 - - [08/Dec/2025 08:27:15] "GET /api/payments HTTP/1.1" 200 -
+2025-12-08T08:27:16.568195837Z 127.0.0.1 - - [08/Dec/2025 08:27:16] "GET /api/stats HTTP/1.1" 200 -
+2025-12-08T08:27:16.942367871Z 127.0.0.1 - - [08/Dec/2025 08:27:16] "GET /api/ads/stats HTTP/1.1" 200 -
+2025-12-08T08:33:56.861546078Z 127.0.0.1 - - [08/Dec/2025 08:33:56] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T08:34:17.625626657Z 127.0.0.1 - - [08/Dec/2025 08:34:17] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T08:34:40.884360419Z 127.0.0.1 - - [08/Dec/2025 08:34:40] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T08:34:59.225847171Z 127.0.0.1 - - [08/Dec/2025 08:34:59] "POST /api/webhook/telegram HTTP/1.1" 200 -
