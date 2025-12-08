@@ -571,7 +571,8 @@ def check_ad_watched(user_id):
 def clear_ad_watched(user_id):
     """Clear ad watched status (for next broadcast)"""
     try:
-        users_ads_watched.discard(user_id)
+        if user_id in users_ads_watched:
+            del users_ads_watched[user_id]
         return jsonify({'message': 'Ad status cleared'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
