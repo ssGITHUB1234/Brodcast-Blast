@@ -8,3 +8,12 @@ requests==2.31.0
 python-dotenv==1.0.0
 gunicorn==21.2.0
 httpx==0.24.1
+APScheduler
+Flask
+Flask-CORS
+gunicorn
+openai
+pyTelegramBotAPI
+python-dotenv
+requests
+supabase
