@@ -27,6 +27,9 @@ def mark_ad_watched(user_id):
     users_watched_ads[user_id] = True
     ad_watched_timestamps[user_id] = time.time()  # Store timestamp
     ad_stats['views_completed'] += 1
+    # Decrement uncompleted since this ad is now completed
+    if ad_stats['views_uncompleted'] > 0:
+        ad_stats['views_uncompleted'] -= 1
 
 def user_watched_ad_recently(user_id, timeout_seconds=60):
     """Check if user watched ad recently (within timeout)"""
