@@ -1,0 +1,50 @@
+2025-12-08T18:00:25.467577282Z 
+2025-12-08T18:00:25.467580772Z 🤖 Telegram Bot Status:
+2025-12-08T18:00:25.467583682Z    ✓ Webhook mode enabled (Render)
+2025-12-08T18:00:25.467586142Z    ✓ Bot ready for Telegram webhook updates
+2025-12-08T18:00:25.467588432Z 
+2025-12-08T18:00:25.467591112Z ============================================================
+2025-12-08T18:00:25.467593392Z 
+2025-12-08T18:00:25.467596692Z    ✓ Webhook registered: https://brodcast-blast.onrender.com/api/webhook/telegram
+2025-12-08T18:00:25.467609872Z    ✓ Broadcast queue processor started
+2025-12-08T18:00:25.467613352Z    ✓ Background scheduler running
+2025-12-08T18:00:25.467616022Z ✓ Starting Flask server on 0.0.0.0:10000
+2025-12-08T18:00:25.467618552Z  * Serving Flask app 'backend.app'
+2025-12-08T18:00:25.467621463Z  * Debug mode: off
+2025-12-08T18:00:25.469263789Z WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+2025-12-08T18:00:25.46928349Z  * Running on all addresses (0.0.0.0)
+2025-12-08T18:00:25.46929046Z  * Running on http://127.0.0.1:10000
+2025-12-08T18:00:25.46929292Z  * Running on http://10.17.192.181:10000
+2025-12-08T18:00:25.46931611Z Press CTRL+C to quit
+2025-12-08T18:00:25.756388238Z 127.0.0.1 - - [08/Dec/2025 18:00:25] "HEAD / HTTP/1.1" 200 -
+2025-12-08T18:00:29.407554165Z ==> Your service is live 🎉
+2025-12-08T18:00:29.867196783Z ==> 
+2025-12-08T18:00:29.903478568Z ==> ///////////////////////////////////////////////////////////
+2025-12-08T18:00:29.938559293Z ==> 
+2025-12-08T18:00:29.974953758Z ==> Available at your primary URL https://brodcast-blast.onrender.com
+2025-12-08T18:00:30.390215374Z ==> 
+2025-12-08T18:00:30.439243453Z ==> ///////////////////////////////////////////////////////////
+2025-12-08T18:00:32.157667436Z 127.0.0.1 - - [08/Dec/2025 18:00:32] "GET / HTTP/1.1" 200 -
+2025-12-08T18:01:52.810859007Z 127.0.0.1 - - [08/Dec/2025 18:01:52] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T18:01:57.729413802Z 127.0.0.1 - - [08/Dec/2025 18:01:57] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T18:02:10.472998819Z 127.0.0.1 - - [08/Dec/2025 18:02:10] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T18:02:25.032282304Z 127.0.0.1 - - [08/Dec/2025 18:02:25] "GET /ad-viewer?user_id=8362902341&token=ozjH_O5RbV9_95Xa8_wu5AixltgVKvk5f6FHak7hUFE HTTP/1.1" 200 -
+2025-12-08T18:02:27.113001545Z 127.0.0.1 - - [08/Dec/2025 18:02:27] "POST /api/ads/started/8362902341 HTTP/1.1" 200 -
+2025-12-08T18:02:29.235741878Z 127.0.0.1 - - [08/Dec/2025 18:02:29] "GET /favicon.ico HTTP/1.1" 404 -
+2025-12-08T18:02:35.385400228Z 127.0.0.1 - - [08/Dec/2025 18:02:35] "POST /api/ads/complete/8362902341 HTTP/1.1" 200 -
+2025-12-08T18:02:55.258489571Z 127.0.0.1 - - [08/Dec/2025 18:02:55] "GET /ad-viewer?user_id=8362902341&token=ozjH_O5RbV9_95Xa8_wu5AixltgVKvk5f6FHak7hUFE HTTP/1.1" 200 -
+2025-12-08T18:02:57.384904142Z 127.0.0.1 - - [08/Dec/2025 18:02:57] "POST /api/ads/started/8362902341 HTTP/1.1" 200 -
+2025-12-08T18:02:59.970125839Z 127.0.0.1 - - [08/Dec/2025 18:02:59] "GET /favicon.ico HTTP/1.1" 404 -
+2025-12-08T18:03:07.293457329Z 127.0.0.1 - - [08/Dec/2025 18:03:07] "POST /api/ads/complete/8362902341 HTTP/1.1" 200 -
+2025-12-08T18:03:26.121490544Z 127.0.0.1 - - [08/Dec/2025 18:03:26] "GET /ad-viewer?user_id=8362902341&token=ozjH_O5RbV9_95Xa8_wu5AixltgVKvk5f6FHak7hUFE HTTP/1.1" 200 -
+2025-12-08T18:03:28.424601775Z 127.0.0.1 - - [08/Dec/2025 18:03:28] "POST /api/ads/started/8362902341 HTTP/1.1" 200 -
+2025-12-08T18:03:30.600910572Z 127.0.0.1 - - [08/Dec/2025 18:03:30] "GET /favicon.ico HTTP/1.1" 404 -
+2025-12-08T18:03:34.418279506Z 127.0.0.1 - - [08/Dec/2025 18:03:34] "POST /api/ads/complete/8362902341 HTTP/1.1" 200 -
+2025-12-08T18:03:43.105757641Z 127.0.0.1 - - [08/Dec/2025 18:03:43] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T18:03:59.314589189Z 127.0.0.1 - - [08/Dec/2025 18:03:59] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T18:04:16.116817806Z 127.0.0.1 - - [08/Dec/2025 18:04:16] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T18:05:25.092299486Z 127.0.0.1 - - [08/Dec/2025 18:05:25] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T18:05:31.665008223Z 127.0.0.1 - - [08/Dec/2025 18:05:31] "POST /api/webhook/telegram HTTP/1.1" 200 -
+2025-12-08T18:05:32.250326391Z ==> Detected service running on port 10000
+2025-12-08T18:05:32.33199463Z ==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2025-12-08T18:05:44.24445987Z 127.0.0.1 - - [08/Dec/2025 18:05:44] "POST /api/webhook/telegram HTTP/1.1" 200 -
