@@ -808,6 +808,20 @@
                     <button class="btn btn-primary" onclick="saveAdSettings()" style="margin-top: 25px;">Save Settings</button>
                 </div>
                 
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px;">🌍 Broadcast to All Users</h3>
+                    <p style="color: #666; margin-bottom: 15px;">By default, only paid users (with priority slots) and admins can broadcast to all users. Enable this to allow everyone to broadcast to all users.</p>
+                    
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="checkbox" id="allow-all-users-toggle" style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="allow-all-users-toggle" style="cursor: pointer; font-weight: 600;">
+                            Allow all users to broadcast to everyone
+                        </label>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="saveAllUsersBroadcastSetting()" style="margin-top: 15px;">Save Setting</button>
+                </div>
+                
                 <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-bottom: 30px;">
                     <p style="color: #155724; margin: 0;">
                         💡 <strong>How it works:</strong><br>
@@ -1685,6 +1699,7 @@
                 document.getElementById('ads-required-toggle').checked = settings.ads_required;
                 document.getElementById('points-per-ad').value = settings.points_per_ad || 10;
                 document.getElementById('points-required').value = settings.points_required || 30;
+                document.getElementById('allow-all-users-toggle').checked = settings.allow_all_users_broadcast || false;
             } catch (error) {
                 console.error('Error loading ad settings:', error);
                 showError('Failed to load ad settings');
@@ -1715,6 +1730,28 @@
             } catch (error) {
                 console.error('Error saving ad settings:', error);
                 showError('Error saving settings');
+            }
+        }
+        
+        async function saveAllUsersBroadcastSetting() {
+            try {
+                const allowAllUsers = document.getElementById('allow-all-users-toggle').checked;
+                
+                const response = await fetch(`${API_BASE}/ads/settings`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        allow_all_users_broadcast: allowAllUsers
+                    })
+                });
+                if (response.ok) {
+                    showSuccess(allowAllUsers ? '✅ All users can now broadcast to everyone!' : '✅ Only paid users and admins can broadcast to all users.');
+                } else {
+                    showError('Failed to save setting');
+                }
+            } catch (error) {
+                console.error('Error saving setting:', error);
+                showError('Error saving setting');
             }
         }
         

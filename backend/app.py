@@ -411,7 +411,8 @@ def get_ads_settings():
     return jsonify({
         'ads_required': ads_state.settings.get('ads_required', True),
         'points_per_ad': ads_state.settings.get('points_per_ad', 10),
-        'points_required': ads_state.settings.get('points_required', 30)
+        'points_required': ads_state.settings.get('points_required', 30),
+        'allow_all_users_broadcast': ads_state.settings.get('allow_all_users_broadcast', False)
     })
 
 @app.route('/api/ads/settings', methods=['POST'])
@@ -439,13 +440,18 @@ def update_ads_settings():
                 ads_state.settings['points_required'] = points_required
                 updated = True
         
+        if 'allow_all_users_broadcast' in data:
+            ads_state.settings['allow_all_users_broadcast'] = bool(data['allow_all_users_broadcast'])
+            updated = True
+        
         if updated:
             return jsonify({
                 'message': 'Settings updated',
                 'settings': {
                     'ads_required': ads_state.settings.get('ads_required', True),
                     'points_per_ad': ads_state.settings.get('points_per_ad', 10),
-                    'points_required': ads_state.settings.get('points_required', 30)
+                    'points_required': ads_state.settings.get('points_required', 30),
+                    'allow_all_users_broadcast': ads_state.settings.get('allow_all_users_broadcast', False)
                 }
             })
         

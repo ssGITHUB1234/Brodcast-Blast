@@ -181,9 +181,10 @@ def handle_broadcast_media_input(bot, message):
         show_targeting_options(bot, message.chat.id, user_id=user_id)
 
 def show_targeting_options(bot, chat_id, message_id=None, user_id=None):
-    """Show targeting options - All Users only available for priority broadcasts"""
+    """Show targeting options - All Users available based on admin settings"""
     from bot.utils.nav_helpers import edit_or_send
     from config.settings import ADMIN_USER_IDS
+    from config import ads_state
     
     markup = types.InlineKeyboardMarkup(row_width=1)
     
@@ -196,8 +197,11 @@ def show_targeting_options(bot, chat_id, message_id=None, user_id=None):
         if user_id in ADMIN_USER_IDS:
             has_priority = True
     
-    # Only show "All Users" for priority broadcasts or admins
-    if has_priority:
+    # Check if admin enabled "All Users" for everyone
+    allow_all_users = ads_state.settings.get('allow_all_users_broadcast', False)
+    
+    # Show "All Users" for priority broadcasts, admins, or if enabled for all
+    if has_priority or allow_all_users:
         markup.add(
             types.InlineKeyboardButton("🌍 All Users", callback_data="target_all"),
             types.InlineKeyboardButton("📍 By Country", callback_data="target_country"),

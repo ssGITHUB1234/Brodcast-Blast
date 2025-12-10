@@ -19,7 +19,8 @@ ad_stats = {
 settings = {
     'ads_required': True,  # Admin can toggle via dashboard
     'points_per_ad': 10,   # Points awarded per ad watched
-    'points_required': 30  # Points required to send a broadcast
+    'points_required': 30,  # Points required to send a broadcast
+    'allow_all_users_broadcast': False  # Allow normal users to broadcast to all users
 }
 
 def mark_ad_watched(user_id):
