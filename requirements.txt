@@ -1,19 +1,4 @@
-pyTelegramBotAPI==4.14.0
-Flask==3.0.0
-Flask-CORS==4.0.0
-supabase==2.0.3
-openai==1.54.3
-APScheduler==3.10.4
-requests==2.31.0
-python-dotenv==1.0.0
-gunicorn==21.2.0
-httpx==0.24.1
-APScheduler
-Flask
-Flask-CORS
-gunicorn
-openai
-pyTelegramBotAPI
-python-dotenv
+Flask==2.3.0
+gunicorn==20.1.0
 requests
-supabase
+# Add TON Connect SDK / Telegram analytics server packages as needed
